@@ -1,4 +1,82 @@
-import '@testing-library/jest-dom'
+require('@testing-library/jest-dom')
+
+// Polyfill for Web APIs used by Next.js
+const { TextEncoder, TextDecoder } = require('util')
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+
+// Mock Web APIs for Next.js API routes
+global.Request = class MockRequest {
+  constructor(url, init = {}) {
+    this.url = url
+    this.method = init.method || 'GET'
+    this.headers = new Map(Object.entries(init.headers || {}))
+    this.body = init.body
+    this._bodyText = init.body
+  }
+
+  async json() {
+    return JSON.parse(this._bodyText || '{}')
+  }
+
+  async text() {
+    return this._bodyText || ''
+  }
+}
+
+global.Response = class MockResponse {
+  constructor(body, init = {}) {
+    this.body = body
+    this.status = init.status || 200
+    this.statusText = init.statusText || 'OK'
+    this.headers = new Map(Object.entries(init.headers || {}))
+  }
+
+  async json() {
+    return JSON.parse(this.body || '{}')
+  }
+
+  async text() {
+    return this.body || ''
+  }
+}
+
+global.Headers = class MockHeaders extends Map {
+  get(name) {
+    return super.get(name.toLowerCase())
+  }
+  
+  set(name, value) {
+    return super.set(name.toLowerCase(), value)
+  }
+  
+  has(name) {
+    return super.has(name.toLowerCase())
+  }
+}
+
+global.URL = class MockURL {
+  constructor(url) {
+    const parsed = new URL(url)
+    this.searchParams = parsed.searchParams
+    this.pathname = parsed.pathname
+    this.origin = parsed.origin
+  }
+}
+
+global.URLSearchParams = URLSearchParams
+
+// Mock AbortSignal for timeout functionality
+global.AbortSignal = {
+  timeout: (ms) => ({
+    aborted: false,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  })
+}
+
+// Mock fetch for HTTP requests
+global.fetch = jest.fn()
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -16,11 +94,11 @@ jest.mock('next/navigation', () => ({
 
 // Mock Supabase client
 jest.mock('@/lib/supabase/client', () => ({
-  createClientComponentClient: jest.fn(() => ({
+  supabase: {
     auth: {
       getSession: jest.fn(),
       getUser: jest.fn(),
-      signIn: jest.fn(),
+      signInWithPassword: jest.fn(),
       signOut: jest.fn(),
       signUp: jest.fn(),
       resetPasswordForEmail: jest.fn(),
@@ -38,7 +116,7 @@ jest.mock('@/lib/supabase/client', () => ({
       order: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
     })),
-  })),
+  }
 }))
 
 // Mock environment variables

@@ -1,15 +1,101 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createComprehensiveSecurityMiddleware } from './lib/security/middleware'
+
+// Initialize comprehensive security middleware
+const securityMiddleware = createComprehensiveSecurityMiddleware({
+  headers: {
+    environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    csp: {
+      enabled: true,
+      reportOnly: process.env.NODE_ENV === 'development',
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': [
+          "'self'",
+          "'unsafe-inline'", // Required for Next.js
+          "'unsafe-eval'", // Required for Next.js development
+          'https://vercel.live',
+          'https://va.vercel-scripts.com',
+          'https://cdn.vercel-insights.com'
+        ],
+        'style-src': [
+          "'self'",
+          "'unsafe-inline'", // Required for styled-components
+          'https://fonts.googleapis.com'
+        ],
+        'font-src': [
+          "'self'",
+          'https://fonts.gstatic.com',
+          'data:'
+        ],
+        'img-src': [
+          "'self'",
+          'data:',
+          'blob:',
+          'https:',
+          '*.supabase.co',
+          '*.supabase.com'
+        ],
+        'connect-src': [
+          "'self'",
+          'https://api.openai.com',
+          'https://api.anthropic.com',
+          'https://generativelanguage.googleapis.com',
+          '*.supabase.co',
+          '*.supabase.com',
+          'wss://*.supabase.co',
+          'wss://*.supabase.com',
+          'https://vercel.live',
+          'https://va.vercel-scripts.com'
+        ],
+        'frame-src': ["'self'", 'https://vercel.live'],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'upgrade-insecure-requests': []
+      }
+    }
+  },
+  rateLimit: {
+    enabled: true
+  },
+  csrf: {
+    enabled: true,
+    config: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    }
+  },
+  monitoring: {
+    enabled: true,
+    blockSuspiciousIPs: process.env.NODE_ENV === 'production'
+  },
+  validation: {
+    enabled: true,
+    strictMode: process.env.NODE_ENV === 'production'
+  }
+})
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Apply security middleware first
+  const securityResponse = await securityMiddleware(request)
+  
+  // If security middleware blocked the request, return early
+  if (securityResponse.status !== 200 && securityResponse.status !== 301 && securityResponse.status !== 302) {
+    return securityResponse
+  }
+
+  // Continue with authentication logic
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
-
-  const pathname = request.nextUrl.pathname
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -71,24 +157,41 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (session && authRoutes.includes(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url))
+    // Copy security headers to redirect response
+    securityResponse.headers.forEach((value, key) => {
+      redirectResponse.headers.set(key, value)
+    })
+    return redirectResponse
   }
 
   // Redirect unauthenticated users to login from protected routes
   if (!session && protectedRoutes.some(route => pathname.startsWith(route))) {
     const redirectUrl = new URL('/auth/login', request.url)
     redirectUrl.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(redirectUrl)
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+    // Copy security headers to redirect response
+    securityResponse.headers.forEach((value, key) => {
+      redirectResponse.headers.set(key, value)
+    })
+    return redirectResponse
   }
 
   // For root path, redirect based on auth status
   if (pathname === '/') {
-    if (session) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    } else {
-      return NextResponse.redirect(new URL('/auth/login', request.url))
-    }
+    const redirectUrl = session ? '/dashboard' : '/auth/login'
+    const redirectResponse = NextResponse.redirect(new URL(redirectUrl, request.url))
+    // Copy security headers to redirect response
+    securityResponse.headers.forEach((value, key) => {
+      redirectResponse.headers.set(key, value)
+    })
+    return redirectResponse
   }
+
+  // Copy security headers to the response
+  securityResponse.headers.forEach((value, key) => {
+    response.headers.set(key, value)
+  })
 
   return response
 }

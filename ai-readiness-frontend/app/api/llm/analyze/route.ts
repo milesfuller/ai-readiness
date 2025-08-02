@@ -5,8 +5,18 @@ import { cookies } from 'next/headers';
 import { llmService } from '@/lib/services/llm-service';
 import { JTBDForceType } from '@/lib/types/llm';
 
-export async function POST(request: NextRequest) {
-  try {
+// Apply security middleware
+const secureHandler = withCSRFProtection()(
+  withRateLimit(rateLimitConfigs.llm)(async function POST(request: NextRequest) {
+    try {
+      // Log API access for monitoring
+      securityMonitor.logEvent(
+        SecurityEventType.RATE_LIMIT_EXCEEDED,
+        SecuritySeverity.LOW,
+        request,
+        { endpoint: '/api/llm/analyze' },
+        false
+      )
     const supabase = createServerComponentClient({ cookies });
     
     // Check authentication

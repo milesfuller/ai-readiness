@@ -8,11 +8,25 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:security": "npm audit && npm run test:coverage && node scripts/security-scan.js"
+    "test": "node scripts/run-tests.js",
+    "test:watch": "node scripts/run-tests.js --watch",
+    "test:coverage": "node scripts/run-tests.js --coverage",
+    "test:ci": "node scripts/run-tests.js --ci",
+    "test:parallel": "node scripts/run-tests.js --parallel --workers 4",
+    "test:sequential": "node scripts/run-tests.js --sequential",
+    "test:unit": "jest --testPathPattern=__tests__/components|__tests__/lib/(?!security)",
+    "test:integration": "jest --testPathPattern=__tests__/api",
+    "test:security": "node scripts/security-scan.js",
+    "test:security-full": "npm audit && node scripts/security-scan.js && npm run test:security-tests",
+    "test:security-tests": "jest --testPathPattern=__tests__/lib/security --coverage",
+    "test:performance": "jest --testPathPattern=performance --verbose",
+    "test:all": "npm run test:security && npm run test:coverage && npm run lint && npm run type-check",
+    "test:fast": "node scripts/run-tests.js --parallel --no-coverage --bail",
+    "test:debug": "node scripts/run-tests.js --verbose --sequential",
+    "precommit": "npm run test:security && npm run lint && npm run type-check",
+    "precommit:fast": "node scripts/security-scan.js && npm run lint",
+    "coverage:open": "open coverage/lcov-report/index.html",
+    "coverage:clean": "rm -rf coverage"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.3",
@@ -51,6 +65,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.5.2",
@@ -63,11 +78,14 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.15",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "husky": "^8.0.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "jest-junit": "^16.0.0",
     "msw": "^2.6.8",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
+    "ts-jest": "^29.4.0",
     "typescript": "~5.3.3"
   },
   "jest": {
@@ -79,9 +97,21 @@
       "<rootDir>/.next/",
       "<rootDir>/node_modules/"
     ],
-    "moduleNameMapping": {
+    "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@supabase|jose)/)"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": [
+        "@swc/jest"
+      ]
+    },
+    "extensionsToTreatAsEsm": [
+      ".ts",
+      ".tsx"
+    ],
     "collectCoverageFrom": [
       "app/**/*.{js,jsx,ts,tsx}",
       "components/**/*.{js,jsx,ts,tsx}",

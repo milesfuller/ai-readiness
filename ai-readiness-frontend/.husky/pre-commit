@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit security validation..."
+
+# Run security scan first (fastest check)
+echo "🛡️  Security scan..."
+npm run test:security || {
+  echo "❌ Security scan failed! Commit blocked."
+  exit 1
+}
+
+# Run linting (fast check)
+echo "🧹 Linting..."
+npm run lint || {
+  echo "❌ Linting failed! Please fix linting errors."
+  exit 1
+}
+
+# Run type checking (medium speed check)
+echo "🔍 Type checking..."
+npm run type-check || {
+  echo "❌ Type checking failed! Please fix TypeScript errors."
+  exit 1
+}
+
+# Run fast tests (security tests only)
+echo "🧪 Running security tests..."
+npm run test:security-tests || {
+  echo "❌ Security tests failed! Commit blocked."
+  exit 1
+}
+
+echo "✅ All pre-commit checks passed!"
