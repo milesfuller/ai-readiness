@@ -204,26 +204,27 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 sm:space-y-6 ${className}`}>
       {/* Recording Interface */}
       <div className="text-center space-y-4">
         {!audioBlob ? (
           <div className="space-y-4">
             {/* Recording Button */}
-            <div className={`w-32 h-32 mx-auto rounded-full border-4 flex items-center justify-center transition-all duration-300 relative ${
+            <div className={`w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-full border-4 flex items-center justify-center transition-all duration-300 relative ${
               isRecording 
                 ? 'border-red-500 bg-red-500/10 animate-pulse' 
                 : 'border-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
             }`}>
               <button
                 onClick={isRecording ? stopRecording : startRecording}
-                className="w-full h-full rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                className="w-full h-full rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 touch-target"
                 disabled={isProcessing}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
               >
                 {isRecording ? (
-                  <MicOff className="h-12 w-12 text-red-500 mx-auto" />
+                  <MicOff className="h-10 w-10 sm:h-12 sm:w-12 text-red-500 mx-auto" />
                 ) : (
-                  <Mic className="h-12 w-12 text-teal-500 mx-auto" />
+                  <Mic className="h-10 w-10 sm:h-12 sm:w-12 text-teal-500 mx-auto" />
                 )}
               </button>
               
@@ -253,17 +254,17 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             
             {/* Recording Status */}
             <div className="space-y-2">
-              <p className="text-lg font-medium">
-                {isRecording ? 'Recording...' : 'Click to start recording'}
+              <p className="text-base sm:text-lg font-medium">
+                {isRecording ? 'Recording...' : 'Tap to start recording'}
               </p>
               {isRecording && (
-                <p className="text-teal-400 font-mono">
+                <p className="text-teal-400 font-mono text-lg sm:text-xl">
                   {formatDuration(recordingDuration)}
                 </p>
               )}
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground px-4">
                 {isRecording 
-                  ? 'Click the microphone again to stop' 
+                  ? 'Tap the microphone again to stop' 
                   : 'Speak clearly for best results'
                 }
               </p>
@@ -282,28 +283,31 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             
             {/* Playback Controls */}
             {!isProcessing && (
-              <div className="flex items-center justify-center space-x-4">
+              <div className="flex items-center justify-center space-x-3 sm:space-x-4">
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="default"
                   onClick={isPlaying ? pauseRecording : playRecording}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 touch-target"
+                  aria-label={isPlaying ? 'Pause recording playback' : 'Play recording'}
                 >
                   {isPlaying ? (
-                    <Pause className="h-5 w-5" />
+                    <Pause className="h-4 w-4 sm:h-5 sm:w-5" />
                   ) : (
-                    <Play className="h-5 w-5" />
+                    <Play className="h-4 w-4 sm:h-5 sm:w-5" />
                   )}
-                  <span>{isPlaying ? 'Pause' : 'Play'} Recording</span>
+                  <span className="hidden sm:inline">{isPlaying ? 'Pause' : 'Play'} Recording</span>
+                  <span className="sm:hidden">{isPlaying ? 'Pause' : 'Play'}</span>
                 </Button>
                 
                 <Button
                   variant="ghost"
-                  size="lg"
+                  size="default"
                   onClick={retakeRecording}
-                  className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
+                  className="flex items-center space-x-2 text-muted-foreground hover:text-foreground touch-target"
+                  aria-label="Record again"
                 >
-                  <RotateCcw className="h-5 w-5" />
+                  <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Retake</span>
                 </Button>
               </div>

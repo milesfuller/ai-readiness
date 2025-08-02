@@ -75,27 +75,27 @@ export const SurveyQuestion: React.FC<SurveyQuestionProps> = ({
   }
 
   return (
-    <div className={`max-w-4xl mx-auto space-y-6 ${className}`}>
+    <div className={`max-w-4xl mx-auto space-y-4 sm:space-y-6 ${className}`}>
       {/* Question Header */}
       <Card className="border-teal-500/20 bg-gradient-to-br from-teal-950/10 to-purple-950/10 backdrop-blur-sm">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3 mb-4">
-              <span className={`text-3xl ${categoryColor}`}>
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <span className={`text-2xl sm:text-3xl ${categoryColor} flex-shrink-0`}>
                 {categoryIcon}
               </span>
-              <div>
-                <div className="text-sm font-medium text-muted-foreground mb-1">
+              <div className="flex-1">
+                <div className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">
                   Question {question.number} • {question.categoryLabel}
                 </div>
-                <CardTitle className="text-xl leading-relaxed text-foreground">
+                <CardTitle className="text-lg sm:text-xl leading-relaxed text-foreground">
                   {question.text}
                 </CardTitle>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground">
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>{formatTime(question.estimatedTime)}</span>
             </div>
           </div>
@@ -131,16 +131,17 @@ export const SurveyQuestion: React.FC<SurveyQuestionProps> = ({
       </Card>
 
       {/* Input Method Toggle */}
-      <Card className="p-6 border-border/50 bg-card/50 backdrop-blur-sm">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Choose your input method</h3>
-            <div className="flex items-center space-x-2">
+      <Card className="p-4 sm:p-6 border-border/50 bg-card/50 backdrop-blur-sm">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <h3 className="text-base sm:text-lg font-semibold">Choose your input method</h3>
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
               <Button
                 variant={inputMethod === 'text' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onInputMethodChange('text')}
-                className="flex items-center space-x-2"
+                className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 touch-target"
+                aria-label="Use text input"
               >
                 <Type className="h-4 w-4" />
                 <span>Text</span>
@@ -149,7 +150,8 @@ export const SurveyQuestion: React.FC<SurveyQuestionProps> = ({
                 variant={inputMethod === 'voice' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onInputMethodChange('voice')}
-                className="flex items-center space-x-2"
+                className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 touch-target"
+                aria-label="Use voice input"
               >
                 <Mic className="h-4 w-4" />
                 <span>Voice</span>
@@ -198,18 +200,88 @@ export const SurveyQuestion: React.FC<SurveyQuestionProps> = ({
       </Card>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Mobile: Status and Navigation in column */}
+        <div className="sm:hidden w-full space-y-4">
+          {/* Answer Status */}
+          <div className="flex items-center justify-center space-x-3 text-sm">
+            <div className="flex items-center space-x-2">
+              {localAnswer.trim().length > 0 ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                  <span className="text-green-400">Answer provided</span>
+                </>
+              ) : question.required ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border border-amber-400" />
+                  <span className="text-amber-400">Required</span>
+                </>
+              ) : (
+                <>
+                  <div className="h-4 w-4 rounded-full border border-muted-foreground/50" />
+                  <span>Optional</span>
+                </>
+              )}
+            </div>
+            
+            {/* Input Method Badge */}
+            <div className="flex items-center space-x-1 px-2 py-1 bg-muted/50 rounded text-xs">
+              {inputMethod === 'voice' ? (
+                <Mic className="h-3 w-3" />
+              ) : (
+                <Type className="h-3 w-3" />
+              )}
+              <span className="capitalize">{inputMethod}</span>
+            </div>
+          </div>
+          
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between w-full">
+            <Button
+              variant="outline"
+              onClick={onPrevious}
+              disabled={isFirst}
+              className="flex items-center space-x-2 touch-target"
+              aria-label="Go to previous question"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Back</span>
+            </Button>
+
+            <Button
+              onClick={onNext}
+              disabled={!canGoNext}
+              className={`flex items-center space-x-2 touch-target ${
+                isLast 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-teal-600 hover:bg-teal-700'
+              }`}
+              aria-label={isLast ? 'Complete the survey' : 'Go to next question'}
+            >
+              <span className="hidden sm:inline">{isLast ? 'Complete Survey' : 'Next Question'}</span>
+              <span className="sm:hidden">{isLast ? 'Complete' : 'Next'}</span>
+              {isLast ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Desktop: Original horizontal layout */}
         <Button
           variant="outline"
           onClick={onPrevious}
           disabled={isFirst}
-          className="flex items-center space-x-2"
+          className="hidden sm:flex items-center space-x-2"
         >
           <ChevronLeft className="h-4 w-4" />
           <span>Previous</span>
         </Button>
 
-        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+        <div className="hidden sm:flex items-center space-x-4 text-sm text-muted-foreground">
           {/* Answer Status */}
           <div className="flex items-center space-x-2">
             {localAnswer.trim().length > 0 ? (
@@ -244,7 +316,7 @@ export const SurveyQuestion: React.FC<SurveyQuestionProps> = ({
         <Button
           onClick={onNext}
           disabled={!canGoNext}
-          className={`flex items-center space-x-2 ${
+          className={`hidden sm:flex items-center space-x-2 ${
             isLast 
               ? 'bg-green-600 hover:bg-green-700' 
               : 'bg-teal-600 hover:bg-teal-700'

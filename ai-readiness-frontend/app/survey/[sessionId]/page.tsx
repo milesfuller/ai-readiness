@@ -291,33 +291,39 @@ export default async function SurveyPage({ params }: Props) {
 
   return (
     <MainLayout user={mockUser} currentPath={`/survey/${resolvedParams.sessionId}`}>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
         {/* Header */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold gradient-text">
+              <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
                 AI Readiness Assessment
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Question {currentQuestion.number} of {surveyQuestions.length}
               </p>
             </div>
             
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{formatTime(timeSpent)}</span>
               </div>
               <div className="flex items-center space-x-2">
-                {saveStatus === 'saving' && <Save className="h-4 w-4 animate-spin" />}
-                {saveStatus === 'saved' && <CheckCircle className="h-4 w-4 text-green-400" />}
-                {saveStatus === 'error' && <AlertCircle className="h-4 w-4 text-red-400" />}
-                <span>
+                {saveStatus === 'saving' && <Save className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />}
+                {saveStatus === 'saved' && <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-400" />}
+                {saveStatus === 'error' && <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-400" />}
+                <span className="hidden sm:inline">
                   {saveStatus === 'saving' && 'Saving...'}
                   {saveStatus === 'saved' && 'Saved'}
                   {saveStatus === 'error' && 'Save failed'}
                   {saveStatus === 'idle' && 'Auto-save enabled'}
+                </span>
+                <span className="sm:hidden">
+                  {saveStatus === 'saving' && 'Saving'}
+                  {saveStatus === 'saved' && 'Saved'}
+                  {saveStatus === 'error' && 'Error'}
+                  {saveStatus === 'idle' && 'Auto-save'}
                 </span>
               </div>
             </div>
@@ -358,7 +364,7 @@ export default async function SurveyPage({ params }: Props) {
             <h3 className="font-semibold text-lg">Question Navigation</h3>
             
             {/* Question Grid */}
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
               {surveyQuestions.map((q, idx) => {
                 const hasAnswer = answers[q.id]?.answer.trim()
                 const isCurrent = idx === currentQuestionIndex
@@ -367,7 +373,7 @@ export default async function SurveyPage({ params }: Props) {
                   <button
                     key={q.id}
                     onClick={() => goToQuestion(idx)}
-                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all flex items-center justify-center ${
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center touch-target ${
                       isCurrent
                         ? 'bg-teal-500 text-white ring-2 ring-teal-400'
                         : hasAnswer
@@ -375,6 +381,7 @@ export default async function SurveyPage({ params }: Props) {
                         : 'bg-muted text-muted-foreground hover:bg-muted/80 border border-border'
                     }`}
                     title={`Question ${q.number}: ${q.categoryLabel}`}
+                    aria-label={`Go to question ${q.number}: ${q.categoryLabel}. ${isCurrent ? 'Current question' : hasAnswer ? 'Answered' : 'Not answered'}`}
                   >
                     {q.number}
                   </button>
@@ -398,8 +405,8 @@ export default async function SurveyPage({ params }: Props) {
               </div>
             </div>
             
-            {/* Keyboard shortcuts */}
-            <div className="text-center">
+            {/* Keyboard shortcuts - hide on mobile */}
+            <div className="text-center hidden sm:block">
               <p className="text-xs text-muted-foreground">
                 Use <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+←</kbd> / <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+→</kbd> to navigate, <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+S</kbd> to save
               </p>
@@ -408,13 +415,13 @@ export default async function SurveyPage({ params }: Props) {
         </Card>
 
         {/* Survey Progress Summary */}
-        <Card variant="glass" className="p-6">
-          <h3 className="font-semibold mb-4 flex items-center space-x-2">
-            <Brain className="h-5 w-5 text-teal-400" />
+        <Card variant="glass" className="p-4 sm:p-6">
+          <h3 className="font-semibold mb-4 flex items-center space-x-2 text-base sm:text-lg">
+            <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-teal-400" />
             <span>Progress by Category</span>
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {surveyCategories.map(category => {
               const categoryQuestions = surveyQuestions.filter(q => q.category === category.id)
               const answeredQuestions = categoryQuestions.filter(q => answers[q.id]?.answer.trim())

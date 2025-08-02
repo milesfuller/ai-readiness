@@ -20,14 +20,14 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   className 
 }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {showGradient && (
           <>
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-            <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-pink-500/5 rounded-full blur-2xl animate-pulse delay-2000" />
+            <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 lg:w-96 lg:h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-64 sm:h-64 lg:w-96 lg:h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+            <div className="absolute top-1/2 right-1/3 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-pink-500/5 rounded-full blur-2xl animate-pulse delay-2000" />
           </>
         )}
       </div>
@@ -37,14 +37,14 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         "w-full max-w-md relative z-10 backdrop-blur-xl border-white/10",
         className
       )}>
-        <div className="p-8">
+        <div className="p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold gradient-text mb-2">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-2">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 {subtitle}
               </p>
             )}

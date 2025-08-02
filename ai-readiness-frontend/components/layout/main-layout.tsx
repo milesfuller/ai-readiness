@@ -70,21 +70,23 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
             </div>
 
             {/* Footer */}
-            <footer className="border-t border-border/40 bg-card/50 py-6 px-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center space-x-4">
-                  <span>© 2024 AI Readiness Assessment Platform</span>
-                  <span>•</span>
-                  <a href="/privacy" className="hover:text-teal-400 transition-colors">
-                    Privacy Policy
-                  </a>
-                  <span>•</span>
-                  <a href="/terms" className="hover:text-teal-400 transition-colors">
-                    Terms of Service
-                  </a>
+            <footer className="border-t border-border/40 bg-card/50 py-4 sm:py-6 px-4 sm:px-6">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+                  <span>© 2024 AI Readiness</span>
+                  <span className="hidden sm:inline">•</span>
+                  <div className="flex items-center gap-4">
+                    <a href="/privacy" className="hover:text-teal-400 transition-colors">
+                      Privacy
+                    </a>
+                    <span>•</span>
+                    <a href="/terms" className="hover:text-teal-400 transition-colors">
+                      Terms
+                    </a>
+                  </div>
                 </div>
-                <div className="mt-2 sm:mt-0">
-                  <span>Powered by Advanced AI Analytics</span>
+                <div className="text-center sm:text-right">
+                  <span>Powered by Advanced AI</span>
                 </div>
               </div>
             </footer>
