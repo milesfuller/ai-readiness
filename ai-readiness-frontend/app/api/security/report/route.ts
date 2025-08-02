@@ -82,7 +82,7 @@ async function handler(request: NextRequest) {
       // Generate CSV format for events
       const events = report.recentEvents || []
       const csvHeader = 'Type,Severity,Timestamp,IP,URL,Blocked\n'
-      const csvContent = events.map(event => 
+      const csvContent = events.map((event: any) => 
         `${event.type},${event.severity},${event.timestamp},${event.ip},${event.url},${event.blocked}`
       ).join('\n')
       

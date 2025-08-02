@@ -60,7 +60,8 @@ const securityMiddleware = createComprehensiveSecurityMiddleware({
     }
   },
   rateLimit: {
-    enabled: true
+    enabled: true,
+    configs: {} // Will use default configs from middleware
   },
   csrf: {
     enabled: true,

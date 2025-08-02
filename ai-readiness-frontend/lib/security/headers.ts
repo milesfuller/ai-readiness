@@ -136,36 +136,37 @@ function generateHSTSHeader(config: SecurityHeadersConfig['hsts']): string {
  */
 export function applySecurityHeaders(
   response: NextResponse,
-  config: SecurityHeadersConfig = defaultConfig
+  config: Partial<SecurityHeadersConfig> = defaultConfig
 ): NextResponse {
+  const finalConfig = { ...defaultConfig, ...config } as SecurityHeadersConfig
   const headers = response.headers
 
   // Content Security Policy
-  if (config.csp.enabled) {
-    const cspHeader = generateCSPHeader(config.csp.directives)
-    const headerName = config.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+  if (finalConfig.csp.enabled) {
+    const cspHeader = generateCSPHeader(finalConfig.csp.directives)
+    const headerName = finalConfig.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
     headers.set(headerName, cspHeader)
   }
 
   // HTTP Strict Transport Security (HTTPS only)
-  if (config.hsts.enabled && config.environment === 'production') {
-    headers.set('Strict-Transport-Security', generateHSTSHeader(config.hsts))
+  if (finalConfig.hsts.enabled && finalConfig.environment === 'production') {
+    headers.set('Strict-Transport-Security', generateHSTSHeader(finalConfig.hsts))
   }
 
   // X-Frame-Options
-  headers.set('X-Frame-Options', config.headers.xFrameOptions)
+  headers.set('X-Frame-Options', finalConfig.headers.xFrameOptions)
 
   // X-Content-Type-Options
-  headers.set('X-Content-Type-Options', config.headers.xContentTypeOptions)
+  headers.set('X-Content-Type-Options', finalConfig.headers.xContentTypeOptions)
 
   // Referrer Policy
-  headers.set('Referrer-Policy', config.headers.referrerPolicy)
+  headers.set('Referrer-Policy', finalConfig.headers.referrerPolicy)
 
   // Permissions Policy
-  headers.set('Permissions-Policy', config.headers.permissionsPolicy)
+  headers.set('Permissions-Policy', finalConfig.headers.permissionsPolicy)
 
   // X-XSS-Protection (legacy browsers)
-  headers.set('X-XSS-Protection', config.headers.xXSSProtection)
+  headers.set('X-XSS-Protection', finalConfig.headers.xXSSProtection)
 
   // Remove server information
   headers.set('Server', '')

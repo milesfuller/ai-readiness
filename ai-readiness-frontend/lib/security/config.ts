@@ -190,7 +190,7 @@ export function getSecurityHealth(): {
   status: 'healthy' | 'warning' | 'critical'
   checks: Array<{ name: string; status: 'pass' | 'fail' | 'warn'; message: string }>
 } {
-  const checks = []
+  const checks: Array<{ name: string; status: 'pass' | 'fail' | 'warn'; message: string }> = []
 
   // Environment validation
   const envValidation = validateSecurityEnvironment()
@@ -217,7 +217,7 @@ export function getSecurityHealth(): {
   // Rate limiting check
   checks.push({
     name: 'Rate Limiting',
-    status: 'pass',
+    status: 'pass' as const,
     message: 'Rate limiting configured for all endpoints'
   })
 

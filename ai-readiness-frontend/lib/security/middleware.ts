@@ -121,7 +121,7 @@ function shouldBypassSecurity(request: NextRequest): boolean {
   ]
   
   return staticPaths.some(path => pathname.startsWith(path)) ||
-         pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)
+         !!pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)
 }
 
 /**
@@ -379,7 +379,17 @@ export function createAPISecurityMiddleware(
 /**
  * Security response headers for API responses
  */
-export function addAPISecurityHeaders(response: NextResponse): NextResponse {
+export function addAPISecurityHeaders(response: NextResponse | Response): NextResponse {
+  // Convert Response to NextResponse if needed
+  if (response instanceof Response && !(response instanceof NextResponse)) {
+    const nextResponse = new NextResponse(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    })
+    response = nextResponse
+  }
+  
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-XSS-Protection', '1; mode=block')
@@ -387,5 +397,5 @@ export function addAPISecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('Server', '')
   response.headers.set('X-Powered-By', '')
   
-  return response
+  return response as NextResponse
 }

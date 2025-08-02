@@ -211,8 +211,9 @@ function getSessionId(request: NextRequest): string | null {
  */
 export async function csrfProtection(
   request: NextRequest,
-  config: CSRFConfig = defaultConfig
+  config: Partial<CSRFConfig> = defaultConfig
 ): Promise<{ success: boolean; error?: string; token?: string }> {
+  const finalConfig = { ...defaultConfig, ...config } as CSRFConfig
   const method = request.method
   
   // Skip CSRF protection for safe methods
@@ -229,7 +230,7 @@ export async function csrfProtection(
                request.ip || 
                undefined
     
-    const token = createCSRFToken(sessionId, config, userAgent, ip)
+    const token = createCSRFToken(sessionId, finalConfig, userAgent, ip)
     return { success: true, token }
   }
 
@@ -240,7 +241,7 @@ export async function csrfProtection(
   }
 
   // Get token from header or form data
-  let token = request.headers.get(config.headerName)
+  let token = request.headers.get(finalConfig.headerName)
   
   if (!token) {
     // Try to get token from form data or JSON body
@@ -268,7 +269,7 @@ export async function csrfProtection(
              request.ip || 
              undefined
 
-  const validation = validateCSRFToken(sessionId, token, config, userAgent, ip)
+  const validation = validateCSRFToken(sessionId, token, finalConfig, userAgent, ip)
   
   if (!validation.valid) {
     return { success: false, error: validation.error }
