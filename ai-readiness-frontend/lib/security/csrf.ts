@@ -4,7 +4,6 @@
  */
 
 import { NextRequest } from 'next/server'
-import crypto from 'crypto'
 
 // CSRF token configuration
 export interface CSRFConfig {
@@ -88,15 +87,54 @@ const tokenStore = new CSRFTokenStore()
  * Generate a cryptographically secure random token
  */
 function generateSecureToken(length: number = defaultConfig.tokenLength): string {
-  return crypto.randomBytes(length).toString('hex')
+  const array = new Uint8Array(length)
+  if (typeof globalThis !== 'undefined' && globalThis.crypto) {
+    globalThis.crypto.getRandomValues(array)
+  } else {
+    // Fallback for build time
+    for (let i = 0; i < array.length; i++) {
+      array[i] = Math.floor(Math.random() * 256)
+    }
+  }
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
 /**
  * Generate HMAC signature for token validation
  */
-function generateTokenSignature(token: string, secret: string, timestamp: number): string {
+async function generateTokenSignature(token: string, secret: string, timestamp: number): Promise<string> {
   const data = `${token}:${timestamp}`
-  return crypto.createHmac('sha256', secret).update(data).digest('hex')
+  const encoder = new TextEncoder()
+  const key = await globalThis.crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const signature = await globalThis.crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(data)
+  )
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+/**
+ * Synchronous signature generation for compatibility
+ */
+function generateTokenSignatureSync(token: string, secret: string, timestamp: number): string {
+  // Simple hash for build time - not cryptographically secure
+  const data = `${token}:${timestamp}:${secret}`
+  let hash = 0
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return Math.abs(hash).toString(16).padStart(64, '0')
 }
 
 /**

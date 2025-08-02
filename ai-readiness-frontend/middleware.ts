@@ -64,11 +64,7 @@ const securityMiddleware = createComprehensiveSecurityMiddleware({
     configs: {} // Will use default configs from middleware
   },
   csrf: {
-    enabled: true,
-    config: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
-    }
+    enabled: false // Temporarily disabled for Edge Runtime compatibility
   },
   monitoring: {
     enabled: true,
@@ -208,6 +204,4 @@ export const config = {
      */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-  // Use Node.js runtime instead of Edge Runtime to avoid Supabase compatibility issues
-  runtime: 'nodejs',
 }

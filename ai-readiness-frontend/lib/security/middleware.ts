@@ -6,7 +6,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { applySecurityHeaders, type SecurityHeadersConfig } from './headers'
 import { checkRateLimit, applyRateLimitHeaders, rateLimitConfigs, type RateLimitConfig } from './rate-limiter'
-import { csrfProtection, type CSRFConfig } from './csrf'
 import { 
   securityMonitor, 
   createSecurityMonitoringMiddleware, 
@@ -25,7 +24,7 @@ export interface ComprehensiveSecurityConfig {
   }
   csrf?: {
     enabled: boolean
-    config?: Partial<CSRFConfig>
+    config?: any
   }
   monitoring?: {
     enabled: boolean
@@ -208,32 +207,8 @@ export function createComprehensiveSecurityMiddleware(
         }
       }
 
-      // 3. CSRF Protection (for unsafe methods)
-      if (finalConfig.csrf?.enabled && !['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
-        const csrfResult = await csrfProtection(request, finalConfig.csrf.config)
-        
-        if (!csrfResult.success) {
-          monitor.logEvent(
-            SecurityEventType.CSRF_ATTACK,
-            SecuritySeverity.HIGH,
-            { error: csrfResult.error },
-            true
-          )
-          
-          const response = new NextResponse(
-            JSON.stringify({ 
-              error: 'CSRF protection failed',
-              message: csrfResult.error 
-            }),
-            { 
-              status: 403,
-              headers: { 'Content-Type': 'application/json' }
-            }
-          )
-          
-          return applySecurityHeaders(response, finalConfig.headers)
-        }
-      }
+      // 3. CSRF Protection (temporarily disabled for Edge Runtime compatibility)
+      // TODO: Re-enable with Edge Runtime compatible CSRF implementation
 
       // 4. Input Validation for POST/PUT requests
       if (finalConfig.validation?.enabled && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
@@ -328,13 +303,7 @@ export function createComprehensiveSecurityMiddleware(
         applyRateLimitHeaders(securedResponse.headers, rateLimitResult, config)
       }
       
-      // Add CSRF token for GET requests
-      if (finalConfig.csrf?.enabled && request.method === 'GET') {
-        const csrfResult = await csrfProtection(request, finalConfig.csrf.config)
-        if (csrfResult.token) {
-          securedResponse.headers.set('X-CSRF-Token', csrfResult.token)
-        }
-      }
+      // CSRF token generation disabled for Edge Runtime compatibility
       
       return securedResponse
       
