@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/llm/analyze/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/llm/batch/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/llm/organizational/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
+}
