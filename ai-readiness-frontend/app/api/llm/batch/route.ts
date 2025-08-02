@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 // API Route for Batch LLM Analysis of Multiple Survey Responses
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';

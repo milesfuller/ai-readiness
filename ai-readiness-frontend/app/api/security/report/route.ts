@@ -8,6 +8,9 @@ import { securityMonitor } from '../../../../lib/security/monitoring'
 import { addAPISecurityHeaders } from '../../../../lib/security/middleware'
 import { withRateLimit, rateLimitConfigs } from '../../../../lib/security/rate-limiter'
 
+// Mark as dynamic route
+export const dynamic = 'force-dynamic'
+
 // Rate limit this endpoint more strictly
 const adminRateLimit = {
   ...rateLimitConfigs.api,

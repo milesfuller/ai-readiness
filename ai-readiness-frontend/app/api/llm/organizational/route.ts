@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 // API Route for Organizational-Level AI Readiness Analysis
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
