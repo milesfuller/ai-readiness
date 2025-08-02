@@ -74,13 +74,14 @@ export class LLMService {
       : process.env.ANTHROPIC_API_KEY;
     
     // During build time, allow missing API keys
-    if (!key && process.env.NODE_ENV === 'production') {
+    if (!key && (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development')) {
       console.warn(`Missing API key for ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`);
       return 'dummy-key-for-build';
     }
     
     if (!key) {
-      throw new Error(`Missing API key for ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`);
+      console.warn(`Missing API key for ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`);
+      return 'dummy-key-for-build';
     }
     
     return key;
@@ -760,7 +761,7 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
 }
 
 // Export singleton instance for easy use
-export const llmService = new LLMService();
+export const llmService = new LLMService('anthropic');
 
 // Export factory function for custom configurations
 export const createLLMService = (
