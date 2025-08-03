@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/client'
+import { createBrowserClient } from '@/lib/supabase/client-browser'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    const supabase = createClient()
+    const supabase = createBrowserClient()
     
     if (action === 'register') {
       // Test registration

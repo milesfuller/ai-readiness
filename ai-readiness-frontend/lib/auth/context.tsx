@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase/client'
+import { createBrowserClient } from '@/lib/supabase/client-browser'
 import { User as AppUser } from '@/lib/types'
 
 interface AuthContextType {
@@ -43,6 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AppUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [supabase] = useState(() => createBrowserClient())
 
   // Convert Supabase User to AppUser
   const mapSupabaseUserToAppUser = (supabaseUser: User): AppUser => {
@@ -97,41 +98,67 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    return { error: error || undefined }
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      return { error: error || undefined }
+    } catch (err) {
+      console.error('SignIn error:', err)
+      return { error: err as AuthError }
+    }
   }
 
   const signUp = async (email: string, password: string, metadata?: any) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata
-      }
-    })
-    return { error: error || undefined }
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/auth/verify-email-success`
+        }
+      })
+      return { error: error || undefined }
+    } catch (err) {
+      console.error('SignUp error:', err)
+      return { error: err as AuthError }
+    }
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    return { error: error || undefined }
+    try {
+      const { error } = await supabase.auth.signOut()
+      return { error: error || undefined }
+    } catch (err) {
+      console.error('SignOut error:', err)
+      return { error: err as AuthError }
+    }
   }
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`
-    })
-    return { error: error || undefined }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`
+      })
+      return { error: error || undefined }
+    } catch (err) {
+      console.error('ResetPassword error:', err)
+      return { error: err as AuthError }
+    }
   }
 
   const updatePassword = async (password: string) => {
-    const { error } = await supabase.auth.updateUser({
-      password
-    })
-    return { error: error || undefined }
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password
+      })
+      return { error: error || undefined }
+    } catch (err) {
+      console.error('UpdatePassword error:', err)
+      return { error: err as AuthError }
+    }
   }
 
   const value: AuthContextType = {
