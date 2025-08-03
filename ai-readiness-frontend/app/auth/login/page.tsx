@@ -32,14 +32,21 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      console.log('[Auth] Starting login for:', data.email)
       const { error: authError } = await signIn(data.email, data.password)
       
       if (authError) {
+        console.error('[Auth] Login error:', authError)
         setError(authError.message)
       } else {
-        router.push('/dashboard')
+        console.log('[Auth] Login successful, redirecting to dashboard...')
+        // Add a small delay to ensure session is properly set
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 100)
       }
     } catch (err) {
+      console.error('[Auth] Unexpected error:', err)
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
