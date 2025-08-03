@@ -33,8 +33,8 @@ export async function POST(request: Request) {
         signupError: {
           message: error.message,
           status: error.status,
-          code: error.code || error.__isAuthError,
-          details: error
+          code: error.code || 'unknown',
+          details: error.message
         },
         dbCheck: {
           success: !authError,
