@@ -53,6 +53,11 @@ Thumbs.db
 # Claude Flow
 .claude-flow/
 memory/
+.hive-mind/
+.swarm/
+*.db
+*.db-shm
+*.db-wal
 
 # Supabase
 supabase/.temp/
