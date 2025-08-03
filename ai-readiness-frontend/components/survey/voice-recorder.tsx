@@ -210,10 +210,10 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         {!audioBlob ? (
           <div className="space-y-4">
             {/* Recording Button */}
-            <div className={`w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-full border-4 flex items-center justify-center transition-all duration-300 relative ${
+            <div className={`w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-full border-4 flex items-center justify-center transition-all duration-300 relative whimsy-hover ${
               isRecording 
-                ? 'border-red-500 bg-red-500/10 animate-pulse' 
-                : 'border-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
+                ? 'border-red-500 bg-red-500/10 voice-recording-pulse' 
+                : 'border-teal-500 bg-teal-500/10 hover:bg-teal-500/20 hover:scale-105'
             }`}>
               <button
                 onClick={isRecording ? stopRecording : startRecording}
@@ -242,10 +242,14 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                 {audioVolume.map((volume, index) => (
                   <div
                     key={index}
-                    className="bg-teal-500 rounded-t-sm transition-all duration-100"
+                    className={`rounded-t-sm transition-all duration-100 ${
+                      volume > 0.6 ? 'bg-red-400' : 
+                      volume > 0.3 ? 'bg-yellow-400' : 'bg-teal-500'
+                    }`}
                     style={{
                       height: `${Math.max(2, volume * 48)}px`,
-                      width: '4px'
+                      width: '4px',
+                      boxShadow: volume > 0.5 ? '0 0 8px currentColor' : 'none'
                     }}
                   />
                 ))}
@@ -254,18 +258,20 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             
             {/* Recording Status */}
             <div className="space-y-2">
-              <p className="text-base sm:text-lg font-medium">
-                {isRecording ? 'Recording...' : 'Tap to start recording'}
+              <p className={`text-base sm:text-lg font-medium transition-all duration-300 ${
+                isRecording ? 'animate-pulse text-red-400' : ''
+              }`}>
+                {isRecording ? '🎙️ Recording...' : '🎤 Tap to start recording'}
               </p>
               {isRecording && (
-                <p className="text-teal-400 font-mono text-lg sm:text-xl">
-                  {formatDuration(recordingDuration)}
+                <p className="text-teal-400 font-mono text-lg sm:text-xl animate-pulse">
+                  ⏱️ {formatDuration(recordingDuration)}
                 </p>
               )}
               <p className="text-xs sm:text-sm text-muted-foreground px-4">
                 {isRecording 
-                  ? 'Tap the microphone again to stop' 
-                  : 'Speak clearly for best results'
+                  ? '✋ Tap the microphone again to stop' 
+                  : '💡 Speak clearly for best results'
                 }
               </p>
             </div>
@@ -275,9 +281,19 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           <div className="space-y-4">
             {/* Processing State */}
             {isProcessing && (
-              <div className="flex items-center justify-center space-x-2 text-teal-400">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Processing recording...</span>
+              <div className="flex flex-col items-center justify-center space-y-3 text-teal-400">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>🧠 Processing recording...</span>
+                </div>
+                <div className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <p className="text-xs text-muted-foreground animate-pulse">
+                  ✨ Converting speech to text with AI magic
+                </p>
               </div>
             )}
             
@@ -326,11 +342,11 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
       {/* Transcription Editor */}
       {transcription && !isProcessing && (
-        <Card className="p-4 border-teal-500/20 bg-teal-950/10">
+        <Card className="p-4 border-teal-500/20 bg-teal-950/10 animate-in slide-in-from-bottom duration-500">
           <div className="space-y-3">
             <div className="text-sm font-medium text-teal-400 flex items-center space-x-2">
-              <Mic className="h-4 w-4" />
-              <span>Transcription:</span>
+              <Mic className="h-4 w-4 animate-pulse" />
+              <span>📝 Transcription:</span>
             </div>
             
             <Textarea
@@ -345,7 +361,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             />
             
             <p className="text-xs text-muted-foreground">
-              You can edit the transcription above to ensure accuracy.
+              ✏️ You can edit the transcription above to ensure accuracy.
             </p>
           </div>
         </Card>

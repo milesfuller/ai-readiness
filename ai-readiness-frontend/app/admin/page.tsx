@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { DataVisualization, ProgressStoryteller, AchievementSystem } from '@/components/visual-story'
 import { 
   Users, 
   FileText, 
@@ -12,10 +15,13 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  BarChart3
+  BarChart3,
+  Brain,
+  Award,
+  Sparkles,
+  Eye
 } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 
 interface DashboardStats {
   totalSurveys: number
@@ -243,6 +249,67 @@ export default function AdminDashboard() {
               </Link>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Visual Storytelling Dashboard */}
+      <Card className="glass-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-teal-500 to-purple-500">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-white">AI Readiness Insights</CardTitle>
+                <CardDescription>Visual storytelling powered analytics</CardDescription>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/visual-story-demo">
+                <Eye className="h-4 w-4 mr-2" />
+                View Full Demo
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="analytics" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="analytics" className="flex items-center space-x-2">
+                <BarChart3 className="h-4 w-4" />
+                <span>Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="flex items-center space-x-2">
+                <Brain className="h-4 w-4" />
+                <span>Progress</span>
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center space-x-2">
+                <Award className="h-4 w-4" />
+                <span>Achievements</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="analytics" className="mt-6">
+              <DataVisualization className="min-h-[400px]" />
+            </TabsContent>
+            
+            <TabsContent value="progress" className="mt-6">
+              <ProgressStoryteller 
+                currentChapter="growth" 
+                showNarrative={true}
+                interactive={false}
+                className="min-h-[400px]" 
+              />
+            </TabsContent>
+            
+            <TabsContent value="achievements" className="mt-6">
+              <AchievementSystem 
+                showMilestones={false}
+                className="min-h-[400px]" 
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

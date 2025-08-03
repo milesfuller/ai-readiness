@@ -5,17 +5,20 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
+import { Mail, Lock, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 import { AuthLayout } from '@/components/auth/auth-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { WhimsicalButton, SuccessCheckmark, FloatingHearts } from '@/components/ui/whimsy'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { loginSchema, LoginFormData } from '@/lib/auth/schemas'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [showHearts, setShowHearts] = useState(false)
   const { signIn } = useAuth()
   const router = useRouter()
 
@@ -41,8 +44,13 @@ export default function LoginPage() {
         setError(authError.message)
       } else {
         console.log('[Auth] Login successful, redirecting to dashboard...')
-        // Force navigation with replace to ensure redirect happens
-        router.replace('/dashboard')
+        setShowSuccess(true)
+        setShowHearts(true)
+        
+        // Delay navigation to show success animation
+        setTimeout(() => {
+          router.replace('/dashboard')
+        }, 1500)
       }
     } catch (err) {
       console.error('[Auth] Unexpected error:', err)
@@ -110,16 +118,36 @@ export default function LoginPage() {
         </div>
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          variant="default"
-          size="lg"
-          className="w-full"
-          disabled={isLoading}
-          loading={isLoading}
-        >
-          {isLoading ? 'Signing in...' : 'Sign In'}
-        </Button>
+        <div className="relative">
+          {showSuccess ? (
+            <Button
+              type="button"
+              variant="default"
+              size="lg"
+              className="w-full button-success animate-pulse"
+              disabled
+            >
+              <div className="flex items-center space-x-2">
+                <SuccessCheckmark show={true} size={16} />
+                <span>Welcome back! Redirecting...</span>
+              </div>
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              variant="default"
+              size="lg"
+              className="w-full wobble-on-hover"
+              disabled={isLoading}
+              loading={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          )}
+        </div>
+        
+        {/* Success Hearts */}
+        <FloatingHearts active={showHearts} count={6} />
 
         {/* Sign Up Link */}
         <div className="text-center pt-4">

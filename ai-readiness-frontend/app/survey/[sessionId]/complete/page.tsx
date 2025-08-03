@@ -7,6 +7,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Progress, CircularProgress } from '@/components/ui/progress'
 import { 
+  Confetti, 
+  FloatingHearts, 
+  SuccessCheckmark, 
+  WhimsicalLoading, 
+  AnimatedCounter,
+  Typewriter 
+} from '@/components/ui/whimsy'
+import { 
   CheckCircle2, 
   Brain, 
   Clock, 
@@ -17,7 +25,11 @@ import {
   TrendingUp,
   Award,
   Eye,
-  Calendar
+  Calendar,
+  Sparkles,
+  Zap,
+  Heart,
+  Trophy
 } from 'lucide-react'
 import { surveyCategories, surveyQuestions } from '@/lib/data/survey-questions'
 
@@ -88,12 +100,31 @@ export default async function SurveyCompletePage({ params }: Props) {
   const router = useRouter()
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(true)
+  const [showHearts, setShowHearts] = useState(true)
+  const [showTypewriter, setShowTypewriter] = useState(false)
 
   useEffect(() => {
+    // Initial celebration
+    setShowConfetti(true)
+    setShowHearts(true)
+    
+    // Stop initial celebration
+    setTimeout(() => {
+      setShowConfetti(false)
+      setShowHearts(false)
+    }, 4000)
+    
     // Simulate AI analysis processing
     const timer = setTimeout(() => {
       setAnalysisComplete(true)
-      setTimeout(() => setShowResults(true), 500)
+      setShowTypewriter(true)
+      setTimeout(() => {
+        setShowResults(true)
+        // Celebration for results reveal
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 3000)
+      }, 1000)
     }, 3000)
 
     return () => clearTimeout(timer)
@@ -132,24 +163,44 @@ export default async function SurveyCompletePage({ params }: Props) {
   return (
     <MainLayout user={mockUser} currentPath={`/survey/${resolvedParams.sessionId}/complete`}>
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Celebration Effects */}
+        <Confetti 
+          active={showConfetti} 
+          intensity="high" 
+          duration={4000}
+          colors={['#14b8a6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6']}
+        />
+        <FloatingHearts active={showHearts} count={12} />
+        
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
-            <CheckCircle2 className="h-10 w-10 text-green-400" />
+          <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center celebrate-bounce">
+            <SuccessCheckmark show={true} size={40} />
           </div>
-          <h1 className="text-4xl font-bold gradient-text">
-            Assessment Complete!
+          <h1 className="text-4xl font-bold gradient-text animate-in slide-in-from-bottom-4 duration-1000">
+            {showTypewriter ? (
+              <Typewriter 
+                text="Assessment Complete!" 
+                speed={100}
+              />
+            ) : (
+              "Assessment Complete!"
+            )}
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Thank you for completing the AI Readiness Assessment
-          </p>
+          <div className="flex items-center justify-center space-x-2 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
+            <Sparkles className="h-5 w-5 text-yellow-400 animate-pulse" />
+            <p className="text-xl text-muted-foreground">
+              Thank you for completing the AI Readiness Assessment
+            </p>
+            <Heart className="h-5 w-5 text-pink-400 animate-pulse" />
+          </div>
         </div>
 
         {/* Analysis Status */}
         {!analysisComplete ? (
-          <Card variant="glass" className="p-8 text-center">
+          <Card variant="glass" className="p-8 text-center animate-in fade-in duration-1000 delay-500">
             <div className="space-y-6">
-              <div className="w-16 h-16 mx-auto">
+              <div className="w-16 h-16 mx-auto voice-recording-pulse">
                 <CircularProgress 
                   value={75}
                   size={64}
@@ -157,14 +208,16 @@ export default async function SurveyCompletePage({ params }: Props) {
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold">Analyzing Your Responses</h3>
-                <p className="text-muted-foreground">
-                  Our AI is processing your answers and generating personalized insights...
-                </p>
+                <WhimsicalLoading />
               </div>
-              <div className="bg-teal-950/20 border border-teal-500/20 rounded-lg p-4">
-                <p className="text-sm text-teal-400">
-                  ⚡ Using advanced JTBD framework analysis to evaluate your AI readiness
-                </p>
+              <div className="bg-teal-950/20 border border-teal-500/20 rounded-lg p-4 shimmer">
+                <div className="flex items-center justify-center space-x-2">
+                  <Zap className="h-4 w-4 text-teal-400 animate-pulse" />
+                  <p className="text-sm text-teal-400">
+                    Using advanced JTBD framework analysis to evaluate your AI readiness
+                  </p>
+                  <Brain className="h-4 w-4 text-purple-400 animate-pulse" />
+                </div>
               </div>
             </div>
           </Card>
@@ -172,29 +225,37 @@ export default async function SurveyCompletePage({ params }: Props) {
           showResults && (
             <div className="space-y-6">
               {/* Overall Score */}
-              <Card variant="gradient" className="p-8 text-center">
+              <Card variant="gradient" className="p-8 text-center animate-in zoom-in duration-1000 whimsy-hover">
                 <div className="space-y-4">
-                  <h2 className="text-2xl font-bold">Your AI Readiness Score</h2>
+                  <div className="flex items-center justify-center space-x-2">
+                    <Trophy className="h-6 w-6 text-yellow-400 animate-bounce" />
+                    <h2 className="text-2xl font-bold">Your AI Readiness Score</h2>
+                    <Sparkles className="h-6 w-6 text-purple-400 animate-spin" />
+                  </div>
                   <div className="flex items-center justify-center space-x-8">
                     <div className="text-center">
-                      <CircularProgress 
-                        value={mockAnalysisResults.overallScore}
-                        size={120}
-                      />
+                      <div className="celebrate-bounce">
+                        <CircularProgress 
+                          value={mockAnalysisResults.overallScore}
+                          size={120}
+                        />
+                      </div>
                       <p className="mt-2 text-sm text-muted-foreground">Overall Readiness</p>
                     </div>
                     <div className="text-left space-y-2">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 animate-in slide-in-from-right duration-700 delay-200">
                         <Clock className="h-4 w-4 text-teal-400" />
                         <span className="text-sm">Completed in {mockAnalysisResults.completionTime}</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 animate-in slide-in-from-right duration-700 delay-400">
                         <Award className="h-4 w-4 text-teal-400" />
                         <span className="text-sm">{mockAnalysisResults.readinessLevel}</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 animate-in slide-in-from-right duration-700 delay-600">
                         <TrendingUp className="h-4 w-4 text-teal-400" />
-                        <span className="text-sm">{mockAnalysisResults.confidenceLevel}% Confidence</span>
+                        <span className="text-sm">
+                          <AnimatedCounter value={mockAnalysisResults.confidenceLevel} suffix="% Confidence" />
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -287,7 +348,7 @@ export default async function SurveyCompletePage({ params }: Props) {
                     <Button
                       onClick={downloadReport}
                       variant="default"
-                      className="w-full"
+                      className="w-full wobble-on-hover"
                       leftIcon={Download}
                     >
                       Download Report
@@ -296,7 +357,7 @@ export default async function SurveyCompletePage({ params }: Props) {
                     <Button
                       onClick={shareResults}
                       variant="outline"
-                      className="w-full"
+                      className="w-full wobble-on-hover"
                       leftIcon={Share2}
                     >
                       Share Results
@@ -305,7 +366,7 @@ export default async function SurveyCompletePage({ params }: Props) {
                     <Button
                       onClick={viewDashboard}
                       variant="secondary"
-                      className="w-full"
+                      className="w-full wobble-on-hover"
                       leftIcon={Eye}
                     >
                       View Dashboard
@@ -314,7 +375,7 @@ export default async function SurveyCompletePage({ params }: Props) {
                     <Button
                       onClick={scheduleFollowUp}
                       variant="ghost"
-                      className="w-full"
+                      className="w-full wobble-on-hover"
                       leftIcon={Calendar}
                     >
                       Schedule Follow-up
@@ -337,20 +398,28 @@ export default async function SurveyCompletePage({ params }: Props) {
                       Your comprehensive analysis includes:
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <div className="font-bold text-teal-400">12</div>
+                      <div className="animate-in fade-in duration-500 delay-100">
+                        <div className="font-bold text-teal-400">
+                          <AnimatedCounter value={12} duration={1500} />
+                        </div>
                         <div>Questions Analyzed</div>
                       </div>
-                      <div>
-                        <div className="font-bold text-purple-400">4</div>
+                      <div className="animate-in fade-in duration-500 delay-200">
+                        <div className="font-bold text-purple-400">
+                          <AnimatedCounter value={4} duration={1500} />
+                        </div>
                         <div>JTBD Categories</div>
                       </div>
-                      <div>
-                        <div className="font-bold text-pink-400">15+</div>
+                      <div className="animate-in fade-in duration-500 delay-300">
+                        <div className="font-bold text-pink-400">
+                          <AnimatedCounter value={15} suffix="+" duration={1500} />
+                        </div>
                         <div>Key Insights</div>
                       </div>
-                      <div>
-                        <div className="font-bold text-green-400">8</div>
+                      <div className="animate-in fade-in duration-500 delay-400">
+                        <div className="font-bold text-green-400">
+                          <AnimatedCounter value={8} duration={1500} />
+                        </div>
                         <div>Recommendations</div>
                       </div>
                     </div>

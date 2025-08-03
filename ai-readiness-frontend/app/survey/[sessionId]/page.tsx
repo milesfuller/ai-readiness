@@ -9,12 +9,20 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { SurveyQuestion } from '@/components/survey/survey-question'
 import { 
+  Confetti, 
+  ProgressMilestone, 
+  FloatingHearts, 
+  useKonamiCode 
+} from '@/components/ui/whimsy'
+import { 
   Save, 
   Clock,
   Brain,
   User,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Trophy
 } from 'lucide-react'
 import { surveyQuestions, surveyCategories, getTotalProgress, SurveyQuestion as QuestionType } from '@/lib/data/survey-questions'
 
@@ -76,6 +84,10 @@ export default async function SurveyPage({ params }: Props) {
   const [timeSpent, setTimeSpent] = useState(0)
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const [session, setSession] = useState<SurveySession | null>(null)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [showMilestoneHearts, setShowMilestoneHearts] = useState(false)
+  const [lastCelebratedMilestone, setLastCelebratedMilestone] = useState(0)
+  const [konamiActivated, setKonamiActivated] = useState(false)
   
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const timeIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -85,6 +97,22 @@ export default async function SurveyPage({ params }: Props) {
   const progress = getTotalProgress(Object.fromEntries(
     Object.entries(answers).map(([id, answer]) => [id, answer.answer])
   ))
+  
+  // Celebration milestones
+  const celebrationMilestones = [25, 50, 75, 100]
+  
+  // Handle milestone celebrations
+  const handleMilestone = (milestone: number) => {
+    console.log(`🎉 Milestone reached: ${milestone}%`)
+    
+    if (milestone === 100) {
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 4000)
+    } else {
+      setShowMilestoneHearts(true)
+      setTimeout(() => setShowMilestoneHearts(false), 2000)
+    }
+  }
 
   // Initialize session
   useEffect(() => {
@@ -148,7 +176,27 @@ export default async function SurveyPage({ params }: Props) {
     }
   }, [currentAnswer?.answer])
 
-  // Keyboard navigation
+  // Progress celebration effect
+  useEffect(() => {
+    celebrationMilestones.forEach(milestone => {
+      if (progress >= milestone && lastCelebratedMilestone < milestone) {
+        setLastCelebratedMilestone(milestone)
+        handleMilestone(milestone)
+      }
+    })
+  }, [progress, lastCelebratedMilestone])
+  
+  // Konami code easter egg
+  useKonamiCode(() => {
+    setKonamiActivated(true)
+    setShowConfetti(true)
+    setTimeout(() => {
+      setKonamiActivated(false)
+      setShowConfetti(false)
+    }, 5000)
+  })
+
+  // Keyboard navigation with fun shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey) {
@@ -166,6 +214,12 @@ export default async function SurveyPage({ params }: Props) {
             saveProgress()
             break
         }
+      }
+      
+      // Fun keyboard shortcuts
+      if (event.shiftKey && event.key === 'H') {
+        setShowMilestoneHearts(true)
+        setTimeout(() => setShowMilestoneHearts(false), 1000)
       }
     }
 
@@ -291,7 +345,14 @@ export default async function SurveyPage({ params }: Props) {
 
   return (
     <MainLayout user={mockUser} currentPath={`/survey/${resolvedParams.sessionId}`}>
-      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
+      <div className={`max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0 ${konamiActivated ? 'konami-activated' : ''}`}>
+        {/* Celebration Effects */}
+        <Confetti 
+          active={showConfetti} 
+          intensity={progress === 100 ? 'high' : 'medium'}
+          duration={progress === 100 ? 5000 : 3000}
+        />
+        <FloatingHearts active={showMilestoneHearts} count={progress >= 100 ? 10 : 5} />
         {/* Header */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -329,17 +390,47 @@ export default async function SurveyPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="space-y-2">
+          {/* Progress Bar with Celebrations */}
+          <div className="space-y-2 relative">
             <div className="flex justify-between text-sm">
-              <span>Overall Progress</span>
-              <span>{Math.round(progress)}%</span>
+              <div className="flex items-center space-x-2">
+                <span>Overall Progress</span>
+                {progress >= 25 && (
+                  <Trophy className="h-4 w-4 text-yellow-400 animate-pulse" />
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">{Math.round(progress)}%</span>
+                {progress >= 50 && (
+                  <Sparkles className="h-4 w-4 text-purple-400 animate-spin" />
+                )}
+              </div>
             </div>
-            <Progress 
-              value={progress} 
-              variant="gradient" 
-              className="h-3 rounded-full"
-            />
+            <div className="relative">
+              <Progress 
+                value={progress} 
+                variant="gradient" 
+                className={`h-3 rounded-full transition-all duration-500 ${
+                  progress >= 75 ? 'progress-milestone' : ''
+                }`}
+              />
+              <ProgressMilestone 
+                progress={progress}
+                milestones={celebrationMilestones}
+                onMilestone={handleMilestone}
+              />
+            </div>
+            {/* Progress encouragement */}
+            {progress > 0 && progress < 100 && (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground animate-pulse">
+                  {progress < 25 && "🚀 You're off to a great start!"}
+                  {progress >= 25 && progress < 50 && "⭐ Making excellent progress!"}
+                  {progress >= 50 && progress < 75 && "🔥 You're on fire! Keep going!"}
+                  {progress >= 75 && progress < 100 && "🎯 Almost there! You've got this!"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -373,17 +464,21 @@ export default async function SurveyPage({ params }: Props) {
                   <button
                     key={q.id}
                     onClick={() => goToQuestion(idx)}
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center touch-target ${
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center touch-target whimsy-hover ${
                       isCurrent
-                        ? 'bg-teal-500 text-white ring-2 ring-teal-400'
+                        ? 'bg-teal-500 text-white ring-2 ring-teal-400 animate-pulse'
                         : hasAnswer
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30'
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 success-pulse'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80 border border-border'
                     }`}
                     title={`Question ${q.number}: ${q.categoryLabel}`}
                     aria-label={`Go to question ${q.number}: ${q.categoryLabel}. ${isCurrent ? 'Current question' : hasAnswer ? 'Answered' : 'Not answered'}`}
                   >
-                    {q.number}
+                    {hasAnswer && !isCurrent ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      q.number
+                    )}
                   </button>
                 )
               })}
@@ -409,6 +504,12 @@ export default async function SurveyPage({ params }: Props) {
             <div className="text-center hidden sm:block">
               <p className="text-xs text-muted-foreground">
                 Use <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+←</kbd> / <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+→</kbd> to navigate, <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+S</kbd> to save
+                {konamiActivated && (
+                  <span className="ml-2 text-rainbow animate-pulse">🎮 Konami Code Activated! 🎮</span>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                💡 Try <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Shift+H</kbd> for a little surprise
               </p>
             </div>
           </div>
@@ -428,24 +529,55 @@ export default async function SurveyPage({ params }: Props) {
               const categoryProgress = categoryQuestions.length > 0 
                 ? (answeredQuestions.length / categoryQuestions.length) * 100 
                 : 0
+              const isComplete = categoryProgress === 100
 
               return (
-                <div key={category.id} className="space-y-2">
+                <div key={category.id} className={`space-y-2 transition-all duration-300 ${
+                  isComplete ? 'celebrate-bounce' : ''
+                }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg">{category.icon}</span>
+                      <span className={`text-lg transition-transform duration-300 ${
+                        isComplete ? 'scale-110' : ''
+                      }`}>{category.icon}</span>
                       <span className="font-medium text-sm">{category.label}</span>
+                      {isComplete && (
+                        <CheckCircle className="h-4 w-4 text-green-400 animate-pulse" />
+                      )}
                     </div>
-                    <span className="text-sm text-muted-foreground">
+                    <span className={`text-sm transition-colors duration-300 ${
+                      isComplete ? 'text-green-400 font-medium' : 'text-muted-foreground'
+                    }`}>
                       {answeredQuestions.length}/{categoryQuestions.length}
                     </span>
                   </div>
-                  <Progress value={categoryProgress} className="h-2" />
+                  <Progress 
+                    value={categoryProgress} 
+                    className={`h-2 transition-all duration-500 ${
+                      isComplete ? 'success-pulse' : ''
+                    }`} 
+                    variant={isComplete ? 'gradient' : 'default'}
+                  />
                 </div>
               )
             })}
           </div>
         </Card>
+        
+        {/* Hidden easter egg message */}
+        {konamiActivated && (
+          <Card className="p-4 border-rainbow animate-pulse">
+            <div className="text-center space-y-2">
+              <div className="text-2xl">🎮✨🚀</div>
+              <p className="text-sm font-medium text-rainbow">
+                You found the secret! You're clearly ready for AI if you can master the Konami Code!
+              </p>
+              <div className="text-xs text-muted-foreground">
+                Keep this energy for your AI journey!
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </MainLayout>
   )

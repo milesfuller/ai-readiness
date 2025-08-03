@@ -28,7 +28,10 @@
       "Bash(node *)",
       "Bash(which *)",
       "Bash(pwd)",
-      "Bash(ls *)"
+      "Bash(ls *)",
+      "mcp__playwright__*",
+      "mcp__claude-flow__*",
+      "mcp__ruv-swarm__*"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -110,5 +113,32 @@
     ]
   },
   "includeCoAuthoredBy": true,
-  "enabledMcpjsonServers": ["claude-flow", "ruv-swarm"]
+  "mcpServers": {
+    "claude-flow": {
+      "command": "npx",
+      "args": ["claude-flow@alpha", "mcp", "start"],
+      "type": "stdio"
+    },
+    "ruv-swarm": {
+      "command": "npx",
+      "args": ["ruv-swarm", "mcp", "start"],
+      "type": "stdio"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "type": "stdio"
+    },
+    "semgrep": {
+      "command": "npx",
+      "args": ["mcp-server-semgrep"],
+      "type": "stdio"
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest", "--read-only"],
+      "type": "stdio"
+    }
+  },
+  "enabledMcpjsonServers": ["claude-flow", "ruv-swarm", "playwright", "semgrep", "supabase"]
 }
