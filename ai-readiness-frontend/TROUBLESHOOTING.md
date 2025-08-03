@@ -111,25 +111,59 @@ NEXT_PUBLIC_SUPABASE_URL="https://abc.supabase.co"
 ## Common Issues & Solutions
 
 ### 1. "No API key found in request" Error
-This means Supabase environment variables are not set properly in Vercel.
+This error occurs when Supabase cannot find the API key in the request headers, even if environment variables appear to be set.
 
-**Fix:**
-1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-2. Ensure these are set (NO quotes!):
+**Diagnostic Tools:**
+1. **Check Environment Variables**: Visit `/api/check-env` to see:
+   - If variables are loaded
+   - If they have quotes or spaces
+   - If formats are correct
+
+2. **Test Direct Auth**: Make a direct API call:
+   ```bash
+   curl -X POST https://your-app.vercel.app/api/test-direct-auth \
+     -H "Content-Type: application/json" \
+     -d '{"email":"test@example.com","password":"password123"}'
    ```
-   NEXT_PUBLIC_SUPABASE_URL=https://[your-ref].supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[your-anon-key]
-   ```
-3. **IMPORTANT**: After adding/updating env vars:
+
+**Common Causes:**
+1. **Environment Variables in Vercel:**
+   - Extra spaces before/after values
+   - Quotes around values (remove them!)
+   - Using wrong key (service_role instead of anon)
+   - Not redeploying after adding variables
+
+2. **Incorrect Values:**
+   - URL should be: `https://[your-ref].supabase.co` (no trailing slash)
+   - Key should start with: `eyJ` (it's a JWT token)
+   - Make sure you're using the `anon` key, not `service_role`
+
+3. **Supabase Settings:**
+   - Go to Authentication → Providers → Email
+   - Ensure Email provider is enabled
+   - For testing, turn OFF "Confirm email"
+
+**Fix Steps:**
+1. **Re-copy from Supabase:**
+   - Go to Supabase Dashboard → Settings → API
+   - Copy the "Project URL" and "anon public" key
+   - Do NOT copy quotes if shown
+
+2. **Update Vercel:**
+   - Paste values WITHOUT adding quotes
+   - Ensure no leading/trailing spaces
+   - Save changes
+
+3. **Redeploy Without Cache:**
    - Go to Deployments tab
-   - Click "..." on latest deployment
-   - Click "Redeploy"
-   - Select "Use existing Build Cache" = NO
+   - Click "..." → "Redeploy"
+   - **UNCHECK** "Use existing Build Cache"
    - Click "Redeploy"
 
-**Verify Environment Variables:**
-- In development: Visit `/api/debug/env` to check env vars
-- Check Vercel Functions logs for errors
+4. **Verify:**
+   - Visit `/api/check-env` after deployment
+   - Check that values look correct
+   - Try registering again
 
 ### 2. "Invalid API Key"
 - Verify `ANTHROPIC_API_KEY` is set correctly
