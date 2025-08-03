@@ -112,11 +112,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
+      // Extract firstName and lastName from nested profile if present
+      const data = metadata?.profile ? {
+        firstName: metadata.profile.firstName || '',
+        lastName: metadata.profile.lastName || '',
+        organizationName: metadata.profile.organizationName || ''
+      } : metadata || {}
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: metadata,
+          data,
           emailRedirectTo: `${window.location.origin}/auth/verify-email-success`
         }
       })
