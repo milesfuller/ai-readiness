@@ -150,7 +150,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = ['/dashboard', '/survey', '/analytics', '/admin', '/profile']
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/auth/verify-email', '/terms', '/privacy', '/support']
+  const publicRoutes = ['/', '/auth/verify-email', '/auth/verify-email-success', '/terms', '/privacy', '/support']
 
   // Redirect authenticated users away from auth pages
   if (session && authRoutes.includes(pathname)) {

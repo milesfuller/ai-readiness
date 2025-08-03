@@ -62,8 +62,8 @@ const defaultSecurityConfig: ComprehensiveSecurityConfig = {
  * Determine which rate limit config to use based on the request path
  */
 function getRateLimitConfig(pathname: string): { name: string; config: RateLimitConfig } {
-  // Authentication routes
-  if (pathname.includes('/auth/')) {
+  // Authentication routes (but not verify-email which should be more lenient)
+  if (pathname.includes('/auth/') && !pathname.includes('/verify-email')) {
     return { name: 'auth', config: rateLimitConfigs.auth }
   }
   
