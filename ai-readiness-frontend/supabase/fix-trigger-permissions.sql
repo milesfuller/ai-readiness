@@ -26,7 +26,7 @@ BEGIN
   
   RETURN NEW;
 EXCEPTION
-  WHEN duplicate_key THEN
+  WHEN unique_violation THEN
     -- If profile already exists, just return
     RETURN NEW;
   WHEN OTHERS THEN
