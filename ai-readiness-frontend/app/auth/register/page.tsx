@@ -33,18 +33,25 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      const metadata = {
-        profile: {
+      // Use the custom signup endpoint that handles profile creation
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
           firstName: data.firstName,
           lastName: data.lastName,
           organizationName: data.organizationName
-        }
-      }
+        })
+      })
 
-      const { error: authError } = await signUp(data.email, data.password, metadata)
+      const result = await response.json()
       
-      if (authError) {
-        setError(authError.message)
+      if (!response.ok) {
+        setError(result.error || 'Signup failed')
       } else {
         setSuccess(true)
         setTimeout(() => {
