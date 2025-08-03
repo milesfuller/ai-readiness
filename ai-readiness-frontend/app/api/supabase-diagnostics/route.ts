@@ -11,10 +11,15 @@ export async function GET() {
     )
 
     // Test 1: Check auth.users table permissions
-    const { data: authTest, error: authError } = await supabase
-      .rpc('get_auth_users_count')
-      .single()
-      .catch(() => ({ data: null, error: 'Function does not exist' }))
+    let authTest = null
+    let authError: any = null
+    try {
+      const result = await supabase.rpc('get_auth_users_count').single()
+      authTest = result.data
+      authError = result.error
+    } catch (e) {
+      authError = 'Function does not exist'
+    }
 
     // Test 2: Check profiles table
     const { count: profileCount, error: profileError } = await supabase
@@ -25,9 +30,15 @@ export async function GET() {
     const { data: sessionTest, error: sessionError } = await supabase.auth.getSession()
 
     // Test 4: Check RLS policies
-    const { data: policies, error: policiesError } = await supabase
-      .rpc('get_policies', { table_name: 'profiles' })
-      .catch(() => ({ data: null, error: 'Function does not exist' }))
+    let policies = null
+    let policiesError: any = null
+    try {
+      const result = await supabase.rpc('get_policies', { table_name: 'profiles' })
+      policies = result.data
+      policiesError = result.error
+    } catch (e) {
+      policiesError = 'Function does not exist'
+    }
 
     // Test 5: Direct REST API test
     const restUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?select=count`
