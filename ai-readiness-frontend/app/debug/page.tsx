@@ -21,16 +21,36 @@ export default function DebugPage() {
         supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       }
 
-      // Check server-side env vars
-      const response = await fetch('/api/debug/env')
-      const serverEnv = await response.json()
+      // Try to check server-side env vars
+      let serverEnv = null
+      let serverError = null
+      try {
+        const response = await fetch('/api/debug/env')
+        if (!response.ok) {
+          serverError = `Server returned ${response.status}: ${response.statusText}`
+        } else {
+          serverEnv = await response.json()
+        }
+      } catch (error) {
+        serverError = `Failed to fetch: ${error instanceof Error ? error.message : 'Unknown error'}`
+        console.error('Server check error:', error)
+      }
 
       setEnvStatus({
         client: clientEnv,
-        server: serverEnv
+        server: serverEnv,
+        serverError
       })
     } catch (error) {
       console.error('Error checking environment:', error)
+      setEnvStatus({
+        client: {
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        },
+        server: null,
+        serverError: 'Failed to check environment'
+      })
     } finally {
       setLoading(false)
     }
@@ -87,6 +107,38 @@ export default function DebugPage() {
             </div>
           </div>
         </Card>
+
+        {/* Current Values (for debugging) */}
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Current Environment Values</h2>
+          <div className="space-y-2 font-mono text-xs">
+            <div>
+              <span className="text-muted-foreground">NEXT_PUBLIC_SUPABASE_URL:</span>
+              <div className="ml-4 break-all">
+                {envStatus?.client?.supabaseUrl || 'Not Set'}
+              </div>
+            </div>
+            <div className="mt-4">
+              <span className="text-muted-foreground">NEXT_PUBLIC_SUPABASE_ANON_KEY:</span>
+              <div className="ml-4 break-all">
+                {envStatus?.client?.supabaseKey ? 
+                  `${envStatus.client.supabaseKey.substring(0, 40)}...` : 
+                  'Not Set'}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Server Error */}
+        {envStatus?.serverError && (
+          <Card className="p-6 border-red-500/50">
+            <h2 className="text-lg font-semibold mb-4 text-red-500">Server Check Error</h2>
+            <p className="text-sm text-red-400">{envStatus.serverError}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              This might be normal in production. The server-side check only works in development mode.
+            </p>
+          </Card>
+        )}
 
         {/* Server-side Environment */}
         {envStatus?.server && !envStatus.server.error && (
@@ -151,6 +203,31 @@ export default function DebugPage() {
             </li>
             <li>3. After adding variables, redeploy without cache</li>
           </ol>
+        </Card>
+
+        {/* Test Supabase Connection */}
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Test Supabase Connection</h2>
+          <Button 
+            onClick={async () => {
+              try {
+                const { createClient } = await import('@/lib/supabase/client')
+                const supabase = createClient()
+                const { data, error } = await supabase.auth.getSession()
+                
+                if (error) {
+                  alert(`Supabase Error: ${error.message}`)
+                } else {
+                  alert(`Supabase Connected! Session: ${data.session ? 'Active' : 'No session'}`)
+                }
+              } catch (error) {
+                alert(`Connection Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              }
+            }}
+            className="w-full"
+          >
+            Test Supabase Connection
+          </Button>
         </Card>
 
         <Button 
