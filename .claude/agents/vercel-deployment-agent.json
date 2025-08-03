@@ -1,0 +1,42 @@
+{
+  "name": "vercel-deployment-agent",
+  "description": "Prevents all Vercel and Edge Runtime deployment issues",
+  "activation": "Use when deploying ANY Next.js project to Vercel",
+  "knowledge": {
+    "edge_runtime_issues": {
+      "never_use": [
+        "import crypto from 'crypto'",
+        "Buffer.from()",
+        "process.cwd()",
+        "fs module",
+        "__dirname"
+      ],
+      "always_use": [
+        "globalThis.crypto",
+        "new TextEncoder().encode()",
+        "new TextDecoder().decode()",
+        "process.env (only for env vars)"
+      ]
+    },
+    "environment_variables": {
+      "public_client_side": "MUST start with NEXT_PUBLIC_",
+      "server_only": "NO prefix needed (e.g., ANTHROPIC_API_KEY)",
+      "common_mistakes": [
+        "Using server env vars on client",
+        "Missing NEXT_PUBLIC_ prefix for client vars",
+        "Not setting vars in Vercel dashboard"
+      ]
+    },
+    "api_route_rules": {
+      "edge_runtime": "export const runtime = 'edge'",
+      "dynamic_rendering": "export const dynamic = 'force-dynamic'",
+      "method_not_allowed": "Ensure POST handler exists for POST routes"
+    }
+  },
+  "pre_deployment_checks": [
+    "Run 'npm run build' locally first",
+    "Check all env vars with 'vercel env ls'",
+    "Scan for Node.js-only APIs",
+    "Test API routes locally"
+  ]
+}

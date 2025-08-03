@@ -41,10 +41,8 @@ export default function LoginPage() {
         setError(authError.message)
       } else {
         console.log('[Auth] Login successful, redirecting to dashboard...')
-        // Add a small delay to ensure session is properly set
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 100)
+        // Force navigation with replace to ensure redirect happens
+        router.replace('/dashboard')
       }
     } catch (err) {
       console.error('[Auth] Unexpected error:', err)
