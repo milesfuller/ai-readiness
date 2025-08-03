@@ -47,10 +47,8 @@ export default function LoginPage() {
         setShowSuccess(true)
         setShowHearts(true)
         
-        // Delay navigation to show success animation
-        setTimeout(() => {
-          router.replace('/dashboard')
-        }, 1500)
+        // Immediately redirect to prevent any unmounting issues
+        router.push('/dashboard')
       }
     } catch (err) {
       console.error('[Auth] Unexpected error:', err)
