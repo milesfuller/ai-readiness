@@ -75,7 +75,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <button
             type="button"
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={(e) => {
+              e.preventDefault()
+              setShowPassword(!showPassword)
+            }}
+            onMouseDown={(e) => {
+              // Prevent the button from stealing focus
+              e.preventDefault()
+            }}
+            tabIndex={-1}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
