@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-export function createServerClient() {
+export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -8,7 +8,7 @@ export function createServerClient() {
     throw new Error('Missing Supabase environment variables')
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
@@ -24,6 +24,9 @@ export function createServerClient() {
   })
 }
 
+// Export createServerClient as an alias
+export const createServerClient = createClient
+
 // Create a server client with cookie handling for auth
 export async function createServerClientWithAuth() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -33,7 +36,7 @@ export async function createServerClientWithAuth() {
     throw new Error('Missing Supabase environment variables')
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
