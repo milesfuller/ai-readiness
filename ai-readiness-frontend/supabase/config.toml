@@ -1,0 +1,97 @@
+# Supabase MCP Integration Configuration
+# Enhanced for Docker MCP and AI Readiness testing
+
+[project]
+project_id = "ai-readiness-local"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3000/auth/login",
+  "http://localhost:3000/auth/register",
+  "http://localhost:8000/mcp/callback"  # MCP integration callback
+]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_refresh_token_reuse_interval = 10
+enable_signup = true
+enable_email_confirmations = false
+enable_sms_confirmations = false
+enable_signup_rate_limit = false
+max_enrolled_factors = 10
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = false
+enable_confirmations = false
+secure_email_change_enabled = false
+secure_password_change_enabled = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+[auth.external.github]
+enabled = false
+
+[auth.external.google]
+enabled = false
+
+[storage]
+enabled = true
+port = 54323
+file_size_limit = "50MiB"
+s3_enabled = false
+
+[edge_functions]
+enabled = true
+port = 54325
+
+[analytics]
+enabled = false
+
+[functions]
+enabled = true
+verify_jwt = false
+
+[realtime]
+enabled = true
+port = 54326
+
+# MCP Integration Settings
+[experimental]
+# Enable experimental features for MCP integration
+webhooks_enabled = true
+custom_schemas = true
+
+# Custom configuration for AI Readiness MCP integration
+[custom.mcp]
+enabled = true
+endpoint = "http://localhost:8000"
+api_key_header = "X-MCP-API-KEY"
+webhook_secret = "mcp-webhook-secret-ai-readiness-2024"
+timeout = 30000
+retry_attempts = 3
+
+[custom.ai_readiness]
+# AI Readiness specific configuration
+llm_analysis_enabled = true
+voice_input_enabled = true
+export_formats = ["json", "csv", "pdf"]
+max_survey_responses = 10000
+batch_processing_enabled = true

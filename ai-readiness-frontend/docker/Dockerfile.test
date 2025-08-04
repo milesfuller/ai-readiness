@@ -1,0 +1,38 @@
+# Test Runner Dockerfile
+# Optimized for fast test execution in containerized environment
+
+FROM node:18-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache libc6-compat curl
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
+COPY . .
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Set up permissions
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# Build the application (for integration tests)
+RUN npm run build
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Expose port
+EXPOSE 3000
+
+# Default command (can be overridden)
+CMD ["npm", "run", "test:ci"]

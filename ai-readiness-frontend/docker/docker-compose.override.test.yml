@@ -1,0 +1,83 @@
+# Docker Compose Override for Local Development Testing
+# This file provides additional configurations for local testing scenarios
+
+version: '3.8'
+
+services:
+  # Override for development with hot reloading
+  supabase-db:
+    environment:
+      - POSTGRES_INITDB_ARGS=--auth-host=md5
+    volumes:
+      # Add volume for custom test data
+      - ./docker/test-data:/docker-entrypoint-initdb.d/test-data:ro
+    ports:
+      # Expose on different port to avoid conflicts
+      - "54322:5432"
+
+  # Fast startup auth service for development
+  supabase-auth:
+    environment:
+      # Enable debug logging in development
+      - GOTRUE_LOG_LEVEL=debug
+      # Faster token refresh for testing
+      - GOTRUE_JWT_EXP=3600
+      # Disable email verification for faster testing
+      - GOTRUE_MAILER_AUTOCONFIRM=true
+    ports:
+      - "9999:9999"
+
+  # Development REST API with enhanced logging
+  supabase-rest:
+    environment:
+      # Enable request logging
+      - PGRST_LOG_LEVEL=info
+      - PGRST_DB_POOL=20
+    ports:
+      - "3001:3000"
+
+  # Development Studio with custom project settings
+  supabase-studio:
+    environment:
+      - NEXT_PUBLIC_ENABLE_LOGS=true
+    ports:
+      - "3010:3000"
+
+  # Test data seeder (one-time service)
+  test-seeder:
+    image: postgres:15-alpine
+    container_name: ai-readiness-test-seeder
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: postgres
+    volumes:
+      - ./supabase/seeds:/seeds:ro
+      - ./docker/test-data:/test-data:ro
+    command: |
+      sh -c "
+        echo 'Waiting for database to be ready...'
+        sleep 10
+        echo 'Seeding test data...'
+        for file in /seeds/*.sql; do
+          if [ -f $$file ]; then
+            echo 'Executing $$file'
+            psql -h supabase-db -U postgres -d postgres -f $$file
+          fi
+        done
+        for file in /test-data/*.sql; do
+          if [ -f $$file ]; then
+            echo 'Executing test data $$file'
+            psql -h supabase-db -U postgres -d postgres -f $$file
+          fi
+        done
+        echo 'Seeding complete'
+      "
+    networks:
+      - supabase-test
+    restart: "no"
+
+networks:
+  supabase-test:
+    name: ai-readiness-test-network

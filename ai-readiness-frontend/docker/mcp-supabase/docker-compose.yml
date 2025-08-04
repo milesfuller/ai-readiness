@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mcp-supabase:
+    build:
+      context: ../..
+      dockerfile: docker/mcp-supabase/Dockerfile
+    container_name: mcp-supabase-container
+    ports:
+      - "3000:3000"     # Supabase Studio
+      - "8000:8000"     # Supabase API Gateway  
+      - "5432:5432"     # PostgreSQL
+      - "54321:54321"   # Supabase API
+      - "54323:54323"   # PostgREST
+      - "54324:54324"   # Supabase Storage
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ../../supabase:/app/supabase-host:ro
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - SUPABASE_DB_PASSWORD=postgres
+      - SUPABASE_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      - SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+    networks:
+      - supabase-mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:54321/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  supabase-mcp-network:
+    driver: bridge
+    name: supabase-mcp-network
+
+volumes:
+  supabase-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
