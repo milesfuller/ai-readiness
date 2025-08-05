@@ -15,15 +15,15 @@ import { test, expect } from '@playwright/test';
  * 6. Password reset flow
  */
 
-// Test credentials - these should match your test Supabase environment
+// Test credentials - these match the mock server in test-mock-server.js
 const TEST_CREDENTIALS = {
   VALID_USER: {
-    email: 'test.user@aireadiness.com',
-    password: 'TestPass123!'
+    email: 'testuser@example.com',
+    password: 'TestPassword123!'
   },
   ADMIN_USER: {
-    email: 'admin@aireadiness.com', 
-    password: 'AdminPass123!'
+    email: 'testadmin@example.com', 
+    password: 'AdminPassword123!'
   },
   INVALID_USER: {
     email: 'invalid@example.com',
@@ -182,7 +182,12 @@ test.describe('Complete Authentication Flows', () => {
       
       // Check for email field validation
       const emailField = page.locator('input[type="email"]');
-      const emailError = await emailField.evaluate(el => el.validationMessage || el.getAttribute('aria-invalid'));
+      const emailError = await emailField.evaluate(el => {
+        if (el instanceof HTMLInputElement) {
+          return el.validationMessage || el.getAttribute('aria-invalid');
+        }
+        return el.getAttribute('aria-invalid');
+      });
       
       expect(emailError).toBeTruthy();
       
@@ -201,9 +206,12 @@ test.describe('Complete Authentication Flows', () => {
       
       // Should show validation error or stay on page
       const emailField = page.locator('input[type="email"]');
-      const isInvalid = await emailField.evaluate(el => 
-        !el.validity.valid || el.getAttribute('aria-invalid') === 'true'
-      );
+      const isInvalid = await emailField.evaluate(el => {
+        if (el instanceof HTMLInputElement) {
+          return !el.validity.valid || el.getAttribute('aria-invalid') === 'true';
+        }
+        return el.getAttribute('aria-invalid') === 'true';
+      });
       
       expect(isInvalid).toBeTruthy();
       
@@ -473,8 +481,18 @@ test.describe('Registration Flow Tests', () => {
     const emailField = page.locator('input[type="email"]');
     const passwordField = page.locator('input[type="password"]').first();
     
-    const emailInvalid = await emailField.evaluate(el => !el.validity.valid);
-    const passwordInvalid = await passwordField.evaluate(el => !el.validity.valid);
+    const emailInvalid = await emailField.evaluate(el => {
+      if (el instanceof HTMLInputElement) {
+        return !el.validity.valid;
+      }
+      return el.getAttribute('aria-invalid') === 'true';
+    });
+    const passwordInvalid = await passwordField.evaluate(el => {
+      if (el instanceof HTMLInputElement) {
+        return !el.validity.valid;
+      }
+      return el.getAttribute('aria-invalid') === 'true';
+    });
     
     expect(emailInvalid || passwordInvalid).toBeTruthy();
     

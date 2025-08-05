@@ -3,8 +3,10 @@
 
 const baseConfig = require('./jest.config.js')
 
-module.exports = {
-  ...baseConfig,
+module.exports = (async () => {
+  const config = await baseConfig()
+  return {
+    ...config,
   displayName: 'Supabase Integration Tests',
   testEnvironment: 'node',
   
@@ -43,10 +45,12 @@ module.exports = {
   
   // Module name mapping for test environment
   moduleNameMapper: {
-    ...baseConfig.moduleNameMapper,
+    ...config.moduleNameMapper,
     '^@/supabase/(.*)$': '<rootDir>/supabase/$1'
   },
   
   // Parallel testing (disabled for database tests to avoid conflicts)
   maxWorkers: 1
+  }
+})()
 }

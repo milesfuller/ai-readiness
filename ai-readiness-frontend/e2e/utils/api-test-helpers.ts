@@ -6,10 +6,9 @@ import type {
   User, 
   Survey, 
   SurveyResponse, 
-  ExportOptions,
-  LLMConfig,
-  JTBDForceType 
+  ExportOptions
 } from '../../lib/types'
+import type { LLMConfig, JTBDForceType } from '../../lib/types/llm'
 
 export interface TestUser {
   email: string

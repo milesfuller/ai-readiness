@@ -33,8 +33,9 @@ export function createTestAwareRateLimit(config: any) {
       return null // No rate limiting
     }
 
-    // Apply normal rate limiting
-    const rateLimitHandler = withRateLimit(config)
+    // Apply normal rate limiting - withRateLimit is a decorator that needs a handler
+    const handler = async (req: NextRequest) => NextResponse.next()
+    const rateLimitHandler = withRateLimit(config)(handler)
     return rateLimitHandler(request)
   }
 }

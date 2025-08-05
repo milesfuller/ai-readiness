@@ -14,11 +14,25 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:stable": "playwright test --config playwright.config.stable.ts",
+    "test:e2e:stable:debug": "playwright test --config playwright.config.stable.ts --debug",
     "test:e2e:login": "playwright test auth-login-redirect.spec.ts",
     "test:e2e:local": "playwright test --config playwright.config.test.ts",
-    "test:e2e:setup": "./scripts/test-setup.sh && npm run test:e2e:local",
-    "test:e2e:cleanup": "./scripts/test-cleanup.sh",
-    "test:e2e:full": "./scripts/test-setup.sh && npm run test:e2e:local && ./scripts/test-cleanup.sh",
+    "test:e2e:enhanced": "playwright test --config playwright.config.e2e.ts",
+    "test:e2e:working": "playwright test --config playwright.config.working.js",
+    "test:e2e:epipe-safe": "node scripts/run-playwright-epipe-safe.js",
+    "test:e2e:epipe-safe:debug": "node scripts/run-playwright-epipe-safe.js --debug",
+    "test:e2e:epipe-safe:headed": "node scripts/run-playwright-epipe-safe.js --headed",
+    "test:e2e:epipe-safe:validate": "node scripts/validate-epipe-config.js",
+    "test:e2e:setup": "./scripts/e2e-setup.sh setup",
+    "test:e2e:cleanup": "./scripts/e2e-setup.sh cleanup",
+    "test:e2e:validate": "./scripts/e2e-setup.sh validate",
+    "test:e2e:validate:full": "./scripts/validate-e2e-environment.sh",
+    "test:e2e:env:setup": "./scripts/setup-e2e-environment.sh",
+    "test:e2e:env:validate": "./scripts/validate-e2e-environment.sh",
+    "test:e2e:validate:config": "node scripts/validate-playwright-config.js",
+    "test:e2e:full": "npm run test:e2e:env:setup && npm run test:e2e:enhanced && docker-compose -f docker-compose.e2e.yml down",
+    "test:e2e:ci": "npm run test:e2e:setup && npm run test:e2e:enhanced",
     "test": "node scripts/run-tests.js",
     "test:watch": "node scripts/run-tests.js --watch",
     "test:coverage": "node scripts/run-tests.js --coverage",
@@ -80,9 +94,12 @@
     "@supabase/supabase-js": "^2.53.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "framer-motion": "^11.0.0",
     "globals": "^16.3.0",
     "html2canvas": "^1.4.1",
+    "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.263.1",
     "next": "^14.2.15",
@@ -107,6 +124,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "autoprefixer": "^10.4.16",
+    "cookie-parser": "^1.4.7",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.15",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -121,50 +139,5 @@
     "tailwindcss": "^3.3.5",
     "ts-jest": "^29.4.0",
     "typescript": "~5.3.3"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
-    ],
-    "testPathIgnorePatterns": [
-      "<rootDir>/.next/",
-      "<rootDir>/node_modules/"
-    ],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/$1"
-    },
-    "transformIgnorePatterns": [
-      "node_modules/(?!(@supabase|jose)/)"
-    ],
-    "transform": {
-      "^.+\\.(js|jsx|ts|tsx)$": [
-        "@swc/jest"
-      ]
-    },
-    "extensionsToTreatAsEsm": [
-      ".ts",
-      ".tsx"
-    ],
-    "collectCoverageFrom": [
-      "app/**/*.{js,jsx,ts,tsx}",
-      "components/**/*.{js,jsx,ts,tsx}",
-      "lib/**/*.{js,jsx,ts,tsx}",
-      "!**/*.d.ts",
-      "!**/node_modules/**",
-      "!**/.next/**"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 75,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
-    },
-    "testMatch": [
-      "**/__tests__/**/*.(js|jsx|ts|tsx)",
-      "**/*.(test|spec).(js|jsx|ts|tsx)"
-    ]
   }
 }

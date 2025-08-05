@@ -1,10 +1,54 @@
 import { chromium, FullConfig } from '@playwright/test';
 import path from 'path';
+import fs from 'fs';
 
+/**
+ * Enhanced Global E2E Test Setup
+ * Validates test environment and prepares infrastructure
+ */
 async function globalSetup(config: FullConfig) {
-  console.log('🚀 Global setup started...');
+  console.log('🚀 Enhanced E2E test environment setup started...');
   
-  const { baseURL } = config.projects[0].use;
+  // Ensure required directories exist
+  const requiredDirs = [
+    'playwright/.auth',
+    'test-results',
+    'test-results/e2e-artifacts',
+    'test-results/e2e-report'
+  ];
+  
+  for (const dir of requiredDirs) {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`📁 Created directory: ${dir}`);
+    }
+  }
+  
+  // Validate environment variables
+  const requiredEnvVars = [
+    'NODE_ENV',
+    'PLAYWRIGHT_BASE_URL',
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'TEST_USER_EMAIL',
+    'TEST_USER_PASSWORD',
+  ];
+  
+  const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  if (missingVars.length > 0) {
+    console.error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error('Please ensure .env.test is properly loaded');
+  }
+  
+  console.log('✅ Environment variables validated');
+  
+  // Wait for services to be ready
+  const baseURL = config.projects[0]?.use?.baseURL || process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3001';
+  const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321';
+  
+  await waitForService(baseURL, 'Next.js App');
+  await waitForService(supabaseURL, 'Supabase Services');
+  
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
@@ -83,7 +127,42 @@ async function globalSetup(config: FullConfig) {
     await browser.close();
   }
 
-  console.log('✅ Global setup completed successfully');
+  console.log('✅ Enhanced global setup completed successfully');
+}
+
+/**
+ * Wait for service to be ready with exponential backoff
+ */
+async function waitForService(url: string, name: string, maxAttempts: number = 30): Promise<void> {
+  console.log(`⏳ Waiting for ${name} at ${url}...`);
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // Try health endpoint first, then root endpoint
+      const healthUrl = `${url}/health`;
+      let response = await fetch(healthUrl).catch(() => null);
+      
+      if (!response || !response.ok) {
+        response = await fetch(url).catch(() => null);
+      }
+      
+      if (response && response.ok) {
+        console.log(`✅ ${name} is ready!`);
+        return;
+      }
+    } catch (error) {
+      // Service not ready yet
+    }
+    
+    if (attempt === maxAttempts) {
+      console.error(`❌ ${name} failed to start after ${maxAttempts} attempts`);
+      throw new Error(`Service ${name} is not available at ${url}`);
+    }
+    
+    const delay = Math.min(2000 * Math.pow(1.5, attempt - 1), 10000); // Exponential backoff, max 10s
+    console.log(`   Attempt ${attempt}/${maxAttempts} - ${name} not ready yet... (retrying in ${delay}ms)`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
 }
 
 export default globalSetup;

@@ -96,7 +96,7 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
         {/* Sidebar Toggle Button for Desktop */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="hidden md:flex fixed left-4 bottom-4 z-40 w-10 h-10 rounded-full bg-teal-500 hover:bg-teal-600 text-white items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="hidden md:flex fixed left-4 bottom-4 z-40 w-[44px] h-[44px] rounded-full bg-teal-500 hover:bg-teal-600 text-white items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg 

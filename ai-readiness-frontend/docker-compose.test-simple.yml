@@ -1,0 +1,122 @@
+version: '3.8'
+
+name: ai-readiness-test-simple
+
+services:
+  # PostgreSQL Database
+  db:
+    container_name: supabase-db-test
+    image: supabase/postgres:15.1.0.147
+    restart: unless-stopped
+    healthcheck:
+      test: pg_isready -U postgres -h localhost
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: test_postgres_password
+      POSTGRES_PASSWORD: test_postgres_password
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXP: ${JWT_EXPIRY:-3600}
+    ports:
+      - "54322:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data:Z
+      - ./supabase/migrations:/docker-entrypoint-initdb.d/migrations:Z
+
+  # Kong API Gateway
+  kong:
+    container_name: supabase-kong-test  
+    build:
+      context: ./supabase
+      dockerfile: Dockerfile.kong
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      DASHBOARD_USERNAME: supabase
+      DASHBOARD_PASSWORD: test_dashboard_password
+    ports:
+      - "54321:8000"
+
+  # GoTrue Authentication Server
+  auth:
+    container_name: supabase-auth-test
+    image: supabase/gotrue:v2.151.0
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
+    restart: unless-stopped
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: http://localhost:54321
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:test_postgres_password@db:5432/postgres?search_path=auth
+      GOTRUE_SITE_URL: http://localhost:3000
+      GOTRUE_URI_ALLOW_LIST: http://localhost:3000/**,http://localhost:54323/**
+      GOTRUE_DISABLE_SIGNUP: false
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: ${JWT_EXPIRY:-3600}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: true
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: false
+      GOTRUE_MAILER_AUTOCONFIRM: true
+      GOTRUE_SMTP_ADMIN_EMAIL: admin@example.com
+      GOTRUE_SMTP_HOST: inbucket
+      GOTRUE_SMTP_PORT: 2500
+      GOTRUE_SMTP_SENDER_NAME: Test Mailer
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: 30
+      MFA_ENABLED: false
+      GOTRUE_PASSWORD_MIN_LENGTH: 6
+
+  # PostgREST API Server
+  rest:
+    container_name: supabase-rest-test
+    image: postgrest/postgrest:v12.0.1
+    depends_on:
+      - db
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgres://postgres:test_postgres_password@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY:-3600}
+    command: "postgrest"
+
+  # SMTP Server for testing emails
+  inbucket:
+    container_name: supabase-inbucket-test
+    image: inbucket/inbucket:3.0.3
+    restart: unless-stopped
+    environment:
+      INBUCKET_WEB_ADDR: 0.0.0.0:9000
+      INBUCKET_SMTP_ADDR: 0.0.0.0:2500
+    ports:
+      - "54324:9000"
+      - "2500:2500"
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  default:
+    name: supabase_network_test_simple
+    driver: bridge

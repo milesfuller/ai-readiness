@@ -106,8 +106,15 @@ const defaultConfig: SecurityHeadersConfig = {
 /**
  * Generate Content Security Policy header value
  */
-function generateCSPHeader(directives: Record<string, string | string[]>): string {
-  return Object.entries(directives)
+function generateCSPHeader(directives: Record<string, string | string[]>, reportOnly: boolean = false): string {
+  // Filter out upgrade-insecure-requests in report-only mode to avoid console warnings
+  const filteredDirectives = Object.entries(directives)
+    .filter(([directive]) => {
+      if (reportOnly && directive === 'upgrade-insecure-requests') {
+        return false
+      }
+      return true
+    })
     .map(([directive, values]) => {
       if (Array.isArray(values)) {
         return `${directive} ${values.join(' ')}`
@@ -115,6 +122,8 @@ function generateCSPHeader(directives: Record<string, string | string[]>): strin
       return `${directive} ${values}`
     })
     .join('; ')
+  
+  return filteredDirectives
 }
 
 /**
@@ -143,7 +152,7 @@ export function applySecurityHeaders(
 
   // Content Security Policy
   if (finalConfig.csp.enabled) {
-    const cspHeader = generateCSPHeader(finalConfig.csp.directives)
+    const cspHeader = generateCSPHeader(finalConfig.csp.directives, finalConfig.csp.reportOnly)
     const headerName = finalConfig.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
     headers.set(headerName, cspHeader)
   }

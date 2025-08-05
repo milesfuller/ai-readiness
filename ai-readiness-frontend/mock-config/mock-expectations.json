@@ -1,0 +1,54 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/test-webhook"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "status": "received",
+        "timestamp": "2025-08-05T04:17:00Z"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/test-logs"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "logged": true,
+        "message": "Log received"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/api/health"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "status": "healthy",
+        "services": {
+          "database": "up",
+          "auth": "up",
+          "storage": "up"
+        }
+      }
+    }
+  }
+]

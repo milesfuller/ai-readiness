@@ -1,86 +1,81 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    // Check if environment variables exist
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    // Test 1: Check auth.users table permissions
-    let authTest = null
-    let authError: any = null
-    try {
-      const result = await supabase.rpc('get_auth_users_count').single()
-      authTest = result.data
-      authError = result.error
-    } catch (e) {
-      authError = 'Function does not exist'
-    }
-
-    // Test 2: Check profiles table
-    const { count: profileCount, error: profileError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-
-    // Test 3: Check if we can read from auth schema (usually restricted)
-    const { data: sessionTest, error: sessionError } = await supabase.auth.getSession()
-
-    // Test 4: Check RLS policies
-    let policies = null
-    let policiesError: any = null
-    try {
-      const result = await supabase.rpc('get_policies', { table_name: 'profiles' })
-      policies = result.data
-      policiesError = result.error
-    } catch (e) {
-      policiesError = 'Function does not exist'
-    }
-
-    // Test 5: Direct REST API test
-    const restUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?select=count`
-    const restResponse = await fetch(restUrl, {
-      headers: {
-        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-        'Prefer': 'count=exact'
-      }
-    })
-
-    return NextResponse.json({
-      diagnostics: {
-        authUsers: {
-          success: !authError,
-          error: authError
-        },
-        profiles: {
-          count: profileCount,
-          error: profileError
-        },
-        session: {
-          hasSession: !!sessionTest?.session,
-          error: sessionError
-        },
-        policies: {
-          data: policies,
-          error: policiesError
-        },
-        restApi: {
-          status: restResponse.status,
-          headers: Object.fromEntries(restResponse.headers.entries())
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({
+        status: 'unhealthy',
+        connection: false,
+        error: 'Missing Supabase environment variables',
+        diagnostics: {
+          url: !!supabaseUrl,
+          key: !!supabaseKey
         }
-      },
-      project: {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        keyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length,
+      })
+    }
+
+    // Simple health check - just test if we can reach the Supabase REST API
+    const healthCheckUrl = `${supabaseUrl}/rest/v1/`
+    
+    try {
+      const response = await fetch(healthCheckUrl, {
+        method: 'HEAD',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        },
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(5000)
+      })
+
+      const isHealthy = response.ok || response.status === 404 // 404 is ok, it means API is reachable
+      
+      return NextResponse.json({
+        status: isHealthy ? 'healthy' : 'unhealthy',
+        connection: isHealthy,
+        diagnostics: {
+          restApi: {
+            status: response.status,
+            statusText: response.statusText,
+            reachable: true
+          },
+          environment: {
+            url: supabaseUrl ? 'SET' : 'NOT SET',
+            key: supabaseKey ? 'SET' : 'NOT SET',
+            urlLength: supabaseUrl?.length || 0,
+            keyLength: supabaseKey?.length || 0
+          }
+        },
         timestamp: new Date().toISOString()
-      }
-    })
+      })
+    } catch (fetchError) {
+      return NextResponse.json({
+        status: 'unhealthy',
+        connection: false,
+        error: 'Failed to connect to Supabase',
+        diagnostics: {
+          restApi: {
+            reachable: false,
+            error: fetchError instanceof Error ? fetchError.message : 'Unknown error'
+          },
+          environment: {
+            url: 'SET',
+            key: 'SET'
+          }
+        },
+        timestamp: new Date().toISOString()
+      })
+    }
   } catch (error) {
     return NextResponse.json({
+      status: 'unhealthy',
+      connection: false,
       error: 'Diagnostics failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })

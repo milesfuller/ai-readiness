@@ -8,6 +8,7 @@ import { NextRequest } from 'next/server'
 // Security event types
 export enum SecurityEventType {
   RATE_LIMIT_EXCEEDED = 'rate_limit_exceeded',
+  RATE_LIMIT_BYPASSED = 'rate_limit_bypassed',
   CSRF_ATTACK = 'csrf_attack',
   XSS_ATTEMPT = 'xss_attempt',
   SQL_INJECTION_ATTEMPT = 'sql_injection_attempt',
@@ -19,7 +20,9 @@ export enum SecurityEventType {
   REPEATED_FAILED_REQUESTS = 'repeated_failed_requests',
   SECURITY_HEADER_VIOLATION = 'security_header_violation',
   PROTOCOL_VIOLATION = 'protocol_violation',
-  SUSPICIOUS_IP = 'suspicious_ip'
+  SUSPICIOUS_IP = 'suspicious_ip',
+  PRODUCTION_DATA_ACCESS_ATTEMPTED = 'production_data_access_attempted',
+  PRODUCTION_CREDENTIALS_DETECTED = 'production_credentials_detected'
 }
 
 // Security event severity levels

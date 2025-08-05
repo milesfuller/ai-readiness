@@ -15,9 +15,9 @@ const inputVariants = cva(
         warning: "border-yellow-500 focus-visible:ring-yellow-500/50 focus-visible:border-yellow-500 bg-yellow-500/5",
       },
       size: {
-        default: "h-10",
-        sm: "h-9 text-xs",
-        lg: "h-11 text-base",
+        default: "h-11", // Changed from h-10 to h-11 to meet 44px touch target requirement
+        sm: "h-10 text-xs", // Changed from h-9 to h-10 
+        lg: "h-12 text-base", // Changed from h-11 to h-12
         xl: "h-14 text-lg px-4",
       },
     },
@@ -217,7 +217,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           
           {/* Error Message */}
           {error && (
-            <div className="flex items-center space-x-1 animate-fade-in">
+            <div className="flex items-center space-x-1 animate-fade-in" data-testid={`${type === 'email' ? 'email' : type === 'password' ? 'password' : 'field'}-error`}>
               <svg className="h-3 w-3 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>

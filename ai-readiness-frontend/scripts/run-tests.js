@@ -103,7 +103,7 @@ class TestRunner {
   }
 
   buildJestCommand(testType = 'all', additionalArgs = []) {
-    const baseCommand = ['npx', 'jest'];
+    const baseCommand = ['npx', 'jest', '--config', './jest.config.js'];
     
     // Test pattern based on type
     const testPatterns = {

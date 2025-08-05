@@ -249,6 +249,20 @@ export function createRateLimitMiddleware(
   identifier?: (request: NextRequest) => string
 ) {
   return async (request: NextRequest) => {
+    // Check if rate limiting is disabled via environment variable or bypass header
+    const bypassHeader = request.headers.get('X-Rate-Limit-Bypass') === 'true'
+    if (process.env.ENABLE_RATE_LIMITING === 'false' || bypassHeader) {
+      // Rate limiting disabled, return success
+      return { 
+        result: {
+          success: true,
+          limit: config.maxRequests,
+          remaining: config.maxRequests,
+          reset: Math.ceil((Date.now() + config.windowMs) / 1000)
+        }
+      }
+    }
+
     const customId = identifier ? identifier(request) : undefined
     const result = await checkRateLimit(request, config, customId)
     
@@ -283,6 +297,13 @@ export function withRateLimit(
 ) {
   return function (handler: Function) {
     return async function (request: NextRequest, ...args: any[]) {
+      // Check if rate limiting is disabled via environment variable or bypass header
+      const bypassHeader = request.headers.get('X-Rate-Limit-Bypass') === 'true'
+      if (process.env.ENABLE_RATE_LIMITING === 'false' || bypassHeader) {
+        // Rate limiting disabled, just call the handler
+        return await handler(request, ...args)
+      }
+
       const customId = identifier ? identifier(request) : undefined
       const result = await checkRateLimit(request, config, customId)
       

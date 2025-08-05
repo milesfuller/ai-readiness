@@ -141,6 +141,10 @@ export function createComprehensiveSecurityMiddleware(
     const monitor = createSecurityMonitoringMiddleware()(request)
     const pathname = request.nextUrl.pathname
     
+    // Check if rate limiting should be enabled (respect environment variable and bypass header)
+    const bypassHeader = request.headers.get('X-Rate-Limit-Bypass') === 'true'
+    const rateLimitingEnabled = process.env.ENABLE_RATE_LIMITING !== 'false' && finalConfig.rateLimit?.enabled && !bypassHeader
+    
     try {
       // 1. Security Monitoring - Detect suspicious patterns
       if (finalConfig.monitoring?.enabled) {
@@ -174,8 +178,8 @@ export function createComprehensiveSecurityMiddleware(
         }
       }
 
-      // 2. Rate Limiting
-      if (finalConfig.rateLimit?.enabled) {
+      // 2. Rate Limiting (respects ENABLE_RATE_LIMITING environment variable)
+      if (rateLimitingEnabled) {
         const { name, config } = getRateLimitConfig(pathname)
         const rateLimitResult = await checkRateLimit(request, config)
         
@@ -297,7 +301,7 @@ export function createComprehensiveSecurityMiddleware(
       const securedResponse = applySecurityHeaders(response, finalConfig.headers)
       
       // Add rate limit headers if rate limiting was checked
-      if (finalConfig.rateLimit?.enabled) {
+      if (rateLimitingEnabled) {
         const { config } = getRateLimitConfig(pathname)
         const rateLimitResult = await checkRateLimit(request, config)
         applyRateLimitHeaders(securedResponse.headers, rateLimitResult, config)

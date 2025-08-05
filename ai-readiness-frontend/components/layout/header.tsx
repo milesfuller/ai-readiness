@@ -69,7 +69,8 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
                   variant="ghost"
                   size="icon"
                   onClick={onMenuClick}
-                  className="md:hidden"
+                  className="md:hidden min-h-[44px] min-w-[44px]"
+                  aria-label="Mobile menu"
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
@@ -91,7 +92,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
             {/* Right side - User menu */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative min-h-[44px] min-w-[44px]" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
                   3
@@ -102,7 +103,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Button variant="ghost" className="relative h-[44px] w-[44px] rounded-full" data-testid="user-profile" aria-label="User profile menu">
                       <Avatar className="h-10 w-10">
                         <AvatarImage 
                           src={user.profile?.avatar} 
@@ -162,7 +163,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 
               {/* Login button if no user */}
               {!user && (
-                <Button variant="default" size="sm">
+                <Button variant="default" size="sm" className="min-h-[44px] px-4">
                   Sign In
                 </Button>
               )}

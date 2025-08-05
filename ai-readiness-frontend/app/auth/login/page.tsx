@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Mail, Lock, Loader2, AlertCircle, CheckCircle2, Wifi, WifiOff } from 'lucide-react'
 
 import { AuthLayout } from '@/components/auth/auth-layout'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showHearts, setShowHearts] = useState(false)
+  const [networkError, setNetworkError] = useState(false)
   const { signIn } = useAuth()
   const router = useRouter()
 
@@ -34,25 +35,37 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
     setError(null)
+    setNetworkError(false)
 
     try {
-      console.log('[Auth] Starting login for:', data.email)
+      console.log('[Login Page] Starting login for:', data.email)
       const { error: authError } = await signIn(data.email, data.password)
       
       if (authError) {
-        console.error('[Auth] Login error:', authError)
+        console.error('[Login Page] Login error:', authError)
         setError(authError.message)
       } else {
-        console.log('[Auth] Login successful, redirecting to dashboard...')
+        console.log('[Login Page] Login successful, showing success state...')
         setShowSuccess(true)
         setShowHearts(true)
         
-        // Immediately redirect to prevent any unmounting issues
-        router.push('/dashboard')
+        // Give a brief moment for success animation, then redirect
+        // This is important for tests to see the success state
+        setTimeout(() => {
+          console.log('[Login Page] Redirecting to dashboard...')
+          router.push('/dashboard')
+        }, 500) // Brief delay for success animation
       }
-    } catch (err) {
-      console.error('[Auth] Unexpected error:', err)
-      setError('An unexpected error occurred. Please try again.')
+    } catch (err: any) {
+      console.error('[Login Page] Unexpected error:', err)
+      
+      // Check if it's a network error
+      if (err.message?.includes('fetch') || err.message?.includes('network') || err.code === 'NETWORK_ERROR') {
+        setNetworkError(true)
+        setError('Network error. Please check your connection and try again.')
+      } else {
+        setError('An unexpected error occurred. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -63,11 +76,11 @@ export default function LoginPage() {
       title="Welcome Back"
       subtitle="Sign in to your AI Readiness account"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Error Message */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" data-testid="login-form">
+        {/* Error Messages */}
         {error && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive" data-testid={networkError ? "network-error" : "login-error"} role="alert">
+            {networkError ? <WifiOff className="h-4 w-4 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 flex-shrink-0" />}
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -80,6 +93,7 @@ export default function LoginPage() {
             leftIcon={Mail}
             variant="glass"
             error={errors.email?.message}
+            data-testid="email-input"
             {...register('email')}
           />
         </div>
@@ -92,6 +106,7 @@ export default function LoginPage() {
             leftIcon={Lock}
             variant="glass"
             error={errors.password?.message}
+            data-testid="password-input"
             {...register('password')}
           />
         </div>
@@ -138,6 +153,7 @@ export default function LoginPage() {
               className="w-full wobble-on-hover"
               disabled={isLoading}
               loading={isLoading}
+              data-testid="login-submit"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>

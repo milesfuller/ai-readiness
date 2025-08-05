@@ -18,11 +18,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Check user permissions (admin or org_admin)
-    const { data: userProfile } = await supabase
+    const { data: userProfile, error: profileError } = await supabase
       .from('profiles')
       .select('role, organization_id')
       .eq('id', user.id)
       .single();
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
 
     if (!userProfile || !['admin', 'org_admin'].includes(userProfile.role)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });

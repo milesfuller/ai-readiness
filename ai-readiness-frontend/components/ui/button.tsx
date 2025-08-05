@@ -21,12 +21,12 @@ const buttonVariants = cva(
         shimmer: "gradient-bg-teal text-white hover:scale-105 hover:glow-teal shadow-lg relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] hover:before:animate-shimmer",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3 text-xs",
-        lg: "h-11 rounded-lg px-8 text-base",
+        default: "h-11 px-4 py-2", // Changed from h-10 to h-11 to meet 44px touch target requirement
+        sm: "h-10 rounded-md px-3 text-xs", // Changed from h-9 to h-10
+        lg: "h-12 rounded-lg px-8 text-base", // Changed from h-11 to h-12
         xl: "h-14 rounded-xl px-10 text-lg font-semibold",
-        icon: "h-10 w-10 p-0",
-        "icon-sm": "h-8 w-8 p-0",
+        icon: "h-11 w-11 p-0", // Changed from h-10 w-10 to h-11 w-11 for 44px touch target
+        "icon-sm": "h-10 w-10 p-0", // Changed from h-8 w-8 to h-10 w-10 
         "icon-lg": "h-12 w-12 p-0",
       },
     },

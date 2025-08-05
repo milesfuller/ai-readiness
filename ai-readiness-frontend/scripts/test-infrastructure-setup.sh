@@ -109,7 +109,7 @@ install_dependencies() {
     log_info "Installing dependencies..."
     
     if [ -f "package.json" ]; then
-        npm ci --prefer-offline --no-audit
+        npm install --prefer-offline --no-audit
         log_success "Dependencies installed"
     else
         log_error "package.json not found!"

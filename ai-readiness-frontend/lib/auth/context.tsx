@@ -99,13 +99,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('[Auth Context] Attempting sign in with:', { email, supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL })
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
-      return { error: error || undefined }
+      
+      if (error) {
+        console.error('[Auth Context] Sign in error:', error)
+        return { error }
+      }
+      
+      if (data?.session) {
+        console.log('[Auth Context] Sign in successful, session created:', {
+          sessionId: data.session.access_token?.substring(0, 20) + '...',
+          userId: data.session.user?.id,
+          expires: data.session.expires_at
+        })
+        
+        // For test environments, also store session in sessionStorage as backup
+        const isTestEnv = process.env.NODE_ENV === 'test' || 
+                         process.env.ENVIRONMENT === 'test' ||
+                         window.location.hostname === 'localhost'
+        
+        if (isTestEnv && typeof window !== 'undefined') {
+          try {
+            sessionStorage.setItem('supabase-test-session', JSON.stringify(data.session))
+            console.log('[Auth Context] Test session backup stored')
+          } catch (e) {
+            console.warn('[Auth Context] Failed to store test session backup:', e)
+          }
+        }
+      }
+      
+      return { error: undefined }
     } catch (err) {
-      console.error('SignIn error:', err)
+      console.error('[Auth Context] SignIn unexpected error:', err)
       return { error: err as AuthError }
     }
   }

@@ -300,7 +300,7 @@ export function validateTestEnvironment(): { valid: boolean; errors: string[]; w
     for (const secret of requiredTestSecrets) {
       if (!process.env[secret]) {
         errors.push(`Missing required test secret: ${secret}`)
-      } else if (process.env[secret].length < 32) {
+      } else if (process.env[secret]!.length < 32) {
         warnings.push(`Test secret ${secret} should be at least 32 characters`)
       }
     }

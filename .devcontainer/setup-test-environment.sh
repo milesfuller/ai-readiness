@@ -38,7 +38,21 @@ fi
 
 # Install Playwright browsers
 log_info "Installing Playwright browsers..."
-npx playwright install --with-deps
+# First check if browsers are already installed
+if [ -d "${PLAYWRIGHT_BROWSERS_PATH:-/home/node/pw-browsers}" ] && [ "$(ls -A ${PLAYWRIGHT_BROWSERS_PATH:-/home/node/pw-browsers})" ]; then
+    log_info "Playwright browsers already installed, validating..."
+    npx playwright install --dry-run || npx playwright install --with-deps
+else
+    log_info "Installing Playwright browsers for the first time..."
+    npx playwright install --with-deps
+fi
+
+# Validate Playwright installation
+if npx playwright --version >/dev/null 2>&1; then
+    log_success "Playwright installed successfully: $(npx playwright --version)"
+else
+    log_warning "Playwright installation may have issues"
+fi
 
 # Copy test environment file
 log_info "Setting up environment variables..."
@@ -76,6 +90,17 @@ if docker info >/dev/null 2>&1; then
     fi
 else
     log_warning "Docker is not available yet, you may need to restart the container"
+fi
+
+# Validate Playwright browsers are installed
+log_info "Validating Playwright browser installations..."
+if npx playwright install --list >/dev/null 2>&1; then
+    INSTALLED_BROWSERS=$(npx playwright install --list 2>/dev/null | grep -E "chromium|firefox|webkit" | wc -l)
+    if [ "$INSTALLED_BROWSERS" -ge 3 ]; then
+        log_success "All Playwright browsers are installed"
+    else
+        log_warning "Some Playwright browsers may be missing. Run 'npx playwright install' to fix."
+    fi
 fi
 
 # Create a test readiness indicator

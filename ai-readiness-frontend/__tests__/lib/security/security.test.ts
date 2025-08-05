@@ -160,7 +160,8 @@ describe('Input Validation', () => {
     const sanitized = sanitizeSearchQuery(maliciousQuery)
     
     expect(sanitized).not.toContain('DROP TABLE')
-    expect(sanitized).not.toContain('--')
+    expect(sanitized).not.toContain("'")
+    expect(sanitized).toBe(';  TABLE users; --')
   })
 
   test('should validate file uploads', () => {

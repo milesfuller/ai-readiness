@@ -1,6 +1,9 @@
 {
   "name": "AI Readiness Dev & Test Environment",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
   
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -46,7 +49,7 @@
     54324
   ],
 
-  "postCreateCommand": "bash -c 'apt-get update && apt-get install -y postgresql-client && if [ -f .devcontainer/setup-test-environment.sh ]; then .devcontainer/setup-test-environment.sh || echo \"Setup script failed but container started\"; fi'",
+  "postCreateCommand": "bash -c 'if [ -f .devcontainer/setup-test-environment.sh ]; then chmod +x .devcontainer/setup-test-environment.sh && .devcontainer/setup-test-environment.sh || echo \"Setup script failed but container started\"; fi'",
   
   "postStartCommand": "bash -c 'cd ai-readiness-frontend && if [ -f docker-compose.test.yml ]; then docker compose -f docker-compose.test.yml up -d || echo \"Docker compose failed but container started\"; fi'",
 
@@ -60,6 +63,9 @@
   
   "remoteEnv": {
     "NODE_ENV": "development",
-    "DOCKER_BUILDKIT": "1"
+    "DOCKER_BUILDKIT": "1",
+    "PLAYWRIGHT_BROWSERS_PATH": "/home/node/pw-browsers",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "0",
+    "CI": "false"
   }
 }

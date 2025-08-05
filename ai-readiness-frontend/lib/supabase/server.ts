@@ -8,17 +8,27 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables')
   }
 
+  // Detect test environment
+  const isTestEnv = process.env.NODE_ENV === 'test' || 
+                   process.env.ENVIRONMENT === 'test' || 
+                   supabaseUrl.includes('localhost:54321')
+
   return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
+      persistSession: isTestEnv, // Enable persistence in test mode for better session handling
+      debug: isTestEnv
     },
     global: {
       headers: {
         'apikey': supabaseAnonKey,
         'Authorization': `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'Prefer': 'return=minimal',
+        ...(isTestEnv && {
+          'x-test-mode': 'true',
+          'x-server-client': 'true'
+        })
       }
     }
   })
