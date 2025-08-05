@@ -32,7 +32,6 @@ RUN apt-get update && apt-get install -y \
     libopus0 \
     libwebp6 \
     libwebpdemux2 \
-    libenchant1c2a \
     libgudev-1.0-0 \
     libsecret-1-0 \
     libhyphen0 \
