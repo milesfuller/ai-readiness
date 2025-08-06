@@ -80,7 +80,7 @@ export default async function NotificationsPage() {
             <CardContent className="p-12 text-center">
               <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-medium mb-2">No notifications</p>
-              <p className="text-sm text-muted-foreground">You're all caught up!</p>
+              <p className="text-sm text-muted-foreground">You&apos;re all caught up!</p>
             </CardContent>
           </Card>
         )}

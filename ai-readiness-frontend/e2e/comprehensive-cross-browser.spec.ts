@@ -138,7 +138,7 @@ test.describe('Comprehensive Cross-Browser Compatibility Tests', () => {
               return a === 1;
             } catch { return false; }
           })(),
-          modules: typeof import !== 'undefined'
+          modules: false // Changed from typeof import check to avoid syntax error
         };
       });
       

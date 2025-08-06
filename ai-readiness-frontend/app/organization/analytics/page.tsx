@@ -17,7 +17,7 @@ export default async function OrganizationAnalyticsPage() {
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Organization Analytics</h1>
-          <p className="text-muted-foreground">Comprehensive insights into your organization's AI readiness journey</p>
+          <p className="text-muted-foreground">Comprehensive insights into your organization&apos;s AI readiness journey</p>
         </div>
 
         {/* Key Metrics */}
