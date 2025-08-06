@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
-import { createBrowserClient } from '@/lib/supabase/client-browser'
+import { getSupabaseClientSync } from '@/lib/supabase'
 import { User as AppUser } from '@/lib/types'
 
 interface AuthContextType {
@@ -43,7 +43,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AppUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [supabase] = useState(() => createBrowserClient())
+  
+  // Use singleton client - will always return the same instance
+  const supabase = getSupabaseClientSync()
 
   // Convert Supabase User to AppUser
   const mapSupabaseUserToAppUser = useCallback((supabaseUser: User): AppUser => {
@@ -95,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth, mapSupabaseUserToAppUser])
+  }, [supabase, mapSupabaseUserToAppUser])
 
   const signIn = async (email: string, password: string) => {
     try {

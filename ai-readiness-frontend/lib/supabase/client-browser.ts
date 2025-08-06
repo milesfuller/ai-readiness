@@ -1,7 +1,14 @@
 import { createBrowserClient as createSSRBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { registerClient, getClient } from './singleton'
 
-// Browser-only Supabase client with cookie-based session management
-export function createBrowserClient() {
+// Browser-only Supabase client with cookie-based session management (Singleton)
+export function createBrowserClient(): SupabaseClient {
+  // Check if instance already exists in global registry
+  const existingClient = getClient('browser')
+  if (existingClient) {
+    return existingClient
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -23,7 +30,7 @@ export function createBrowserClient() {
                    supabaseUrl.includes('localhost:54321')
 
   // Create SSR client with cookie-based session management
-  return createSSRBrowserClient(supabaseUrl, supabaseAnonKey, {
+  const client = createSSRBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
         if (typeof document === 'undefined') return undefined
@@ -73,4 +80,7 @@ export function createBrowserClient() {
       }
     }
   })
+
+  // Register in singleton registry and return
+  return registerClient('browser', client)
 }

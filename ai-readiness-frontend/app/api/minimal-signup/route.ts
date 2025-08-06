@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export const runtime = 'edge'
 
@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-    // Create the most minimal client possible
-    const supabase = createClient(url, key)
+    // Get unified Supabase client (singleton)
+    const supabase = await getSupabaseClient()
 
     // Try the simplest signup possible
     const { data, error } = await supabase.auth.signUp({

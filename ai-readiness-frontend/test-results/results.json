@@ -1,0 +1,814 @@
+{
+  "config": {
+    "configFile": "/workspaces/ai-readiness/ai-readiness-frontend/playwright.config.ts",
+    "rootDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "testType": "e2e",
+      "environment": "test",
+      "timestamp": "2025-08-06T05:42:57.024Z",
+      "platform": "linux",
+      "nodeVersion": "v20.19.3",
+      "actualWorkers": 1
+    },
+    "preserveOutput": "failures-only",
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never",
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "list",
+        {
+          "printSteps": true
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T05:42:57.024Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T05:42:57.024Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T05:42:57.024Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T05:42:57.024Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T05:42:57.024Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.2",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3000,
+      "reuseExistingServer": true,
+      "timeout": 180000,
+      "env": {
+        "DOCKER_BUILDKIT": "1",
+        "CLAUDE_FLOW_AUTO_PUSH": "false",
+        "USER": "node",
+        "CLAUDE_CODE_ENTRYPOINT": "cli",
+        "npm_config_user_agent": "npm/10.8.2 node/v20.19.3 linux x64 workspaces/false",
+        "GIT_EDITOR": "true",
+        "NODE_VERSION": "20.19.3",
+        "HOSTNAME": "640bba4db740",
+        "YARN_VERSION": "1.22.22",
+        "GIT_ASKPASS": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/extensions/git/dist/askpass.sh",
+        "npm_node_execpath": "/usr/local/bin/node",
+        "SHLVL": "3",
+        "BROWSER": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/bin/helpers/browser.sh",
+        "npm_config_noproxy": "",
+        "HOME": "/home/node",
+        "TERM_PROGRAM_VERSION": "1.102.3",
+        "VSCODE_IPC_HOOK_CLI": "/tmp/vscode-ipc-d548bc3c-670a-46c1-a523-a01862646a44.sock",
+        "npm_package_json": "/workspaces/ai-readiness/ai-readiness-frontend/package.json",
+        "NVM_SYMLINK_CURRENT": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "VSCODE_GIT_ASKPASS_MAIN": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/extensions/git/dist/askpass-main.js",
+        "VSCODE_GIT_ASKPASS_NODE": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/node",
+        "npm_config_userconfig": "/home/node/.npmrc",
+        "npm_config_local_prefix": "/workspaces/ai-readiness/ai-readiness-frontend",
+        "COLORTERM": "truecolor",
+        "REMOTE_CONTAINERS": "true",
+        "COLOR": "0",
+        "NVM_DIR": "/usr/local/share/nvm",
+        "CLAUDE_FLOW_TELEMETRY_ENABLED": "true",
+        "CLAUDE_FLOW_HOOKS_ENABLED": "true",
+        "CLAUDE_FLOW_REMOTE_EXECUTION": "true",
+        "REMOTE_CONTAINERS_IPC": "/tmp/vscode-remote-containers-ipc-faf29046-d2f3-432b-8fa0-8b6b076854e0.sock",
+        "_": "/usr/local/bin/npx",
+        "npm_config_prefix": "/usr/local/share/npm-global",
+        "npm_config_npm_version": "10.8.2",
+        "CLAUDE_CODE_SSE_PORT": "47469",
+        "PROMPT_DIRTRIM": "4",
+        "TERM": "xterm-256color",
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta",
+        "npm_config_cache": "/home/node/.npm",
+        "npm_config_node_gyp": "/usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+        "PATH": "/workspaces/ai-readiness/ai-readiness-frontend/node_modules/.bin:/workspaces/ai-readiness/ai-readiness-frontend/node_modules/.bin:/workspaces/ai-readiness/node_modules/.bin:/workspaces/node_modules/.bin:/node_modules/.bin:/usr/local/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/bin/remote-cli:/usr/local/share/nvm/current/bin:/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:/usr/local/share/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/node/.local/bin:/home/node/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand",
+        "NODE": "/usr/local/bin/node",
+        "npm_package_name": "ai-readiness-frontend",
+        "COREPACK_ENABLE_AUTO_PIN": "0",
+        "PLAYWRIGHT_BROWSERS_PATH": "/home/node/.cache/ms-playwright",
+        "CLAUDE_FLOW_AUTO_COMMIT": "false",
+        "REMOTE_CONTAINERS_SOCKETS": "[]",
+        "CLAUDE_FLOW_CHECKPOINTS_ENABLED": "true",
+        "LANG": "en_US.UTF-8",
+        "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
+        "VSCODE_GIT_IPC_HANDLE": "/tmp/vscode-git-afec277a8c.sock",
+        "TERM_PROGRAM": "vscode",
+        "npm_lifecycle_script": "playwright",
+        "SHELL": "/bin/bash",
+        "npm_package_version": "0.1.0",
+        "npm_lifecycle_event": "npx",
+        "CLAUDECODE": "1",
+        "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "",
+        "npm_config_globalconfig": "/usr/local/share/npm-global/etc/npmrc",
+        "npm_config_init_module": "/home/node/.npm-init.js",
+        "PWD": "/workspaces/ai-readiness/ai-readiness-frontend",
+        "ENABLE_IDE_INTEGRATION": "true",
+        "npm_execpath": "/usr/local/lib/node_modules/npm/bin/npm-cli.js",
+        "NVM_CD_FLAGS": "",
+        "npm_config_global_prefix": "/usr/local/share/npm-global",
+        "npm_command": "exec",
+        "NVM_RC_VERSION": "",
+        "INIT_CWD": "/workspaces/ai-readiness/ai-readiness-frontend",
+        "EDITOR": "vi",
+        "NODE_ENV": "development",
+        "PLAYWRIGHT_TEST": "true",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      },
+      "ignoreHTTPSErrors": true,
+      "stdout": "ignore",
+      "stderr": "ignore"
+    }
+  },
+  "suites": [
+    {
+      "title": "component-boundaries.spec.ts",
+      "file": "component-boundaries.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Component Boundaries - Client/Server Issues",
+          "file": "component-boundaries.spec.ts",
+          "line": 29,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Dashboard Client Component Issues",
+              "file": "component-boundaries.spec.ts",
+              "line": 67,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "dashboard loads without useState/useEffect errors",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 295,
+                          "error": {
+                            "message": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
+                            "stack": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at /workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts:33:16",
+                            "location": {
+                              "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                              "column": 16,
+                              "line": 33
+                            },
+                            "snippet": "  31 |   test.beforeEach(async ({ page }) => {\n  32 |     // Clear all storage to start fresh\n> 33 |     await page.goto('/');\n     |                ^\n  34 |     await page.context().clearCookies();\n  35 |     await page.evaluate(() => {\n  36 |       localStorage.clear();"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                                "column": 16,
+                                "line": 33
+                              },
+                              "message": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n  31 |   test.beforeEach(async ({ page }) => {\n  32 |     // Clear all storage to start fresh\n> 33 |     await page.goto('/');\n     |                ^\n  34 |     await page.context().clearCookies();\n  35 |     await page.evaluate(() => {\n  36 |       localStorage.clear();\n    at /workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts:33:16"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-08-06T05:42:58.758Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/component-boundaries-Compo-b23b7-t-useState-useEffect-errors-chromium/test-failed-1.png"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                            "column": 16,
+                            "line": 33
+                          }
+                        },
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 344,
+                          "error": {
+                            "message": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
+                            "stack": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at /workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts:33:16",
+                            "location": {
+                              "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                              "column": 16,
+                              "line": 33
+                            },
+                            "snippet": "  31 |   test.beforeEach(async ({ page }) => {\n  32 |     // Clear all storage to start fresh\n> 33 |     await page.goto('/');\n     |                ^\n  34 |     await page.context().clearCookies();\n  35 |     await page.evaluate(() => {\n  36 |       localStorage.clear();"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                                "column": 16,
+                                "line": 33
+                              },
+                              "message": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n  31 |   test.beforeEach(async ({ page }) => {\n  32 |     // Clear all storage to start fresh\n> 33 |     await page.goto('/');\n     |                ^\n  34 |     await page.context().clearCookies();\n  35 |     await page.evaluate(() => {\n  36 |       localStorage.clear();\n    at /workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts:33:16"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2025-08-06T05:43:00.018Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/component-boundaries-Compo-b23b7-t-useState-useEffect-errors-chromium-retry1/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/component-boundaries-Compo-b23b7-t-useState-useEffect-errors-chromium-retry1/video.webm"
+                            },
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/component-boundaries-Compo-b23b7-t-useState-useEffect-errors-chromium-retry1/trace.zip"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                            "column": 16,
+                            "line": 33
+                          }
+                        },
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 273,
+                          "error": {
+                            "message": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
+                            "stack": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at /workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts:33:16",
+                            "location": {
+                              "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                              "column": 16,
+                              "line": 33
+                            },
+                            "snippet": "  31 |   test.beforeEach(async ({ page }) => {\n  32 |     // Clear all storage to start fresh\n> 33 |     await page.goto('/');\n     |                ^\n  34 |     await page.context().clearCookies();\n  35 |     await page.evaluate(() => {\n  36 |       localStorage.clear();"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                                "column": 16,
+                                "line": 33
+                              },
+                              "message": "Error: page.goto: net::ERR_INVALID_ARGUMENT at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n  31 |   test.beforeEach(async ({ page }) => {\n  32 |     // Clear all storage to start fresh\n> 33 |     await page.goto('/');\n     |                ^\n  34 |     await page.context().clearCookies();\n  35 |     await page.evaluate(() => {\n  36 |       localStorage.clear();\n    at /workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts:33:16"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 2,
+                          "startTime": "2025-08-06T05:43:01.309Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/component-boundaries-Compo-b23b7-t-useState-useEffect-errors-chromium-retry2/test-failed-1.png"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/workspaces/ai-readiness/ai-readiness-frontend/e2e/component-boundaries.spec.ts",
+                            "column": 16,
+                            "line": 33
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-31294c79f640e6855da8",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 69,
+                  "column": 9
+                },
+                {
+                  "title": "dashboard interactive elements work correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-32c17dc73019cc9af737",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 128,
+                  "column": 9
+                },
+                {
+                  "title": "dashboard state management works without errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-3315e796df91f3fe4070",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 188,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Login Redirect Flow",
+              "file": "component-boundaries.spec.ts",
+              "line": 240,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "login redirects to dashboard properly without hydration errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-bb45951cdb1cfa868854",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 242,
+                  "column": 9
+                },
+                {
+                  "title": "login preserves redirectTo parameter correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-8158f89073e0cf7d2461",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 290,
+                  "column": 9
+                },
+                {
+                  "title": "authentication state persists across page refreshes",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-d006e463439f17739955",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 312,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Client Component Interactivity",
+              "file": "component-boundaries.spec.ts",
+              "line": 344,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "whimsical components render and animate without errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-01721368e6f1fa943583",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 346,
+                  "column": 9
+                },
+                {
+                  "title": "form interactions work correctly without boundary errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-18d1b08396a77d3667c5",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 419,
+                  "column": 9
+                },
+                {
+                  "title": "dynamic content updates work without errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-c542e4ff808ed9c28ec9",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 471,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Supabase Client Singleton Issues",
+              "file": "component-boundaries.spec.ts",
+              "line": 526,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "no multiple GoTrueClient instances warning",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-c16a8d50bbbb53f5d397",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 528,
+                  "column": 9
+                },
+                {
+                  "title": "auth state consistency across components",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-29ade24390027e182998",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 585,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Function Passing and Serialization",
+              "file": "component-boundaries.spec.ts",
+              "line": 649,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "no \"Functions cannot be passed directly\" errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-99fb92c533baaa1458e0",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 651,
+                  "column": 9
+                },
+                {
+                  "title": "component props are properly serialized",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-8495b7d4da5b82315131",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 700,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Error Boundary and Recovery",
+              "file": "component-boundaries.spec.ts",
+              "line": 758,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "components recover gracefully from errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-0bec18c5241b2d4245a6",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 760,
+                  "column": 9
+                },
+                {
+                  "title": "page refreshes maintain component integrity",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-022f0d20dd1a91a671eb",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 812,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Performance and Memory",
+              "file": "component-boundaries.spec.ts",
+              "line": 849,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "no memory leaks from component boundaries",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-742d6999fcaef42ddab1",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 851,
+                  "column": 9
+                },
+                {
+                  "title": "components render efficiently without excessive re-renders",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "4eaaf96b9792a6b2bd70-4228861c59d2dfb0dc1c",
+                  "file": "component-boundaries.spec.ts",
+                  "line": 894,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-08-06T05:42:57.029Z",
+    "duration": 4729.947,
+    "expected": 0,
+    "skipped": 16,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

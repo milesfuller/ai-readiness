@@ -1,0 +1,9 @@
+{
+  "name": "eslint-plugin-local-nextjs",
+  "version": "1.0.0",
+  "description": "Local ESLint rules for Next.js server/client boundary validation",
+  "main": "index.js",
+  "peerDependencies": {
+    "eslint": ">=7.0.0"
+  }
+}

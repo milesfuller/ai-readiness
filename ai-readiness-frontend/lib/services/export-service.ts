@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase'
 import { ExportOptions, Survey, SurveyResponse, User, Organization, Analytics, JTBDForces } from '@/lib/types'
 import jsPDF from 'jspdf'
 import Papa from 'papaparse'

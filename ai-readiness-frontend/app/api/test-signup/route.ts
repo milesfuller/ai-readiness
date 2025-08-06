@@ -13,23 +13,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing environment variables' }, { status: 500 })
     }
 
-    // Method 1: Using Supabase JS Client
+    // Method 1: Using Supabase JS Client (singleton)
     console.log('Testing with Supabase JS Client...')
-    const { createClient } = await import('@supabase/supabase-js')
-    
-    const supabase = createClient(url, key, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false
-      },
-      global: {
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${key}`
-        }
-      }
-    })
+    const { getSupabaseClient } = await import('@/lib/supabase')
+    const supabase = await getSupabaseClient()
 
     const { data: clientData, error: clientError } = await supabase.auth.signUp({
       email,

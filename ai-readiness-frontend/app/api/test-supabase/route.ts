@@ -37,9 +37,9 @@ export async function GET() {
     const tablesStatus = tablesResponse.status
     const tablesText = await tablesResponse.text()
 
-    // Test 3: Create Supabase client
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(url, key)
+    // Test 3: Create Supabase client (using singleton)
+    const { getSupabaseClient } = await import('@/lib/supabase')
+    const supabase = await getSupabaseClient()
     
     // Try to get session
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession()

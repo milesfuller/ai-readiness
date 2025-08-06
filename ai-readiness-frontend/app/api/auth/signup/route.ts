@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export const runtime = 'edge'
 
@@ -7,11 +7,8 @@ export async function POST(request: Request) {
   try {
     const { email, password, firstName, lastName, organizationName } = await request.json()
     
-    // Create a Supabase client with service role key for profile creation
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    // Get unified Supabase client (singleton)
+    const supabase = await getSupabaseClient()
 
     // Step 1: Create the user
     const { data: authData, error: authError } = await supabase.auth.signUp({

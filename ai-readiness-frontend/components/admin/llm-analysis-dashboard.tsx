@@ -1,5 +1,5 @@
 // LLM Analysis Dashboard for Admin Interface
-'use client';
+'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

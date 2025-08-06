@@ -1,0 +1,90 @@
+name: Component Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate-components:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2  # Need 2 commits for diff detection
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run Component Validation
+      env:
+        VALIDATION_REPORT_FORMAT: github
+        CI: true
+      run: npm run validate:components:ci
+    
+    - name: Generate Validation Reports
+      if: always()
+      run: |
+        npm run validate:components:ci:json
+        npm run validate:components:ci:junit
+    
+    - name: Upload validation results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: component-validation-results-node-${{ matrix.node-version }}
+        path: |
+          component-validation-results.json
+          component-validation-report.json
+          component-validation-junit.xml
+        retention-days: 30
+    
+    - name: Publish Test Results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Component Validation Results
+        path: component-validation-junit.xml
+        reporter: java-junit
+        
+  security-and-quality:
+    needs: validate-components
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run security checks
+      run: npm run test:security
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: Run TypeScript checks
+      run: npm run type-check
+    
+    - name: Run tests
+      run: npm run test:ci

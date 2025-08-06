@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push checks..."
+
+# Run component validation on all files
+echo "⚙️ Validating all React component boundaries..."
+VALIDATE_ALL_FILES=true node .claude/hooks/validate-components.js
+
+if [ $? -ne 0 ]; then
+  echo "❌ Component validation failed. Push blocked."
+  exit 1
+fi
+
+# Run comprehensive tests
+echo "🧪 Running test suite..."
+npm run test:ci
+
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Push blocked."
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed!"
