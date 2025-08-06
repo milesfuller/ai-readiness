@@ -144,8 +144,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired - required for Server Components
-  const { data: { session } } = await supabase.auth.getSession()
+  // Use getUser() instead of getSession() for more reliable auth check
+  // getSession() can return cached/stale data, getUser() always validates
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Auth routes that should redirect to dashboard if user is logged in
   const authRoutes = ['/auth/login', '/auth/register', '/auth/reset-password']
@@ -157,7 +158,7 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = ['/', '/auth/verify-email', '/auth/verify-email-success', '/terms', '/privacy', '/support']
 
   // Redirect authenticated users away from auth pages
-  if (session && authRoutes.includes(pathname)) {
+  if (user && authRoutes.includes(pathname)) {
     const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url))
     // Copy security headers to redirect response
     securityResponse.headers.forEach((value, key) => {
@@ -167,7 +168,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect unauthenticated users to login from protected routes
-  if (!session && protectedRoutes.some(route => pathname.startsWith(route))) {
+  if (!user && protectedRoutes.some(route => pathname.startsWith(route))) {
     const redirectUrl = new URL('/auth/login', request.url)
     redirectUrl.searchParams.set('redirectTo', pathname)
     const redirectResponse = NextResponse.redirect(redirectUrl)
@@ -180,7 +181,7 @@ export async function middleware(request: NextRequest) {
 
   // For root path, redirect based on auth status
   if (pathname === '/') {
-    const redirectUrl = session ? '/dashboard' : '/auth/login'
+    const redirectUrl = user ? '/dashboard' : '/auth/login'
     const redirectResponse = NextResponse.redirect(new URL(redirectUrl, request.url))
     // Copy security headers to redirect response
     securityResponse.headers.forEach((value, key) => {

@@ -559,6 +559,54 @@ export default async function DashboardPage() {
 }
 ```
 
+## Redirect Loop Prevention
+
+### Critical: Authentication Check Consistency
+
+**Problem:** Using different auth methods in middleware vs pages causes redirect loops.
+
+```typescript
+// ❌ WRONG: Inconsistent auth checks
+// middleware.ts
+const { data: { session } } = await supabase.auth.getSession() // Can be stale/cached
+
+// app/dashboard/page.tsx  
+const { data: { user } } = await supabase.auth.getUser() // Always fresh
+
+// Result: Middleware thinks no session, redirects to login
+// Dashboard checks user, finds none, redirects to login
+// Creates infinite loop!
+```
+
+**Solution:** Use consistent auth method everywhere:
+
+```typescript
+// ✅ CORRECT: Consistent auth checks
+// middleware.ts
+const { data: { user } } = await supabase.auth.getUser() // Always validates token
+
+// app/dashboard/page.tsx
+const { data: { user } } = await supabase.auth.getUser() // Same method
+
+// Both use same auth check = no loops
+```
+
+### Key Differences:
+- **getSession()**: Returns cached session, can be stale
+- **getUser()**: Always validates with Supabase, more reliable
+
+### Debugging Redirect Loops:
+
+```bash
+# Check browser network tab for rapid 307 redirects
+# If you see 100+ requests in seconds, it's a loop
+
+# Common pattern:
+/dashboard → 307 → /auth/login → 307 → /dashboard → 307 → /auth/login
+
+# Fix: Ensure middleware and page use same auth method
+```
+
 ## Knowledge Updates
 
 This agent definition should be updated when:
@@ -567,6 +615,7 @@ This agent definition should be updated when:
 - Common deployment issues are discovered
 - Best practices evolve
 - New testing frameworks emerge (e.g., Vitest for Next.js 15+)
+- New auth patterns or redirect issues are found
 
 ## Rate Limit Recovery Strategy
 

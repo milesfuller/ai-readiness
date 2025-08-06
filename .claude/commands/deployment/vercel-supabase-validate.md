@@ -115,12 +115,46 @@ for (const route of allRoutes) {
 - Session persistence
 - Protected route access
 - Token refresh
+- Redirect loop prevention
+- Session vs User consistency
 
 // Playwright + Supabase:
 await testSignUpFlow()
 await testLoginFlow()
 await testProtectedRoutes()
 await testSessionRefresh()
+await testRedirectLoops() // NEW
+await testAuthConsistency() // NEW
+
+// CRITICAL: Test for redirect loops
+async function testRedirectLoops() {
+  // Monitor redirect count
+  let redirectCount = 0
+  page.on('response', (response) => {
+    if ([301, 302, 307, 308].includes(response.status())) {
+      redirectCount++
+      if (redirectCount > 5) {
+        throw new Error('Redirect loop detected!')
+      }
+    }
+  })
+  
+  await page.goto('/dashboard')
+  // Should land on dashboard or login, not loop
+}
+
+// CRITICAL: Verify auth consistency
+async function testAuthConsistency() {
+  // Middleware should use same auth check as pages
+  // getUser() is more reliable than getSession()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  // If user exists but session is null/stale, potential issue
+  if (user && !session) {
+    console.warn('Session/User mismatch detected - use getUser() everywhere')
+  }
+}
 ```
 
 ### 6. API Endpoint Testing (Agent: api-tester)
