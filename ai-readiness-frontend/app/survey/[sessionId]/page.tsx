@@ -342,7 +342,16 @@ export default function SurveyPage({ params }: Props) {
   const canGoNext = () => {
     if (!currentQuestion) return false
     const answer = currentAnswer?.answer?.trim()
-    return currentQuestion.required ? !!answer : true
+    const result = currentQuestion.required ? !!answer : true
+    console.log('canGoNext check:', {
+      questionId: currentQuestion.id,
+      questionNumber: currentQuestion.number,
+      required: currentQuestion.required,
+      hasAnswer: !!answer,
+      result: result,
+      isLastQuestion: isLastQuestion()
+    })
+    return result
   }
 
   const canGoToPrevious = () => {
