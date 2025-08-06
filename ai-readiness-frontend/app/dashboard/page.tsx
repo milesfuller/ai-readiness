@@ -1,9 +1,12 @@
+'use client'
+
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Button, Card, CardHeader, CardTitle, CardContent, StatsCard, CircularProgress, Progress } from '@/components/ui'
 import { AnimatedCounter } from '@/components/ui/whimsy'
 import { Brain, Users, TrendingUp, Clock, CheckCircle2, BarChart3, Sparkles, Trophy, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 // Mock user data for demonstration
 const mockUser = {
@@ -31,12 +34,32 @@ const mockUser = {
   lastLogin: '2024-08-02T19:00:00Z'
 }
 
-export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/auth/login')
+export default function DashboardPage() {
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        redirect('/auth/login')
+      }
+      setLoading(false)
+    }
+    
+    checkAuth()
+  }, [])
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
