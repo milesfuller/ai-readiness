@@ -135,8 +135,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
         
-        // Trigger a session refresh to ensure cookies are properly set
-        await supabase.auth.getSession()
+        // Force refresh the session to ensure cookies are properly set
+        // This is critical for the middleware to recognize the session
+        const { data: refreshedSession } = await supabase.auth.refreshSession()
+        if (refreshedSession?.session) {
+          console.log('[Auth Context] Session refreshed successfully')
+        }
       }
       
       return { error: undefined }

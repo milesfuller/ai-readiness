@@ -117,6 +117,8 @@ export async function middleware(request: NextRequest) {
             name,
             value,
             ...options,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
           })
         },
         remove(name: string, options: CookieOptions) {
@@ -134,6 +136,8 @@ export async function middleware(request: NextRequest) {
             name,
             value: '',
             ...options,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
           })
         },
       },

@@ -50,12 +50,13 @@ export default function LoginPage() {
         setShowSuccess(true)
         setShowHearts(true)
         
-        // Force a hard navigation to dashboard to ensure middleware runs
-        // and session cookies are properly set
+        // Wait a moment for the session to be fully established
+        // This ensures cookies are properly set before navigation
         setTimeout(() => {
-          // Use window.location for hard navigation to ensure cookies are set
-          window.location.href = '/dashboard'
-        }, 500) // Brief delay for success animation
+          // Force a page reload to the redirect URL
+          // This ensures the middleware recognizes the new session
+          window.location.replace(redirectTo)
+        }, 1000) // Give time for session to propagate
       }
     } catch (err: any) {
       // eslint-disable-next-line no-console
