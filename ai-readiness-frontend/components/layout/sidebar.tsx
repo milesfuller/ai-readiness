@@ -33,10 +33,11 @@ interface SidebarProps {
   isCollapsed?: boolean
   onItemClick?: (href: string) => void
   className?: string
+  'data-testid-prefix'?: string
 }
 
 const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
-  ({ userRole, currentPath, isCollapsed = false, onItemClick, className }, ref) => {
+  ({ userRole, currentPath, isCollapsed = false, onItemClick, className, 'data-testid-prefix': testIdPrefix = '' }, ref) => {
     const [expandedItems, setExpandedItems] = React.useState<string[]>(['dashboard'])
 
     const toggleExpanded = (itemLabel: string) => {
@@ -179,6 +180,8 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               isActive && "bg-teal-500/10 text-teal-400 border-l-2 border-teal-500",
               !isCollapsed ? "h-10" : "h-12 p-2 justify-center"
             )}
+            data-testid={`${testIdPrefix}nav-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+            role="button"
             onClick={() => {
               if (hasChildren) {
                 toggleExpanded(item.label)
@@ -198,7 +201,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               <>
                 <span className="flex-1 text-left">{item.label}</span>
                 {hasChildren && (
-                  isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+                  isExpanded ? <ChevronDown className="h-4 w-4" data-testid="chevron-down" /> : <ChevronRight className="h-4 w-4" data-testid="chevron-right" />
                 )}
                 {item.badge && (
                   <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
@@ -227,9 +230,10 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           isCollapsed ? "w-16" : "w-64",
           className
         )}
+        data-testid="sidebar"
       >
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 space-y-1 p-4" role="navigation">
           {navItems.map(item => renderNavItem(item))}
         </nav>
 
@@ -241,6 +245,8 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               "w-full justify-start font-normal",
               isCollapsed ? "h-12 p-2 justify-center" : "h-10"
             )}
+            data-testid="nav-item-settings"
+            role="button"
             onClick={() => onItemClick?.('/settings')}
           >
             <Settings className={cn("h-4 w-4", !isCollapsed && "mr-2")} />

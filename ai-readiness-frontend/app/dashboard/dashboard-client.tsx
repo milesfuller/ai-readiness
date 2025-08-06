@@ -28,7 +28,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="opacity-0 animate-fade-in animation-delay-100">
+          <div className="animate-fade-in animation-delay-100">
             <StatsCard
               title="Total Surveys"
               value={<AnimatedCounter value={247} duration={2000} />}
@@ -42,7 +42,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               }}
             />
           </div>
-          <div className="opacity-0 animate-fade-in animation-delay-200">
+          <div className="animate-fade-in animation-delay-200">
             <StatsCard
               title="Completion Rate"
               value={<AnimatedCounter value={89} suffix="%" duration={2000} />}
@@ -56,7 +56,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               }}
             />
           </div>
-          <div className="opacity-0 animate-fade-in animation-delay-300">
+          <div className="animate-fade-in animation-delay-300">
             <StatsCard
               title="Active Users"
               value={<AnimatedCounter value={156} duration={2000} />}
@@ -70,7 +70,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               }}
             />
           </div>
-          <div className="opacity-0 animate-fade-in animation-delay-400">
+          <div className="animate-fade-in animation-delay-400">
             <StatsCard
               title="Avg. Time"
               value={<AnimatedCounter value={18} suffix=" min" duration={2000} />}
@@ -89,7 +89,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AI Readiness Score */}
-          <Card variant="glass" className="lg:col-span-1 opacity-0 animate-fade-in animation-delay-500 whimsy-hover">
+          <Card variant="glass" className="lg:col-span-1 animate-fade-in animation-delay-500 whimsy-hover">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <TrendingUp className="h-5 w-5 text-teal-400 animate-pulse" />
@@ -117,7 +117,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </Card>
 
           {/* Recent Activity */}
-          <Card variant="glass" className="lg:col-span-2 opacity-0 animate-fade-in animation-delay-300">
+          <Card variant="glass" className="lg:col-span-2 animate-fade-in animation-delay-300">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="h-5 w-5 text-purple-400 animate-pulse" />
@@ -172,7 +172,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="opacity-0 animate-fade-in animation-delay-100">
+          <div className="animate-fade-in animation-delay-100">
             <Card variant="interactive" className="cursor-pointer whimsy-hover">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
@@ -190,7 +190,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             </Card>
           </div>
 
-          <div className="opacity-0 animate-fade-in animation-delay-200">
+          <div className="animate-fade-in animation-delay-200">
             <Card variant="interactive" className="cursor-pointer whimsy-hover">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
@@ -208,7 +208,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             </Card>
           </div>
 
-          <div className="opacity-0 animate-fade-in animation-delay-300">
+          <div className="animate-fade-in animation-delay-300">
             <Card variant="interactive" className="cursor-pointer whimsy-hover">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">

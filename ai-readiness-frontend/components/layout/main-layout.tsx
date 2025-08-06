@@ -34,6 +34,7 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
         <Header
           user={user}
           onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          data-testid="header"
         />
 
         <div className="flex">
@@ -49,17 +50,19 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
 
           {/* Mobile Sidebar Overlay */}
           {mobileMenuOpen && (
-            <div className="fixed inset-0 z-50 md:hidden">
+            <div className="fixed inset-0 z-50 md:hidden" data-testid="mobile-menu-overlay">
               <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                data-testid="mobile-menu-backdrop"
                 onClick={() => setMobileMenuOpen(false)}
               />
-              <aside className="absolute left-0 top-0 h-full w-64 bg-card border-r border-border">
+              <aside className="absolute left-0 top-0 h-full w-64 bg-card border-r border-border" data-testid="mobile-sidebar" role="navigation">
                 <div className="pt-16"> {/* Account for header height */}
                   <Sidebar
                     userRole={userRole}
                     currentPath={currentPath}
                     onItemClick={handleNavigate}
+                    data-testid-prefix="mobile-"
                   />
                 </div>
               </aside>
@@ -102,6 +105,7 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           className="hidden md:flex fixed left-4 bottom-4 z-40 w-[44px] h-[44px] rounded-full bg-teal-500 hover:bg-teal-600 text-white items-center justify-center shadow-lg hover:shadow-xl transition-colors duration-200"
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          data-testid="sidebar-toggle"
         >
           <svg 
             className={cn("w-5 h-5 transition-transform duration-300", sidebarCollapsed && "rotate-180")}

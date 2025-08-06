@@ -79,7 +79,7 @@ export const AdminSidebar: React.FC = () => {
       <div className="p-6">
         <div className="flex items-center space-x-2 mb-8">
           <div className="w-8 h-8 bg-gradient-to-r from-teal-400 to-purple-400 rounded-lg"></div>
-          <span className="text-white font-bold text-xl">Admin Panel</span>
+          <span className="text-white font-bold text-xl" data-testid="admin-panel-title">Admin Panel</span>
         </div>
 
         <nav className="space-y-2">
@@ -97,6 +97,7 @@ export const AdminSidebar: React.FC = () => {
                     ? 'bg-gradient-to-r from-teal-500/20 to-purple-500/20 text-white border border-teal-500/30' 
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 )}
+                data-testid={`admin-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <item.icon className="h-5 w-5" />
                 <span className="font-medium">{item.title}</span>
@@ -117,6 +118,7 @@ export const AdminSidebar: React.FC = () => {
             variant="ghost"
             onClick={handleSignOut}
             className="w-full justify-start text-gray-300 hover:text-white hover:bg-red-500/10"
+            data-testid="admin-sign-out"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out

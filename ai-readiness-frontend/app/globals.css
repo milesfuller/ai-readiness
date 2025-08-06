@@ -285,7 +285,9 @@
   
   /* Simple fade-in animation that only triggers once */
   .animate-fade-in {
+    opacity: 0;
     animation: fadeIn 0.7s ease-out forwards;
+    animation-fill-mode: forwards;
   }
   
   .animation-delay-100 {

@@ -59,6 +59,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
           "sticky top-0 z-50 w-full border-b border-border/40 glass-card backdrop-blur-xl",
           className
         )}
+        data-testid="header"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -71,6 +72,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
                   onClick={onMenuClick}
                   className="md:hidden min-h-[44px] min-w-[44px]"
                   aria-label="Mobile menu"
+                  data-testid="mobile-menu-toggle"
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
