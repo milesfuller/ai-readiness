@@ -50,11 +50,11 @@ export default function LoginPage() {
         setShowSuccess(true)
         setShowHearts(true)
         
-        // Give a brief moment for success animation, then redirect
-        // This is important for tests to see the success state
+        // Force a hard navigation to dashboard to ensure middleware runs
+        // and session cookies are properly set
         setTimeout(() => {
-          // Redirecting to dashboard
-          router.push('/dashboard')
+          // Use window.location for hard navigation to ensure cookies are set
+          window.location.href = '/dashboard'
         }, 500) // Brief delay for success animation
       }
     } catch (err: any) {

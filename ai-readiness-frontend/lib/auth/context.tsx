@@ -118,6 +118,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           expires: data.session.expires_at
         })
         
+        // Update the user state immediately
+        setUser(mapSupabaseUserToAppUser(data.user))
+        
         // For test environments, also store session in sessionStorage as backup
         const isTestEnv = process.env.NODE_ENV === 'test' || 
                          process.env.ENVIRONMENT === 'test' ||
@@ -131,6 +134,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.warn('[Auth Context] Failed to store test session backup:', e)
           }
         }
+        
+        // Trigger a session refresh to ensure cookies are properly set
+        await supabase.auth.getSession()
       }
       
       return { error: undefined }
