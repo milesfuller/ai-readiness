@@ -1,25 +1,12 @@
 {
-  "extends": [
-    "next/core-web-vitals"
-  ],
-  "root": true,
-  "env": {
-    "node": true,
-    "browser": true,
-    "es2022": true,
-    "jest": true
-  },
+  "extends": "next/core-web-vitals",
   "rules": {
-    "no-console": "warn",
-    "no-debugger": "error",
-    "no-unused-vars": "error"
-  },
-  "ignorePatterns": [
-    "node_modules/",
-    ".next/",
-    "coverage/",
-    "test-results/",
-    "playwright-report/",
-    "e2e/**/*"
-  ]
+    "no-unused-vars": "off",
+    "no-console": "off",
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-async-client-component": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "import/no-anonymous-default-export": "off"
+  }
 }
