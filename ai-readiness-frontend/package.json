@@ -64,7 +64,7 @@
     "test:debug": "node scripts/run-tests.js --verbose --sequential",
     "precommit": "npm run validate:components && npm run test:security && npm run lint && npm run type-check",
     "precommit:fast": "npm run validate:components && node scripts/security-scan.js && npm run lint",
-    "prepare": "husky install",
+    "prepare": "node -e \"if (process.env.VERCEL !== '1' && process.env.CI !== 'true') { require('child_process').execSync('husky install') }\" || true",
     "coverage:open": "open coverage/lcov-report/index.html",
     "coverage:clean": "rm -rf coverage",
     "infra:setup": "./scripts/test-infrastructure-setup.sh start",
