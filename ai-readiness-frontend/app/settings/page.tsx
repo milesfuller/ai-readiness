@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/u
 import { Bell, Lock, Palette, Globe, User } from 'lucide-react'
 
 export default async function SettingsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {

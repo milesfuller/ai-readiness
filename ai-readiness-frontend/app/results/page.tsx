@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Progress } from '@/co
 import { BarChart3, TrendingUp, Award, Download, Calendar } from 'lucide-react'
 
 export default async function ResultsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {

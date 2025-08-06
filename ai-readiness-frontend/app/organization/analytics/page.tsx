@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Progress } from '@/components
 import { BarChart3, TrendingUp, Users, Brain, Target, Activity } from 'lucide-react'
 
 export default async function OrganizationAnalyticsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {

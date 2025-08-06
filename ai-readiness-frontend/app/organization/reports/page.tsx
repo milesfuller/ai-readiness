@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/compo
 import { FileText, Download, Calendar, Share2, Filter, Eye } from 'lucide-react'
 
 export default async function OrganizationReportsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {

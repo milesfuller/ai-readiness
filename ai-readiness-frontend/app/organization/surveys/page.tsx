@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/compo
 import { ClipboardList, Users, Calendar, TrendingUp, Download } from 'lucide-react'
 
 export default async function TeamSurveysPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
