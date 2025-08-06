@@ -3,6 +3,12 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { 
   Home,
   ClipboardList,
@@ -169,16 +175,14 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       const hasChildren = item.children && item.children.length > 0
       const Icon = item.icon
 
-      return (
-        <div key={item.label}>
-          <Button
+      const buttonContent = (
+        <Button
             variant={isActive ? "secondary" : "ghost"}
             className={cn(
               "w-full justify-start font-normal transition-all duration-200",
-              level > 0 && "pl-8 text-sm",
+              level > 0 && !isCollapsed && "pl-8 text-sm",
               isActive && "bg-teal-500/10 text-teal-400 border-l-2 border-teal-500",
-              !isCollapsed && "h-10",
-              isCollapsed && "h-12 w-12 p-0 justify-center"
+              !isCollapsed ? "h-10" : "h-12 p-2 justify-center"
             )}
             onClick={() => {
               if (hasChildren) {
@@ -190,7 +194,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           >
             {Icon && (
               <Icon className={cn(
-                "h-4 w-4",
+                "h-4 w-4 flex-shrink-0",
                 !isCollapsed && "mr-2",
                 isActive && "text-teal-400"
               )} />
@@ -209,6 +213,24 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               </>
             )}
           </Button>
+      )
+
+      return (
+        <div key={item.label}>
+          {isCollapsed && !hasChildren ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {buttonContent}
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{item.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            buttonContent
+          )}
 
           {/* Render children */}
           {hasChildren && isExpanded && !isCollapsed && (
@@ -240,7 +262,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
             variant="ghost"
             className={cn(
               "w-full justify-start font-normal",
-              isCollapsed && "h-12 w-12 p-0 justify-center"
+              isCollapsed ? "h-12 p-2 justify-center" : "h-10"
             )}
             onClick={() => onItemClick?.('/settings')}
           >

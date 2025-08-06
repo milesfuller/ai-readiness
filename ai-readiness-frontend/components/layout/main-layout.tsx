@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Header } from "./header"
 import { Sidebar } from "./sidebar"
@@ -20,9 +21,10 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
 
     const userRole: UserRole = user?.role || 'user'
 
+    const router = useRouter()
+    
     const handleNavigate = (href: string) => {
-      // In a real app, you&apos;d use your router here
-      console.log('Navigate to:', href)
+      router.push(href)
       setMobileMenuOpen(false)
     }
 
@@ -98,7 +100,7 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
         {/* Sidebar Toggle Button for Desktop */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="hidden md:flex fixed left-4 bottom-4 z-40 w-[44px] h-[44px] rounded-full bg-teal-500 hover:bg-teal-600 text-white items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="hidden md:flex fixed left-4 bottom-4 z-40 w-[44px] h-[44px] rounded-full bg-teal-500 hover:bg-teal-600 text-white items-center justify-center shadow-lg hover:shadow-xl transition-colors duration-200"
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg 
