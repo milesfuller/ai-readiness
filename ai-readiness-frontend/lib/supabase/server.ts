@@ -9,11 +9,23 @@ import { createServerClient as createSupabaseServerClient, type CookieOptions } 
 import { cookies } from 'next/headers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+// Rate limiting for server-side client creation
+let lastServerCreationTime = 0
+const MIN_SERVER_CREATION_INTERVAL = 100 // 100ms between server client creations
+
 /**
  * Create a server-side Supabase client with cookie management
  * This function consolidates the previous server-client.ts functionality
  */
 export async function createClient(): Promise<SupabaseClient> {
+  // Simple rate limiting to prevent too many simultaneous connections
+  const now = Date.now()
+  const timeSinceLastCreation = now - lastServerCreationTime
+  if (timeSinceLastCreation < MIN_SERVER_CREATION_INTERVAL) {
+    // Add a small delay to prevent rate limiting
+    await new Promise(resolve => setTimeout(resolve, MIN_SERVER_CREATION_INTERVAL - timeSinceLastCreation))
+  }
+  lastServerCreationTime = Date.now()
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 

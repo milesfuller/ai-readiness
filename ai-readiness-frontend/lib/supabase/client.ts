@@ -7,9 +7,12 @@
 
 import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { globalRateLimiter } from '@/lib/utils/rate-limiter'
 
 // Simple in-memory client cache to prevent multiple instances
 let clientInstance: SupabaseClient | null = null
+let lastCreationTime = 0
+const MIN_CREATION_INTERVAL = 1000 // Minimum 1 second between client creations
 
 /**
  * Create a browser-side Supabase client with cookie-based session management
@@ -20,6 +23,22 @@ export function createClient(): SupabaseClient {
   if (clientInstance) {
     return clientInstance
   }
+
+  // Rate limit client creation to prevent too many instances
+  const now = Date.now()
+  if (now - lastCreationTime < MIN_CREATION_INTERVAL) {
+    // If we're trying to create too quickly, wait a bit
+    const waitTime = MIN_CREATION_INTERVAL - (now - lastCreationTime)
+    console.warn(`Rate limiting Supabase client creation. Waiting ${waitTime}ms`)
+    
+    // Return a placeholder that will throw if used before ready
+    if (!clientInstance) {
+      throw new Error('Supabase client is being rate limited. Please try again.')
+    }
+    return clientInstance
+  }
+
+  lastCreationTime = now
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
