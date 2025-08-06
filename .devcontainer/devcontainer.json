@@ -1,6 +1,48 @@
 {
-  "name": "AI Readiness - Minimal Recovery",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
-  "postCreateCommand": "echo 'Minimal container started successfully'",
-  "forwardPorts": [3000]
+  "name": "AI Readiness - Complete",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "forwardPorts": [3000, 5432],
+  "postCreateCommand": "echo '✅ Container ready with Playwright browsers pre-installed! Run: npx playwright --version'",
+  "postStartCommand": "npx playwright --version && echo 'Browsers available:' && npx playwright list",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "runArgs": ["--init", "--privileged"],
+  "remoteUser": "node",
+  "remoteEnv": {
+    "DOCKER_BUILDKIT": "1",
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "PLAYWRIGHT_BROWSERS_PATH": "/home/node/.cache/ms-playwright"
+  }
 }

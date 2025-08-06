@@ -1,6 +1,0 @@
-{
-  "name": "AI Readiness - Minimal Recovery",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
-  "postCreateCommand": "echo 'Minimal container started successfully'",
-  "forwardPorts": [3000]
-}

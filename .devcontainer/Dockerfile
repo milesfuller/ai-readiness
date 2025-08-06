@@ -1,14 +1,21 @@
-# Use the official Node.js devcontainer image
+# Start from the TypeScript Node devcontainer base image
 FROM mcr.microsoft.com/devcontainers/typescript-node:20-bullseye
 
-# Install system dependencies required by Playwright
-RUN apt-get update && apt-get install -y \
-    # Dependencies for Chromium
+# Switch to root for system installations
+USER root
+
+# Install PostgreSQL client and other system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    postgresql-client \
+    # Playwright system dependencies
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
     libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
     libatspi2.0-0 \
     libx11-6 \
     libxcomposite1 \
@@ -19,54 +26,46 @@ RUN apt-get update && apt-get install -y \
     libgbm1 \
     libxcb1 \
     libxkbcommon0 \
-    libgtk-3-0 \
     libpango-1.0-0 \
     libcairo2 \
     libasound2 \
-    # Dependencies for Firefox
-    libxtst6 \
+    libatspi2.0-0 \
     libgtk-3-0 \
-    libgdk-pixbuf2.0-0 \
-    # Dependencies for WebKit
-    libwoff1 \
-    libopus0 \
-    libwebp6 \
-    libwebpdemux2 \
-    libgudev-1.0-0 \
-    libsecret-1-0 \
-    libhyphen0 \
-    libgdk-pixbuf2.0-0 \
-    libegl1 \
-    libnotify4 \
-    libxslt1.1 \
-    libevent-2.1-7 \
-    libgles2 \
-    # Media codecs
-    libvpx6 \
+    libgbm-dev \
     # Additional useful tools
-    postgresql-client \
     curl \
     wget \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install latest npm and pnpm globally
-RUN npm install -g npm@latest pnpm@latest
-
-# Set environment variables for better Playwright performance
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
-ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/pw-browsers
-
-# Create browser directory with proper permissions
-RUN mkdir -p /home/node/pw-browsers && chown -R node:node /home/node/pw-browsers
-
-# Switch to node user
+# Switch to node user for npm operations
 USER node
 
-# Pre-install Playwright browsers to speed up first run
-RUN npm init -y && \
-    npm install @playwright/test@^1.54.2 && \
-    npx playwright install chromium firefox webkit && \
-    rm -rf node_modules package*.json
+# Set working directory
+WORKDIR /tmp/playwright-setup
 
-# Switch back to root for any additional setup
-USER root
+# Install Playwright and browsers at build time
+# We create a temporary package.json just for Playwright installation
+RUN echo '{"name":"playwright-setup","version":"1.0.0"}' > package.json && \
+    npm install playwright@latest && \
+    npx playwright install chromium firefox webkit && \
+    npx playwright install-deps && \
+    # Clean up
+    cd / && \
+    rm -rf /tmp/playwright-setup
+
+# Set environment variables
+ENV DOCKER_BUILDKIT=1 \
+    NODE_OPTIONS=--max-old-space-size=4096 \
+    PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
+
+# Ensure the browsers are accessible
+RUN npx playwright --version && \
+    echo "Playwright browsers installed at: $PLAYWRIGHT_BROWSERS_PATH" && \
+    ls -la $PLAYWRIGHT_BROWSERS_PATH/
+
+# Switch back to working directory
+WORKDIR /workspaces
+
+# Final message
+RUN echo "Container build complete with Playwright browsers pre-installed"
