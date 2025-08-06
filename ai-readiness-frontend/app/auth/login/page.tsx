@@ -55,13 +55,8 @@ export default function LoginPage({
         setShowSuccess(true)
         setShowHearts(true)
         
-        // Wait a moment for the session to be fully established
-        // This ensures cookies are properly set before navigation
-        setTimeout(() => {
-          // Force a page reload to the redirect URL
-          // This ensures the middleware recognizes the new session
-          window.location.replace(redirectTo)
-        }, 1000) // Give time for session to propagate
+        // Immediately redirect - cookies are now properly set via SSR client
+        window.location.href = redirectTo
       }
     } catch (err: any) {
       // eslint-disable-next-line no-console
