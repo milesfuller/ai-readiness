@@ -1,6 +1,7 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createServerClient as createSSRServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-export function createClient() {
+export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -8,12 +9,25 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables')
   }
 
+  const cookieStore = await cookies()
+
   // Detect test environment
   const isTestEnv = process.env.NODE_ENV === 'test' || 
                    process.env.ENVIRONMENT === 'test' || 
                    supabaseUrl.includes('localhost:54321')
 
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+  return createSSRServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value
+      },
+      set(name: string, value: string, options?: any) {
+        cookieStore.set(name, value, options)
+      },
+      remove(name: string, options?: any) {
+        cookieStore.delete(name)
+      }
+    },
     auth: {
       autoRefreshToken: false,
       persistSession: isTestEnv, // Enable persistence in test mode for better session handling
