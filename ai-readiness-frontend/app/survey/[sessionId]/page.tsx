@@ -299,11 +299,19 @@ export default function SurveyPage({ params }: Props) {
 
 
   const completeSurvey = useCallback(async () => {
-    if (!resolvedParams) return
+    console.log('completeSurvey called', { resolvedParams, session })
+    
+    if (!resolvedParams) {
+      console.log('No resolved params, returning')
+      return
+    }
     
     try {
+      console.log('Starting survey completion...')
+      
       // Final save before completion
       await saveProgress()
+      console.log('Progress saved')
       
       // Update session status
       if (session) {
@@ -313,9 +321,11 @@ export default function SurveyPage({ params }: Props) {
           lastUpdated: new Date()
         }
         setSession(completedSession)
+        console.log('Session updated to completed')
       }
       
       // Navigate to completion page
+      console.log('Navigating to completion page...')
       router.push(`/survey/${resolvedParams.sessionId}/complete`)
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -445,7 +455,13 @@ export default function SurveyPage({ params }: Props) {
           inputMethod={inputMethod}
           onAnswerChange={updateAnswer}
           onInputMethodChange={setInputMethod}
-          onNext={isLastQuestion() ? completeSurvey : goToNextQuestion}
+          onNext={isLastQuestion() ? (() => {
+            console.log('Complete Survey button clicked - calling completeSurvey')
+            completeSurvey()
+          }) : (() => {
+            console.log('Next Question button clicked - calling goToNextQuestion')
+            goToNextQuestion()
+          })}
           onPrevious={goToPrevQuestion}
           isFirst={!canGoToPrevious()}
           isLast={isLastQuestion()}
