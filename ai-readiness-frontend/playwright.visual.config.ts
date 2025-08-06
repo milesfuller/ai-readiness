@@ -12,9 +12,6 @@ export default defineConfig({
   
   // Timeout settings optimized for visual testing
   timeout: 120000, // 2 minutes per test (visual tests can be slower)
-  expect: {
-    timeout: 30000, // 30 seconds for assertions (screenshots can take time)
-  },
 
   // Disable parallel execution for visual tests to ensure consistency
   fullyParallel: false,
@@ -131,8 +128,9 @@ export default defineConfig({
   // Output directory for test results
   outputDir: 'test-results/visual',
   
-  // Screenshot comparison settings
+  // Screenshot comparison settings and assertion timeout
   expect: {
+    timeout: 30000, // 30 seconds for assertions (screenshots can take time)
     // Visual comparison threshold (0 = exact match, 1 = completely different)
     toHaveScreenshot: { 
       threshold: 0.2,
@@ -140,8 +138,7 @@ export default defineConfig({
       maxDiffPixels: 1000,
       // Animation handling
       animations: 'disabled'
-    },
-    timeout: 30000
+    }
   },
 
   // Web server configuration for testing
