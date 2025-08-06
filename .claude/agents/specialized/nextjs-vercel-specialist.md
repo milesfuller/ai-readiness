@@ -135,6 +135,82 @@ console.log(`Rate limited. Waiting ${retryAfter} seconds...`)
 2. Batch multiple changes before deploying
 3. Use GitHub integration for automatic deployments
 4. Configure deployment protection rules
+5. Implement client creation rate limiting (see below)
+```
+
+#### Client Creation Rate Limiting Pattern
+
+**CRITICAL: Prevent rate limits from excessive client creation during build:**
+
+```typescript
+// lib/utils/rate-limiter.ts
+class RateLimiter {
+  private requests: number[] = []
+  private config: { maxRequests: number; windowMs: number }
+
+  constructor(config = { maxRequests: 5, windowMs: 10000 }) {
+    this.config = config
+  }
+
+  async checkLimit(): Promise<{ allowed: boolean; retryAfter?: number }> {
+    const now = Date.now()
+    this.requests = this.requests.filter(time => now - time < this.config.windowMs)
+    
+    if (this.requests.length >= this.config.maxRequests) {
+      const oldestRequest = this.requests[0]
+      const retryAfter = Math.ceil((oldestRequest + this.config.windowMs - now) / 1000)
+      return { allowed: false, retryAfter }
+    }
+    
+    this.requests.push(now)
+    return { allowed: true }
+  }
+}
+
+// lib/supabase/client.ts - Browser client with singleton + rate limiting
+let clientInstance: SupabaseClient | null = null
+let lastCreationTime = 0
+const MIN_CREATION_INTERVAL = 1000 // 1 second between client creations
+
+export function createClient(): SupabaseClient {
+  // Return existing instance (singleton pattern)
+  if (clientInstance) {
+    return clientInstance
+  }
+
+  // Rate limit client creation
+  const now = Date.now()
+  if (now - lastCreationTime < MIN_CREATION_INTERVAL) {
+    const waitTime = MIN_CREATION_INTERVAL - (now - lastCreationTime)
+    console.warn(`Rate limiting Supabase client creation. Waiting ${waitTime}ms`)
+    
+    if (!clientInstance) {
+      throw new Error('Supabase client is being rate limited. Please try again.')
+    }
+    return clientInstance
+  }
+
+  lastCreationTime = now
+  // ... create client
+  clientInstance = createSupabaseBrowserClient(url, key, options)
+  return clientInstance
+}
+
+// lib/supabase/server.ts - Server client with delay
+let lastServerCreationTime = 0
+const MIN_SERVER_CREATION_INTERVAL = 100 // 100ms between server clients
+
+export async function createClient(): Promise<SupabaseClient> {
+  const now = Date.now()
+  const timeSinceLastCreation = now - lastServerCreationTime
+  if (timeSinceLastCreation < MIN_SERVER_CREATION_INTERVAL) {
+    await new Promise(resolve => 
+      setTimeout(resolve, MIN_SERVER_CREATION_INTERVAL - timeSinceLastCreation)
+    )
+  }
+  lastServerCreationTime = Date.now()
+  // ... create client
+}
 ```
 
 ### 6. Vercel Deployment Checklist
@@ -175,6 +251,41 @@ npm run build
 
 #### Error: "Hydration mismatch"
 **Solution:** Ensure server and client render identical initial HTML
+
+#### Error: "No overload matches this call" (Vitest/Vite plugins)
+**Solution:** Exclude test configs from TypeScript build:
+```json
+// tsconfig.json
+{
+  "exclude": [
+    "node_modules",
+    "vitest.config.ts",
+    "vitest.workspace.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "test/**/*"
+  ]
+}
+```
+
+#### Error: Jest/Next.js 15 incompatibility
+**Solution:** Migrate to Vitest for better Next.js 15 support:
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: ['./test/setup.ts']
+  }
+})
+```
 
 ### 8. Best Practices Enforcement
 
@@ -352,6 +463,102 @@ npm run type-check
 npm run lint
 ```
 
+## Animation Best Practices
+
+### Avoiding Continuous Animation Triggers
+
+**Problem:** CSS animations with `animate-in` classes can continuously retrigger on React re-renders.
+
+**Solution:** Use simple CSS animations that only trigger once:
+
+```css
+/* ❌ WRONG: Can retrigger on re-renders */
+.animate-in.slide-in-from-left {
+  animation: slideInFromLeft 0.7s;
+}
+
+/* ✅ CORRECT: Triggers once with proper keyframes */
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.7s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation delays */
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+```
+
+## Singleton Pattern for Database Clients
+
+### Proper Singleton Implementation
+
+**CRITICAL: Always use singleton pattern for database clients to prevent connection exhaustion:**
+
+```typescript
+// ✅ CORRECT: Singleton pattern with rate limiting
+let clientInstance: SupabaseClient | null = null
+
+export function createClient(): SupabaseClient {
+  // Return existing instance
+  if (clientInstance) {
+    return clientInstance
+  }
+  
+  // Create and store new instance
+  clientInstance = createSupabaseBrowserClient(url, key, {
+    // ... options
+  })
+  
+  return clientInstance
+}
+
+// ❌ WRONG: Creating new client on every call
+export function createClient(): SupabaseClient {
+  return createSupabaseBrowserClient(url, key, {
+    // This creates a new connection every time!
+  })
+}
+```
+
+### Mock Data vs Real Data Pattern
+
+```typescript
+// ✅ CORRECT: Use real data with fallback to mock
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/auth/login')
+  }
+  
+  // Use real user data, fallback to mock for missing fields
+  const userData = {
+    id: user.id,
+    email: user.email || mockUser.email,
+    profile: {
+      ...mockUser.profile,
+      firstName: user.user_metadata?.firstName || mockUser.profile.firstName,
+      lastName: user.user_metadata?.lastName || mockUser.profile.lastName,
+    }
+  }
+  
+  return <DashboardClient user={userData} />
+}
+```
+
 ## Knowledge Updates
 
 This agent definition should be updated when:
@@ -359,6 +566,7 @@ This agent definition should be updated when:
 - New Vercel features are added
 - Common deployment issues are discovered
 - Best practices evolve
+- New testing frameworks emerge (e.g., Vitest for Next.js 15+)
 
 ## Rate Limit Recovery Strategy
 
