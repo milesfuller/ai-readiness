@@ -1,5 +1,8 @@
+'use client'
+
 // JTBD Force Visualization Component for Analysis Results
-'use client';
+
+'use client'
 
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -366,8 +366,9 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
       await GET(request)
 
       const redirectCall = mockNextResponseRedirect.mock.calls[0][0]
-      expect(redirectCall.protocol).toBe('https:')
-      expect(redirectCall.hostname).toBe('secure.example.com')
+      const redirectUrl = typeof redirectCall === 'string' ? new URL(redirectCall) : redirectCall
+      expect(redirectUrl.protocol).toBe('https:')
+      expect(redirectUrl.hostname).toBe('secure.example.com')
     })
   })
 

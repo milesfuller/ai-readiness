@@ -1,4 +1,7 @@
+'use client'
+
 // LLM Analysis Dashboard for Admin Interface
+
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';

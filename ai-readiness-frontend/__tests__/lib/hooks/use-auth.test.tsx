@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -657,7 +659,7 @@ describe('useAuth Hook', () => {
     it('should store session in test environment sessionStorage', async () => {
       // Mock test environment
       const originalNodeEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'test'
+      (process.env as any).NODE_ENV = 'test'
       
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       const mockUser = createMockSupabaseUser()
@@ -710,7 +712,7 @@ describe('useAuth Hook', () => {
     it('should handle sessionStorage errors gracefully', async () => {
       // Mock test environment
       const originalNodeEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'test'
+      (process.env as any).NODE_ENV = 'test'
       
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       const mockUser = createMockSupabaseUser()
@@ -1342,7 +1344,7 @@ describe('useAuth Hook', () => {
   describe('Environment Detection Tests', () => {
     it('should detect test environment by NODE_ENV', async () => {
       const originalNodeEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'test'
+      (process.env as any).NODE_ENV = 'test'
       
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       const mockUser = createMockSupabaseUser()
