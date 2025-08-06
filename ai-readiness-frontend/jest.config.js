@@ -1,9 +1,7 @@
 // Jest configuration for the AI Readiness Assessment
 const customJestConfig = {
   setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js',
-    '<rootDir>/types/jest-dom.d.ts',
-    '<rootDir>/__tests__/types/global.d.ts'
+    '<rootDir>/jest.setup.js'
   ],
   moduleNameMapper: {
     // Handle module aliases
@@ -14,8 +12,8 @@ const customJestConfig = {
     '^@/app/(.*)$': '<rootDir>/app/$1',
     '^@/e2e/(.*)$': '<rootDir>/e2e/$1',
     '^@/(.*)$': '<rootDir>/$1',
-    // Test type definitions
-    '^@/tests/types/(.*)$': '<rootDir>/__tests__/types/$1',
+    // Test type definitions (moved to cleanup)
+    // '^@/tests/types/(.*)$': '<rootDir>/__tests__/types/$1',
     // Mock external modules that cause issues
     '^lodash$': 'lodash',
     '^recharts$': 'recharts',

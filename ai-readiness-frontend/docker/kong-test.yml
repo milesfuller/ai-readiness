@@ -1,0 +1,243 @@
+# Kong configuration for AI Readiness E2E testing
+# Simplified routing for test environment
+
+_format_version: "2.1"
+
+services:
+  - name: auth-v1-open
+    url: http://test-auth:9999
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:54321
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Language
+            - Content-Language
+            - Content-Type
+            - Authorization
+            - ApiKey
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
+
+  - name: auth-v1-open-confirm
+    url: http://test-auth:9999
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:54321
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Language
+            - Content-Language
+            - Content-Type
+            - Authorization
+            - ApiKey
+          credentials: true
+          max_age: 3600
+
+  - name: auth-v1-open-recover
+    url: http://test-auth:9999
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:54321
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Language
+            - Content-Language
+            - Content-Type
+            - Authorization
+            - ApiKey
+          credentials: true
+          max_age: 3600
+
+  - name: auth-v1-open-verify
+    url: http://test-auth:9999
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:54321
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Language
+            - Content-Language
+            - Content-Type
+            - Authorization
+            - ApiKey
+          credentials: true
+          max_age: 3600
+
+  - name: auth-v1
+    url: http://test-auth:9999
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:54321
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Language
+            - Content-Language
+            - Content-Type
+            - Authorization
+            - ApiKey
+          credentials: true
+          max_age: 3600
+
+  - name: rest-v1
+    url: http://test-rest:3000
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:54321
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Language
+            - Content-Language
+            - Content-Type
+            - Authorization
+            - ApiKey
+            - X-Client-Info
+          credentials: true
+          max_age: 3600
+
+routes:
+  # Auth routes
+  - name: auth-v1-signup
+    service: auth-v1-open
+    strip_path: true
+    paths:
+      - /auth/v1/signup
+
+  - name: auth-v1-login-email
+    service: auth-v1-open
+    strip_path: true
+    paths:
+      - /auth/v1/token
+
+  - name: auth-v1-login-phone
+    service: auth-v1-open
+    strip_path: true
+    paths:
+      - /auth/v1/otp
+
+  - name: auth-v1-user-credentials
+    service: auth-v1
+    strip_path: true
+    paths:
+      - /auth/v1/user
+
+  - name: auth-v1-logout
+    service: auth-v1
+    strip_path: true
+    paths:
+      - /auth/v1/logout
+
+  - name: auth-v1-confirm
+    service: auth-v1-open-confirm
+    strip_path: true
+    paths:
+      - /auth/v1/confirm
+
+  - name: auth-v1-recover
+    service: auth-v1-open-recover
+    strip_path: true
+    paths:
+      - /auth/v1/recover
+
+  - name: auth-v1-verify
+    service: auth-v1-open-verify
+    strip_path: true
+    paths:
+      - /auth/v1/verify
+
+  - name: auth-v1-callback
+    service: auth-v1-open
+    strip_path: true
+    paths:
+      - /auth/v1/callback
+
+  - name: auth-v1-authorize
+    service: auth-v1-open
+    strip_path: true
+    paths:
+      - /auth/v1/authorize
+
+  # REST API routes
+  - name: rest-v1-get
+    service: rest-v1
+    strip_path: true
+    paths:
+      - /rest/v1/
+
+  - name: rest-v1-post
+    service: rest-v1
+    strip_path: true
+    paths:
+      - /rest/v1/
+
+  # Health check route
+  - name: health
+    service: auth-v1-open
+    strip_path: true
+    paths:
+      - /health
+
+consumers: []
+
+plugins: []

@@ -14,7 +14,11 @@ import { WhimsicalButton, SuccessCheckmark, FloatingHearts } from '@/components/
 import { useAuth } from '@/lib/hooks/use-auth'
 import { loginSchema, LoginFormData } from '@/lib/auth/schemas'
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams
+}: {
+  searchParams?: { redirectTo?: string }
+}) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -22,6 +26,7 @@ export default function LoginPage() {
   const [networkError, setNetworkError] = useState(false)
   const { signIn } = useAuth()
   const router = useRouter()
+  const redirectTo = searchParams?.redirectTo || '/dashboard'
 
   const {
     register,

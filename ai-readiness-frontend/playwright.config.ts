@@ -154,8 +154,15 @@ export default defineConfig({
     /* Enhanced startup options */
     env: {
       ...process.env,
-      NODE_ENV: 'test',
+      // Use test environment when running E2E tests
+      NODE_ENV: process.env.NODE_ENV === 'test' ? 'test' : 'development',
       PLAYWRIGHT_TEST: 'true',
+      // Load test environment variables if in test mode
+      ...(process.env.NODE_ENV === 'test' && {
+        NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+        DATABASE_URL: 'postgresql://postgres:test_postgres_password@localhost:54322/ai_readiness_test',
+      }),
       // Reduce server verbosity to prevent log flooding
       NEXT_TELEMETRY_DISABLED: '1',
       // Optimize for testing

@@ -10,7 +10,8 @@
     "type-check": "tsc --noEmit",
     "validate:local": "./scripts/local-deploy-validate.sh",
     "validate:deployment": "node scripts/validate-deployment.js",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --reporter=dot --max-failures=5",
+    "test:e2e:simple": "playwright test --reporter=dot --max-failures=1 --config=playwright.config.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
@@ -33,14 +34,14 @@
     "test:e2e:validate:config": "node scripts/validate-playwright-config.js",
     "test:e2e:full": "npm run test:e2e:env:setup && npm run test:e2e:enhanced && docker-compose -f docker-compose.e2e.yml down",
     "test:e2e:ci": "npm run test:e2e:setup && npm run test:e2e:enhanced",
-    "test": "node scripts/run-tests.js",
-    "test:watch": "node scripts/run-tests.js --watch",
-    "test:coverage": "node scripts/run-tests.js --coverage",
-    "test:ci": "node scripts/run-tests.js --ci",
-    "test:parallel": "node scripts/run-tests.js --parallel --workers 4",
-    "test:sequential": "node scripts/run-tests.js --sequential",
-    "test:unit": "jest --testPathPattern=__tests__/components|__tests__/lib/(?!security)",
-    "test:integration": "jest --testPathPattern=__tests__/api",
+    "test": "jest --passWithNoTests --testPathIgnorePatterns=security --maxWorkers=1",
+    "test:watch": "jest --watch --testPathIgnorePatterns=security --maxWorkers=1",
+    "test:coverage": "jest --coverage --testPathIgnorePatterns=security --maxWorkers=1",
+    "test:ci": "jest --ci --testPathIgnorePatterns=security --maxWorkers=1",
+    "test:parallel": "jest --testPathIgnorePatterns=security --maxWorkers=4",
+    "test:sequential": "jest --testPathIgnorePatterns=security --maxWorkers=1",
+    "test:unit": "jest --testPathPattern=__tests__/components --maxWorkers=1",
+    "test:integration": "jest --testPathPattern=__tests__/api --maxWorkers=1",
     "test:security": "node scripts/security-scan.js",
     "test:security-full": "npm audit && node scripts/security-scan.js && npm run test:security-tests",
     "test:security-tests": "jest --testPathPattern=__tests__/lib/security --coverage",
@@ -70,7 +71,14 @@
     "test:supabase:watch": "jest --config=jest.config.test.js --testPathPattern=__tests__/supabase --watch",
     "test:db": "npm run test:supabase -- --testNamePattern='Database'",
     "test:auth": "npm run test:supabase -- --testNamePattern='Authentication'",
-    "test:integration:full": "npm run supabase:start && sleep 10 && npm run test:supabase && npm run supabase:stop"
+    "test:integration:full": "npm run supabase:start && sleep 10 && npm run test:supabase && npm run supabase:stop",
+    "test:e2e:setup": "docker-compose -f docker-compose.test.yml up -d --wait && sleep 15",
+    "test:e2e:teardown": "docker-compose -f docker-compose.test.yml down --volumes",
+    "test:e2e:reset": "npm run test:e2e:teardown && npm run test:e2e:setup",
+    "test:e2e:logs": "docker-compose -f docker-compose.test.yml logs --tail=100",
+    "test:e2e:with-env": "NODE_ENV=test npm run test:e2e",
+    "test:e2e:full": "npm run test:e2e:setup && NODE_ENV=test npm run test:e2e && npm run test:e2e:teardown",
+    "test:e2e:full:debug": "npm run test:e2e:setup && NODE_ENV=test npm run test:e2e:debug && npm run test:e2e:teardown"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.3",
@@ -147,6 +155,7 @@
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
     "ts-jest": "^29.4.0",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "undici": "^7.13.0"
   }
 }

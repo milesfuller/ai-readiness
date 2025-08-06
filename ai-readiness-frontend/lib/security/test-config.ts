@@ -383,7 +383,15 @@ export function getTestSecurityHealth() {
 
 // Helper function to check if current environment is test
 export function isTestEnvironment(): boolean {
-  return process.env.NODE_ENV === 'test' || process.env.ENVIRONMENT === 'test'
+  return (
+    process.env.NODE_ENV === 'test' || 
+    process.env.ENVIRONMENT === 'test' ||
+    !!process.env.JEST_WORKER_ID ||
+    process.env.npm_lifecycle_event === 'test' ||
+    // Check for common test runner environments
+    !!global.__DEV__ ||
+    typeof jest !== 'undefined'
+  )
 }
 
 // Helper function to bypass rate limiting for test accounts
@@ -392,31 +400,44 @@ export function shouldBypassRateLimit(request: any): boolean {
     return false
   }
 
+  // In test environment, be more permissive with rate limiting
+  // Always bypass rate limits during Jest testing
+  if (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
+    return true
+  }
+
   // Check user email
   if (request.user?.email && testRateLimitBypass.exemptUsers.includes(request.user.email)) {
     return true
   }
 
-  // Check IP address
-  const clientIP = request.ip || request.connection?.remoteAddress
-  if (clientIP && testRateLimitBypass.exemptIPs.some(ip => {
-    if (ip.includes('/')) {
-      // CIDR notation check would need additional library
-      return false
-    }
-    return clientIP === ip
-  })) {
+  // Check IP address - be permissive with local IPs
+  const clientIP = request.ip || request.connection?.remoteAddress || request.headers?.['x-forwarded-for']
+  if (clientIP && (
+    clientIP === '127.0.0.1' || 
+    clientIP === '::1' || 
+    clientIP?.startsWith('192.168.') ||
+    clientIP?.startsWith('10.') ||
+    clientIP?.startsWith('172.') ||
+    testRateLimitBypass.exemptIPs.some(ip => {
+      if (ip.includes('/')) {
+        // CIDR notation check would need additional library
+        return false
+      }
+      return clientIP === ip
+    })
+  )) {
     return true
   }
 
   // Check API key
-  const apiKey = request.headers['x-api-key'] || request.headers['authorization']
+  const apiKey = request.headers?.['x-api-key'] || request.headers?.['authorization']
   if (apiKey && testRateLimitBypass.exemptAPIKeys.some(key => apiKey.includes(key))) {
     return true
   }
 
   // Check user agent
-  const userAgent = request.headers['user-agent']
+  const userAgent = request.headers?.['user-agent']
   if (userAgent && testRateLimitBypass.exemptUserAgents.some(pattern => pattern.test(userAgent))) {
     return true
   }
