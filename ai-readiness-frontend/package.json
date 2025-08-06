@@ -113,7 +113,25 @@
     "test:accessibility:report": "playwright test --config=playwright.visual.config.ts --project=accessibility-chromium --reporter=json > test-results/accessibility-report.json",
     "test:regression": "npm run test:visual && npm run test:accessibility",
     "test:regression:update": "npm run test:visual:update && npm run test:accessibility",
-    "test:animation-removal": "playwright test --config=playwright.visual.config.ts --grep='animation.*removal|wobble|bounce' --project=visual-chromium"
+    "test:animation-removal": "playwright test --config=playwright.visual.config.ts --grep='animation.*removal|wobble|bounce' --project=visual-chromium",
+    "test:comprehensive": "node scripts/run-comprehensive-tests.js",
+    "test:comprehensive:chromium": "npx playwright test --config=playwright.config.comprehensive.ts --project=chromium-desktop",
+    "test:comprehensive:firefox": "npx playwright test --config=playwright.config.comprehensive.ts --project=firefox-desktop",
+    "test:comprehensive:webkit": "npx playwright test --config=playwright.config.comprehensive.ts --project=webkit-desktop",
+    "test:comprehensive:mobile": "npx playwright test --config=playwright.config.comprehensive.ts --project=mobile-chrome --project=mobile-safari",
+    "test:comprehensive:tablet": "npx playwright test --config=playwright.config.comprehensive.ts --project=tablet-chrome --project=tablet-safari",
+    "test:comprehensive:routes": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-route-navigation.spec.ts",
+    "test:comprehensive:auth": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-auth-flows.spec.ts",
+    "test:comprehensive:errors": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-error-scenarios.spec.ts",
+    "test:comprehensive:security": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-rbac-security.spec.ts comprehensive-rate-limiting.spec.ts",
+    "test:comprehensive:api": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-api-interactions.spec.ts",
+    "test:comprehensive:survey": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-survey-flows.spec.ts",
+    "test:comprehensive:dashboard": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-dashboard-analytics.spec.ts",
+    "test:comprehensive:responsive": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-responsive-behavior.spec.ts",
+    "test:comprehensive:cross-browser": "npx playwright test --config=playwright.config.comprehensive.ts comprehensive-cross-browser.spec.ts",
+    "test:comprehensive:report": "npx playwright show-report test-results/comprehensive-report",
+    "test:comprehensive:debug": "npx playwright test --config=playwright.config.comprehensive.ts --debug",
+    "test:comprehensive:ui": "npx playwright test --config=playwright.config.comprehensive.ts --ui"
   },
   "husky": {
     "hooks": {

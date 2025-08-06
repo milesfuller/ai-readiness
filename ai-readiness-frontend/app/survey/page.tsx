@@ -1,5 +1,8 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Button, Card, CardHeader, CardTitle, CardContent, Progress } from '@/components/ui'
 import { Brain, CheckCircle, Clock, Users } from 'lucide-react'
@@ -30,12 +33,27 @@ const mockUser = {
   lastLogin: '2024-08-02T19:00:00Z'
 }
 
-export default async function SurveyPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function SurveyPage() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!user) {
-    redirect('/auth/login')
+  useEffect(() => {
+    const checkUser = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/auth/login')
+      } else {
+        setUser(user)
+      }
+      setLoading(false)
+    }
+    checkUser()
+  }, [router])
+
+  if (loading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -174,7 +192,7 @@ export default async function SurveyPage() {
                 onClick={() => {
                   // Generate unique session ID
                   const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-                  window.location.href = `/survey/${sessionId}`
+                  router.push(`/survey/${sessionId}`)
                 }}
               >
                 Start Assessment

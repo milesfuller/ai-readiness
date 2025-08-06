@@ -82,6 +82,20 @@ function getRateLimitConfig(pathname: string): { name: string; config: RateLimit
     return { name: 'passwordReset', config: rateLimitConfigs.passwordReset }
   }
   
+  // Organization routes - very lenient
+  if (pathname.includes('/organization')) {
+    return {
+      name: 'organization',
+      config: {
+        windowMs: 60 * 1000, // 1 minute
+        maxRequests: 300, // High limit for organization pages
+        message: 'Rate limit exceeded',
+        headers: true,
+        standardHeaders: true
+      }
+    }
+  }
+  
   // Survey routes
   if (pathname.includes('/survey')) {
     return { name: 'survey', config: rateLimitConfigs.survey }
