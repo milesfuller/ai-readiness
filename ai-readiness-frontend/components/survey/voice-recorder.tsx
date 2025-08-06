@@ -158,33 +158,6 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
   }, [isRecording])
 
-  const startVolumeVisualization = useCallback(() => {
-    if (!analyserRef.current) return
-    
-    const bufferLength = analyserRef.current.frequencyBinCount
-    const dataArray = new Uint8Array(bufferLength)
-    
-    volumeIntervalRef.current = setInterval(() => {
-      if (analyserRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArray)
-        
-        // Calculate volume levels for visualization
-        const volumes = []
-        for (let i = 0; i < 12; i++) {
-          const start = Math.floor((i * bufferLength) / 12)
-          const end = Math.floor(((i + 1) * bufferLength) / 12)
-          let sum = 0
-          for (let j = start; j < end; j++) {
-            sum += dataArray[j]
-          }
-          volumes.push((sum / (end - start)) / 255)
-        }
-        
-        setAudioVolume(volumes)
-      }
-    }, 100)
-  }, [])
-
   const playRecording = useCallback(() => {
     if (audioBlob && !isPlaying) {
       const audio = new Audio(URL.createObjectURL(audioBlob))
