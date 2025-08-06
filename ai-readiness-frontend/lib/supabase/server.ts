@@ -1,14 +1,7 @@
 import { createServerClient as createSSRServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { registerClient, getClient } from './singleton'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
-export async function createClient(): Promise<SupabaseClient> {
-  // Check if instance already exists in global registry
-  const existingClient = getClient('server')
-  if (existingClient) {
-    return existingClient
-  }
+export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -23,7 +16,7 @@ export async function createClient(): Promise<SupabaseClient> {
                    process.env.ENVIRONMENT === 'test' || 
                    supabaseUrl.includes('localhost:54321')
 
-  const client = createSSRServerClient(supabaseUrl, supabaseAnonKey, {
+  return createSSRServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
@@ -53,9 +46,6 @@ export async function createClient(): Promise<SupabaseClient> {
       }
     }
   })
-
-  // Register in singleton registry and return
-  return registerClient('server', client)
 }
 
 // Export createServerClient as an alias

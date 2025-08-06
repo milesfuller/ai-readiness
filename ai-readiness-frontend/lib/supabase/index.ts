@@ -58,7 +58,7 @@ export function getSupabaseClientSync(): SupabaseClient {
  */
 export { createClient } from './client'
 export { createBrowserClient } from './client-browser'
-export { createClient as createServerClient } from './server'
+// Server client should be imported directly from './server' to avoid next/headers in client components
 
 /**
  * Export singleton utilities
