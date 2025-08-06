@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
-import { getSupabaseClientSync } from '@/lib/supabase'
+import { createBrowserClient } from '@/lib/supabase/client-browser'
 import { User as AppUser } from '@/lib/types'
 
 interface AuthContextType {
@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
   
   // Use singleton client - will always return the same instance
-  const supabase = getSupabaseClientSync()
+  const supabase = createBrowserClient()
 
   // Convert Supabase User to AppUser
   const mapSupabaseUserToAppUser = useCallback((supabaseUser: User): AppUser => {

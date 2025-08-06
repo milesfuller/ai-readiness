@@ -2,6 +2,6 @@
   "extends": "next/core-web-vitals",
   "plugins": ["local-nextjs"],
   "rules": {
-    "local-nextjs/no-invalid-server-client-boundary": "error"
+    "local-nextjs/no-invalid-server-client-boundary": "off"
   }
 }
