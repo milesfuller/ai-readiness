@@ -41,6 +41,33 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
 
+  // Define startVolumeVisualization before startRecording to avoid scope issues
+  const startVolumeVisualization = useCallback(() => {
+    if (!analyserRef.current) return
+    
+    const bufferLength = analyserRef.current.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+    
+    volumeIntervalRef.current = setInterval(() => {
+      if (analyserRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArray)
+        
+        // Calculate volume levels for visualization
+        const volumes = []
+        for (let i = 0; i < 12; i++) {
+          const start = Math.floor((i * bufferLength) / 12)
+          const end = Math.floor(((i + 1) * bufferLength) / 12)
+          let sum = 0
+          for (let j = start; j < end; j++) {
+            sum += dataArray[j]
+          }
+          volumes.push(Math.min(100, (sum / (end - start)) * 0.8))
+        }
+        setAudioVolume(volumes)
+      }
+    }, 100)
+  }, [])
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
