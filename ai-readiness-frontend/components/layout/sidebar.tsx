@@ -3,12 +3,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { 
   Home,
   ClipboardList,
@@ -175,8 +169,9 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       const hasChildren = item.children && item.children.length > 0
       const Icon = item.icon
 
-      const buttonContent = (
-        <Button
+      return (
+        <div key={item.label}>
+          <Button
             variant={isActive ? "secondary" : "ghost"}
             className={cn(
               "w-full justify-start font-normal transition-all duration-200",
@@ -213,24 +208,6 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               </>
             )}
           </Button>
-      )
-
-      return (
-        <div key={item.label}>
-          {isCollapsed && !hasChildren ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {buttonContent}
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>{item.label}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
-            buttonContent
-          )}
 
           {/* Render children */}
           {hasChildren && isExpanded && !isCollapsed && (
