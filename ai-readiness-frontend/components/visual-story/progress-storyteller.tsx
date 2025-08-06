@@ -306,7 +306,7 @@ export function ProgressStoryteller({
           >
             <Card className="max-w-3xl mx-auto p-6 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
               <p className="text-muted-foreground italic leading-relaxed">
-                "{chapter.narrative}"
+                &quot;{chapter.narrative}&quot;
               </p>
             </Card>
           </motion.div>

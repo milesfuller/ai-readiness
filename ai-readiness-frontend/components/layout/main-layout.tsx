@@ -19,7 +19,7 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
     const userRole: UserRole = user?.role || 'user'
 
     const handleNavigate = (href: string) => {
-      // In a real app, you'd use your router here
+      // In a real app, you&apos;d use your router here
       console.log('Navigate to:', href)
       setMobileMenuOpen(false)
     }

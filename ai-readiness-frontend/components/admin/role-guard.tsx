@@ -49,7 +49,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
             <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
             <CardTitle className="text-white">Access Denied</CardTitle>
             <CardDescription>
-              You don't have permission to access this area. Required role: {allowedRoles.join(', ')}
+              You don&apos;t have permission to access this area. Required role: {allowedRoles.join(', ')}
             </CardDescription>
           </CardHeader>
           <CardContent>

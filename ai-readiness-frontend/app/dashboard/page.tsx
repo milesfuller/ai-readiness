@@ -51,7 +51,7 @@ export default async function DashboardPage() {
             <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
           </div>
           <p className="text-muted-foreground text-lg animate-in slide-in-from-top duration-1000 delay-200">
-            Welcome back, {mockUser.profile?.firstName}! Here's your organization's AI readiness overview.
+            Welcome back, {mockUser.profile?.firstName}! Here&apos;s your organization&apos;s AI readiness overview.
           </p>
         </div>
 

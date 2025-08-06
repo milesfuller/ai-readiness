@@ -106,7 +106,7 @@ function ResetPasswordContent() {
             <Mail className="h-8 w-8 text-teal-400" />
           </div>
           <p className="text-muted-foreground">
-            We've sent password reset instructions to your email address. Please check your inbox and follow the link to reset your password.
+            We&apos;ve sent password reset instructions to your email address. Please check your inbox and follow the link to reset your password.
           </p>
           <div className="flex flex-col gap-2">
             <Button

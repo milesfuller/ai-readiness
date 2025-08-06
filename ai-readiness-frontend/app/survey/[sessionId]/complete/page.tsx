@@ -95,14 +95,28 @@ const mockAnalysisResults = {
   confidenceLevel: 85
 }
 
-export default async function SurveyCompletePage({ params }: Props) {
-  const resolvedParams = await params
+export default function SurveyCompletePage({ params }: Props) {
   const router = useRouter()
+  const [resolvedParams, setResolvedParams] = useState<{ sessionId: string } | null>(null)
+
+  useEffect(() => {
+    Promise.resolve(params).then(setResolvedParams)
+  }, [params])
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [showConfetti, setShowConfetti] = useState(true)
   const [showHearts, setShowHearts] = useState(true)
   const [showTypewriter, setShowTypewriter] = useState(false)
+
+  useEffect(() => {
+    // Resolve params first
+    const resolveParams = async () => {
+      const resolved = await params
+      setResolvedParams(resolved)
+    }
+    
+    resolveParams()
+  }, [params])
 
   useEffect(() => {
     // Initial celebration
@@ -158,6 +172,10 @@ export default async function SurveyCompletePage({ params }: Props) {
   const scheduleFollowUp = () => {
     // Mock scheduling functionality
     console.log('Scheduling follow-up...')
+  }
+
+  if (!resolvedParams) {
+    return null // or loading spinner
   }
 
   return (

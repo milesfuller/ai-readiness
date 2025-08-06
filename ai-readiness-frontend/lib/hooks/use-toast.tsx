@@ -239,7 +239,7 @@ const toastLoading = (
     title,
     description,
     variant: 'default',
-    duration: 0, // Don't auto-dismiss loading toasts
+    duration: 0, // {"Don't"} auto-dismiss loading toasts
   })
 }
 

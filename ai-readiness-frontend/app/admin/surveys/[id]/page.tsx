@@ -78,7 +78,7 @@ export default function SurveyDetailPage() {
             {
               id: 'q4a',
               type: 'text',
-              question: 'What\'s one part of your work you\'d love to make easier, faster, or more impactful — even if you\'re not sure how AI could help yet?',
+              question: 'What&apos;s one part of your work you&apos;d love to make easier, faster, or more impactful — even if you&apos;re not sure how AI could help yet?',
               required: true,
               category: 'Force 2: Pull of the New',
               order: 4
@@ -254,7 +254,7 @@ export default function SurveyDetailPage() {
         <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-white">Survey Not Found</CardTitle>
-            <CardDescription>The survey you're looking for doesn't exist or you don't have permission to view it.</CardDescription>
+            <CardDescription>The survey you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.</CardDescription>
           </CardHeader>
         </Card>
       </div>

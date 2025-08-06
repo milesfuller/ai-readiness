@@ -102,7 +102,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     } catch (error) {
       console.error('Failed to start recording:', error)
     }
-  }, [recordingDuration, onTranscriptionUpdate])
+  }, [recordingDuration, onTranscriptionUpdate, startVolumeVisualization])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {

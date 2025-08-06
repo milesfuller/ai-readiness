@@ -1,12 +1,3 @@
 {
-  "extends": "next/core-web-vitals",
-  "rules": {
-    "no-unused-vars": "off",
-    "no-console": "off",
-    "react/no-unescaped-entities": "off",
-    "@next/next/no-async-client-component": "off",
-    "react-hooks/rules-of-hooks": "off",
-    "react-hooks/exhaustive-deps": "off",
-    "import/no-anonymous-default-export": "off"
-  }
+  "extends": "next/core-web-vitals"
 }

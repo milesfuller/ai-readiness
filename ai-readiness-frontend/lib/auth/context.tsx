@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { createBrowserClient } from '@/lib/supabase/client-browser'
 import { User as AppUser } from '@/lib/types'
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [supabase] = useState(() => createBrowserClient())
 
   // Convert Supabase User to AppUser
-  const mapSupabaseUserToAppUser = (supabaseUser: User): AppUser => {
+  const mapSupabaseUserToAppUser = useCallback((supabaseUser: User): AppUser => {
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       updatedAt: supabaseUser.updated_at || supabaseUser.created_at,
       lastLogin: supabaseUser.last_sign_in_at || undefined
     }
-  }
+  }, [])
 
   useEffect(() => {
     // Get initial session
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     )
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase.auth, mapSupabaseUserToAppUser])
 
   const signIn = async (email: string, password: string) => {
     try {

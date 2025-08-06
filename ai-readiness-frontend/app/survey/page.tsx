@@ -65,7 +65,7 @@ export default async function SurveyPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">AI Readiness Survey</h3>
                   <p className="text-muted-foreground">
-                    This comprehensive assessment evaluates your organization's readiness for AI adoption 
+                    This comprehensive assessment evaluates your organization&apos;s readiness for AI adoption 
                     across multiple dimensions including technology infrastructure, data maturity, 
                     organizational culture, and strategic alignment.
                   </p>
@@ -200,7 +200,7 @@ export default async function SurveyPage() {
                 <h4 className="font-semibold mb-2">During the Assessment</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• Answer questions honestly based on your current state</li>
-                  <li>• Use "Not Applicable" if a question doesn't apply to your organization</li>
+                  <li>• Use &quot;Not Applicable&quot; if a question doesn&apos;t apply to your organization</li>
                   <li>• Save your progress at any time and return later</li>
                   <li>• Review and modify answers before final submission</li>
                 </ul>

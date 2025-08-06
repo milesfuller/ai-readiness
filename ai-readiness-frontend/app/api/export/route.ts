@@ -200,6 +200,7 @@ export async function POST(request: NextRequest) {
       })
 
     } catch (exportError) {
+      // eslint-disable-next-line no-console
       console.error('Export generation failed:', exportError)
       
       // Log failed export attempt
@@ -224,6 +225,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Export API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -285,6 +287,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (statsError) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch export stats:', statsError)
     }
 
@@ -296,6 +299,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Export info API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },

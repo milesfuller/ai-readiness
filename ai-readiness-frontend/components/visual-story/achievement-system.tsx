@@ -74,7 +74,7 @@ const achievements: Achievement[] = [
     maxProgress: 1,
     unlockedAt: new Date(),
     requirements: ['Complete at least one assessment'],
-    story: 'Every journey begins with a single step. You\'ve taken yours into the world of AI readiness.',
+    story: 'Every journey begins with a single step. You&apos;ve taken yours into the world of AI readiness.',
     nextLevel: 'assessment-streak'
   },
   {
@@ -120,7 +120,7 @@ const achievements: Achievement[] = [
     maxProgress: 10,
     unlockedAt: new Date(Date.now() - 86400000), // Yesterday
     requirements: ['Invite at least 10 team members to the platform'],
-    story: 'Great leaders know that transformation is a team effort. You\'re building the foundation for collective success.',
+    story: 'Great leaders know that transformation is a team effort. You&apos;re building the foundation for collective success.',
     nextLevel: 'community-leader'
   },
   {
@@ -135,7 +135,7 @@ const achievements: Achievement[] = [
     progress: 0,
     maxProgress: 1,
     requirements: ['Create and launch your first AI pilot project'],
-    story: 'Innovation requires courage to try something new. You\'re ready to turn ideas into reality.',
+    story: 'Innovation requires courage to try something new. You&apos;re ready to turn ideas into reality.',
     nextLevel: 'transformation-leader'
   },
   {
@@ -150,7 +150,7 @@ const achievements: Achievement[] = [
     progress: 76,
     maxProgress: 95,
     requirements: ['Achieve an overall AI readiness score of 95% or higher'],
-    story: 'You\'ve mastered the art and science of AI readiness. Others look to you for guidance.',
+    story: 'You&apos;ve mastered the art and science of AI readiness. Others look to you for guidance.',
     nextLevel: 'ai-visionary'
   },
   {
@@ -165,7 +165,7 @@ const achievements: Achievement[] = [
     progress: 0,
     maxProgress: 1,
     requirements: ['Recognized as industry leader in AI adoption', 'Mentor other organizations'],
-    story: 'You\'ve transcended being an adopter to become a leader. Your vision shapes the future of AI.',
+    story: 'You&apos;ve transcended being an adopter to become a leader. Your vision shapes the future of AI.',
   }
 ]
 

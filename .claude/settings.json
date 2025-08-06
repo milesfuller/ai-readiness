@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cat | jq -r '.tool_input.file_path // .tool_input.path // empty' | while IFS= read -r file; do if [[ \"$file\" == *.ts || \"$file\" == *.tsx ]]; then echo \"🔍 Checking TypeScript errors in: $file\"; cd \"$(dirname \"$file\")\" && npx tsc --noEmit --skipLibCheck \"$(basename \"$file\")\" 2>&1 | head -20 || true; fi; done",
+            "command": "/workspaces/ai-readiness/.claude/hooks/validate-typescript-and-lint.sh",
             "timeout": 30
           }
         ]

@@ -180,7 +180,7 @@ const emptyStates: Record<string, EmptyState> = {
     id: 'search-no-results',
     title: 'The Search Continues',
     subtitle: 'No results found',
-    description: 'Sometimes the best discoveries happen when we\'re looking for something else. Your search is leading you toward new possibilities.',
+    description: 'Sometimes the best discoveries happen when we&apos;re looking for something else. Your search is leading you toward new possibilities.',
     icon: Search,
     illustration: 'exploration',
     color: 'indigo',

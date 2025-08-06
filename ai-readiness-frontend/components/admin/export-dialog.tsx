@@ -259,7 +259,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                   <AlertTriangle className="h-4 w-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <div className="text-xs text-yellow-300">
                     <p className="font-medium mb-1">Privacy Notice</p>
-                    <p>Including personal data requires additional data protection measures. Ensure compliance with your organization's privacy policies.</p>
+                    <p>Including personal data requires additional data protection measures. Ensure compliance with your organization&apos;s privacy policies.</p>
                   </div>
                 </div>
               )}

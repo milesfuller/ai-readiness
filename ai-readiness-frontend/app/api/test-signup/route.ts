@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     let directData
     try {
       directData = JSON.parse(directText)
-    } catch {
+    } catch (_error) {
       directData = { raw: directText }
     }
 

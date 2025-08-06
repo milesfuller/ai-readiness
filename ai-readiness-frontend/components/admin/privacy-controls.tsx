@@ -263,7 +263,7 @@ export const PrivacyControls: React.FC<PrivacyControlsProps> = ({
                 className="mt-1"
               />
               <Label htmlFor="gdpr-compliance" className="text-sm text-gray-300">
-                I confirm that this data export complies with GDPR requirements and my organization's data protection policies
+                I confirm that this data export complies with GDPR requirements and my organization&apos;s data protection policies
               </Label>
             </div>
 

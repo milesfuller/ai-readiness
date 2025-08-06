@@ -38,25 +38,27 @@ export default function LoginPage() {
     setNetworkError(false)
 
     try {
-      console.log('[Login Page] Starting login for:', data.email)
+      // Login attempt started
       const { error: authError } = await signIn(data.email, data.password)
       
       if (authError) {
+        // eslint-disable-next-line no-console
         console.error('[Login Page] Login error:', authError)
         setError(authError.message)
       } else {
-        console.log('[Login Page] Login successful, showing success state...')
+        // Login successful, showing success state
         setShowSuccess(true)
         setShowHearts(true)
         
         // Give a brief moment for success animation, then redirect
         // This is important for tests to see the success state
         setTimeout(() => {
-          console.log('[Login Page] Redirecting to dashboard...')
+          // Redirecting to dashboard
           router.push('/dashboard')
         }, 500) // Brief delay for success animation
       }
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error('[Login Page] Unexpected error:', err)
       
       // Check if it's a network error
@@ -176,7 +178,7 @@ export default function LoginPage() {
         {/* Sign Up Link */}
         <div className="text-center pt-4">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            {"Don&apos;t have an account?"}{' '}
             <Link 
               href="/auth/register" 
               className="text-teal-400 hover:text-teal-300 transition-colors font-medium"

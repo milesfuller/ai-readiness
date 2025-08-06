@@ -14,7 +14,6 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  AlertCircle,
   BarChart3,
   Brain,
   Award,

@@ -150,10 +150,10 @@ function VerifyEmailContent() {
         {/* Instructions */}
         <div className="space-y-2">
           <p className="text-muted-foreground">
-            We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.
+            We&apos;ve sent a verification link to your email address. Please check your inbox and click the link to verify your account.
           </p>
           <p className="text-sm text-muted-foreground">
-            Don't see the email? Check your spam folder or click the button below to resend.
+            {"Don't see the email?"} Check your spam folder or click the button below to resend.
           </p>
         </div>
 

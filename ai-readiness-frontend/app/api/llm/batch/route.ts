@@ -275,14 +275,14 @@ export async function GET(request: NextRequest) {
     const organizationId = searchParams.get('organizationId');
 
     // Check user permissions
-    const { data: userProfile, error: profileError2 } = await supabase
+    const { data: userProfile, error: profileError } = await supabase
       .from('profiles')
       .select('role, organization_id')
       .eq('id', user.id)
       .single();
 
-    if (profileError2) {
-      console.error('Profile fetch error:', profileError2);
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 

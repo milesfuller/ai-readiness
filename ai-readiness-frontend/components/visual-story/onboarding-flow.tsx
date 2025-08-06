@@ -35,7 +35,7 @@ const onboardingSteps: OnboardingStep[] = [
     id: 'welcome',
     title: 'Welcome to Your AI Journey',
     subtitle: 'Discover Your Organization\'s AI Potential',
-    description: 'Like climbing a mountain, AI readiness is a journey with multiple paths. We\'ll be your guide, helping you navigate each step with confidence.',
+    description: 'Like climbing a mountain, AI readiness is a journey with multiple paths. We&apos;ll be your guide, helping you navigate each step with confidence.',
     icon: Brain,
     color: 'teal',
     gradient: 'from-teal-500 to-cyan-500',

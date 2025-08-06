@@ -371,7 +371,7 @@ export function ResponseAnalysisPanel({
                       <div className="flex flex-wrap gap-1">
                         {analysis.sentimentAnalysis.emotionalIndicators.map((indicator, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
-                            "{indicator}"
+                            &quot;{indicator}&quot;
                           </Badge>
                         ))}
                       </div>

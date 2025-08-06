@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     let data
     try {
       data = JSON.parse(responseText)
-    } catch {
+    } catch (_error) {
       data = { raw: responseText }
     }
 

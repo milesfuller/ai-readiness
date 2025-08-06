@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { redirect, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MainLayout } from '@/components/layout/main-layout'
@@ -74,9 +74,13 @@ const mockUser = {
   lastLogin: '2024-08-02T19:00:00Z'
 }
 
-export default async function SurveyPage({ params }: Props) {
-  const resolvedParams = await params
+export default function SurveyPage({ params }: Props) {
+  const [resolvedParams, setResolvedParams] = useState<{ sessionId: string } | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    Promise.resolve(params).then(setResolvedParams)
+  }, [params])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, SurveyAnswer>>({})
   const [inputMethod, setInputMethod] = useState<'text' | 'voice'>('text')
@@ -99,11 +103,11 @@ export default async function SurveyPage({ params }: Props) {
   ))
   
   // Celebration milestones
-  const celebrationMilestones = [25, 50, 75, 100]
+  const celebrationMilestones = useMemo(() => [25, 50, 75, 100], [])
   
   // Handle milestone celebrations
-  const handleMilestone = (milestone: number) => {
-    console.log(`🎉 Milestone reached: ${milestone}%`)
+  const handleMilestone = useCallback((milestone: number) => {
+    // Debug milestone - removed in production
     
     if (milestone === 100) {
       setShowConfetti(true)
@@ -112,13 +116,36 @@ export default async function SurveyPage({ params }: Props) {
       setShowMilestoneHearts(true)
       setTimeout(() => setShowMilestoneHearts(false), 2000)
     }
-  }
+  }, [])
 
-  // Initialize session
+  // Auto-save progress (debounced)
+  const saveProgress = useCallback(async () => {
+    if (!session || saveStatus === 'saving') return
+
+    setSaveStatus('saving')
+    
+    try {
+      // Mock save to Supabase
+      await new Promise(resolve => setTimeout(resolve, 500))
+      console.log('Progress saved:', { sessionId: session.sessionId, answers })
+      setSaveStatus('saved')
+      
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } catch (error) {
+      console.error('Save failed:', error)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  }, [answers, session, saveStatus])
+
+  // Resolve params and initialize session
   useEffect(() => {
-    const initSession = () => {
+    const resolveParams = async () => {
+      const resolved = await params
+      setResolvedParams(resolved)
+      
       setSession({
-        sessionId: resolvedParams.sessionId,
+        sessionId: resolved.sessionId,
         userId: mockUser.id,
         answers: {},
         currentQuestionIndex: 0,
@@ -129,8 +156,8 @@ export default async function SurveyPage({ params }: Props) {
       })
     }
     
-    initSession()
-  }, [resolvedParams.sessionId])
+    resolveParams()
+  }, [params])
 
   // Track time spent
   useEffect(() => {
@@ -163,7 +190,7 @@ export default async function SurveyPage({ params }: Props) {
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [answers])
+  }, [answers, saveProgress])
 
   // Save on answer change (debounced)
   useEffect(() => {
@@ -174,11 +201,11 @@ export default async function SurveyPage({ params }: Props) {
 
       return () => clearTimeout(debounceTimeout)
     }
-    // Return undefined when there's no answer
+    // Return undefined when {"there's"} no answer
     return undefined
-  }, [currentAnswer?.answer])
+  }, [currentAnswer?.answer, saveProgress])
 
-  // Progress celebration effect
+  // Progress celebration effect  
   useEffect(() => {
     celebrationMilestones.forEach(milestone => {
       if (progress >= milestone && lastCelebratedMilestone < milestone) {
@@ -186,7 +213,7 @@ export default async function SurveyPage({ params }: Props) {
         handleMilestone(milestone)
       }
     })
-  }, [progress, lastCelebratedMilestone])
+  }, [progress, lastCelebratedMilestone, handleMilestone, celebrationMilestones])
   
   // Konami code easter egg
   useKonamiCode(() => {
@@ -197,6 +224,32 @@ export default async function SurveyPage({ params }: Props) {
       setShowConfetti(false)
     }, 5000)
   })
+
+  // Navigation functions with useCallback
+  const goToQuestion = useCallback((index: number) => {
+    if (index >= 0 && index < surveyQuestions.length) {
+      setCurrentQuestionIndex(index)
+      setQuestionStartTime(Date.now())
+      // Reset input method preference for new question
+      const newQuestion = surveyQuestions[index]
+      const existingAnswer = answers[newQuestion.id]
+      if (existingAnswer?.inputMethod) {
+        setInputMethod(existingAnswer.inputMethod)
+      }
+    }
+  }, [answers])
+
+  const goToNextQuestion = useCallback(() => {
+    if (currentQuestionIndex < surveyQuestions.length - 1) {
+      goToQuestion(currentQuestionIndex + 1)
+    }
+  }, [currentQuestionIndex, goToQuestion])
+
+  const goToPrevQuestion = useCallback(() => {
+    if (currentQuestionIndex > 0) {
+      goToQuestion(currentQuestionIndex - 1)
+    }
+  }, [currentQuestionIndex, goToQuestion])
 
   // Keyboard navigation with fun shortcuts
   useEffect(() => {
@@ -227,37 +280,8 @@ export default async function SurveyPage({ params }: Props) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentQuestionIndex])
+  }, [goToPrevQuestion, goToNextQuestion, saveProgress])
 
-  const saveProgress = async () => {
-    try {
-      setSaveStatus('saving')
-      
-      // Update session with current data
-      const updatedSession = {
-        ...session!,
-        answers,
-        currentQuestionIndex,
-        lastUpdated: new Date(),
-        timeSpent
-      }
-      
-      // In a real app, this would save to Supabase
-      console.log('Saving progress:', updatedSession)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      setSession(updatedSession)
-      setSaveStatus('saved')
-      
-      setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch (error) {
-      console.error('Save failed:', error)
-      setSaveStatus('error')
-      setTimeout(() => setSaveStatus('idle'), 3000)
-    }
-  }
 
   const updateAnswer = (answer: string, method: 'text' | 'voice' = 'text') => {
     if (!currentQuestion) return
@@ -274,32 +298,9 @@ export default async function SurveyPage({ params }: Props) {
   }
 
 
-  const goToQuestion = (index: number) => {
-    if (index >= 0 && index < surveyQuestions.length) {
-      setCurrentQuestionIndex(index)
-      setQuestionStartTime(Date.now())
-      // Reset input method preference for new question
-      const newQuestion = surveyQuestions[index]
-      const existingAnswer = answers[newQuestion.id]
-      if (existingAnswer?.inputMethod) {
-        setInputMethod(existingAnswer.inputMethod)
-      }
-    }
-  }
-
-  const goToNextQuestion = () => {
-    if (currentQuestionIndex < surveyQuestions.length - 1) {
-      goToQuestion(currentQuestionIndex + 1)
-    }
-  }
-
-  const goToPrevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      goToQuestion(currentQuestionIndex - 1)
-    }
-  }
-
-  const completeSurvey = async () => {
+  const completeSurvey = useCallback(async () => {
+    if (!resolvedParams) return
+    
     try {
       // Final save before completion
       await saveProgress()
@@ -317,9 +318,10 @@ export default async function SurveyPage({ params }: Props) {
       // Navigate to completion page
       router.push(`/survey/${resolvedParams.sessionId}/complete`)
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to complete survey:', error)
     }
-  }
+  }, [resolvedParams, saveProgress, session, router])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -341,8 +343,8 @@ export default async function SurveyPage({ params }: Props) {
     return currentQuestionIndex === surveyQuestions.length - 1
   }
 
-  if (!currentQuestion) {
-    redirect('/survey')
+  if (!resolvedParams || !currentQuestion) {
+    return null // or loading spinner
   }
 
   return (
@@ -426,10 +428,10 @@ export default async function SurveyPage({ params }: Props) {
             {progress > 0 && progress < 100 && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground animate-pulse">
-                  {progress < 25 && "🚀 You're off to a great start!"}
+                  {progress < 25 && "🚀 You&apos;re off to a great start!"}
                   {progress >= 25 && progress < 50 && "⭐ Making excellent progress!"}
-                  {progress >= 50 && progress < 75 && "🔥 You're on fire! Keep going!"}
-                  {progress >= 75 && progress < 100 && "🎯 Almost there! You've got this!"}
+                  {progress >= 50 && progress < 75 && "🔥 You&apos;re on fire! Keep going!"}
+                  {progress >= 75 && progress < 100 && "🎯 Almost there! You&apos;ve got this!"}
                 </p>
               </div>
             )}
@@ -572,7 +574,7 @@ export default async function SurveyPage({ params }: Props) {
             <div className="text-center space-y-2">
               <div className="text-2xl">🎮✨🚀</div>
               <p className="text-sm font-medium text-rainbow">
-                You found the secret! You're clearly ready for AI if you can master the Konami Code!
+                You found the secret! You&apos;re clearly ready for AI if you can master the Konami Code!
               </p>
               <div className="text-xs text-muted-foreground">
                 Keep this energy for your AI journey!
