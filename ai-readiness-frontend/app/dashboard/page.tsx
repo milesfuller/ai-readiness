@@ -36,5 +36,23 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
 
-  return <DashboardClient user={mockUser} />
+  // Use real user data, fallback to mock for missing fields
+  const userData = {
+    id: user.id,
+    email: user.email || mockUser.email,
+    role: mockUser.role, // Would come from user metadata in production
+    organizationId: mockUser.organizationId,
+    profile: {
+      ...mockUser.profile,
+      userId: user.id,
+      // Override with real user data if available
+      firstName: user.user_metadata?.firstName || mockUser.profile.firstName,
+      lastName: user.user_metadata?.lastName || mockUser.profile.lastName,
+    },
+    createdAt: user.created_at || mockUser.createdAt,
+    updatedAt: user.updated_at || mockUser.updatedAt,
+    lastLogin: new Date().toISOString()
+  }
+
+  return <DashboardClient user={userData} />
 }

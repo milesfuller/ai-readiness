@@ -150,7 +150,7 @@ export default function LoginPage({
               type="button"
               variant="default"
               size="lg"
-              className="w-full button-success animate-pulse"
+              className="w-full button-success"
               disabled
             >
               <div className="flex items-center space-x-2">
@@ -163,7 +163,7 @@ export default function LoginPage({
               type="submit"
               variant="default"
               size="lg"
-              className="w-full wobble-on-hover"
+              className="w-full"
               disabled={isLoading}
               loading={isLoading}
               data-testid="login-submit"
