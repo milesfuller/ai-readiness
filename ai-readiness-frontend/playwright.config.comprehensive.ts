@@ -153,8 +153,10 @@ export default defineConfig({
       name: 'accessibility',
       use: {
         ...devices['Desktop Chrome'],
-        // Force prefers-reduced-motion
-        reducedMotion: 'reduce'
+        // Force prefers-reduced-motion via environment variable or custom CSS
+        extraHTTPHeaders: {
+          'Sec-CH-Prefers-Reduced-Motion': 'reduce'
+        }
       },
       testMatch: ['comprehensive-*.spec.ts'],
       grep: /accessibility|aria|keyboard/
