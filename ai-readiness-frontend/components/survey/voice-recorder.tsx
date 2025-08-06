@@ -70,6 +70,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   const startRecording = useCallback(async () => {
     try {
+      // Check if microphone is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Microphone access not supported by this browser')
+      }
+
+      // Request microphone permission
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -128,6 +134,19 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       
     } catch (error) {
       console.error('Failed to start recording:', error)
+      
+      // Provide user-friendly error messages
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          alert('Microphone access denied. Please allow microphone permissions in your browser settings and try again.')
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+          alert('No microphone found. Please connect a microphone and try again.')
+        } else if (error.name === 'NotSupportedError') {
+          alert('Voice recording is not supported by this browser. Please try using Chrome, Firefox, or Safari.')
+        } else {
+          alert('Failed to start voice recording. Please check your microphone settings and try again.')
+        }
+      }
     }
   }, [recordingDuration, onTranscriptionUpdate, startVolumeVisualization])
 

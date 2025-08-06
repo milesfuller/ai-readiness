@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'AI Readiness Assessment',
   description: 'Comprehensive AI readiness assessment platform',
+  other: {
+    'permissions-policy': 'microphone=*, camera=*'
+  }
 }
 
 export default function RootLayout({
@@ -17,6 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <meta name="permissions-policy" content="microphone=*" />
+      </head>
       <body className={inter.className}>
         <AuthProvider>
           {children}
