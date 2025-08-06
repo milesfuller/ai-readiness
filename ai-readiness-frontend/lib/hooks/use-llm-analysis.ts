@@ -256,6 +256,9 @@ export function useLLMAnalysis(options: UseLLMAnalysisOptions = {}): LLMAnalysis
       const interval = setInterval(fetchData, refreshInterval);
       return () => clearInterval(interval);
     }
+    
+    // Return undefined explicitly for no cleanup
+    return undefined
   }, [fetchData, autoRefresh, refreshInterval]);
 
   return {

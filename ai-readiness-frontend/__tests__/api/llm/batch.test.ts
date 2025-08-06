@@ -11,36 +11,44 @@
  * - Performance and concurrency
  */
 
+// Import types first
+import type { MockNextRequest, MockNextRequestOptions } from '../../types/mocks'
+
 // Mock NextRequest and NextResponse before importing
 jest.mock('next/server', () => {
   class MockNextRequest {
-    constructor(url, options = {}) {
-      this.url = url;
-      this.method = options.method || 'GET';
-      this.headers = new Map(Object.entries(options.headers || {}));
-      this._body = options.body;
+    public url: string
+    public method: string
+    public headers: Map<string, string>
+    public _body: string
+
+    constructor(url: string, options: MockNextRequestOptions = {}) {
+      this.url = url
+      this.method = options.method || 'GET'
+      this.headers = new Map(Object.entries(options.headers || {}))
+      this._body = options.body || ''
     }
 
-    async json() {
-      return JSON.parse(this._body || '{}');
+    async json(): Promise<any> {
+      return JSON.parse(this._body || '{}')
     }
 
-    async text() {
-      return this._body || '';
+    async text(): Promise<string> {
+      return this._body || ''
     }
   }
 
   return {
     NextRequest: MockNextRequest,
     NextResponse: {
-      json: (data, options = {}) => ({
+      json: (data: any, options: { status?: number; headers?: Record<string, string> } = {}) => ({
         status: options.status || 200,
         json: () => Promise.resolve(data),
         headers: new Map(Object.entries(options.headers || {})),
       }),
     },
-  };
-});
+  }
+})
 
 import { NextRequest } from 'next/server';
 import { POST, GET } from '@/app/api/llm/batch/route';
@@ -49,7 +57,20 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 
 // Mock dependencies
 jest.mock('@supabase/auth-helpers-nextjs');
-jest.mock('@/lib/services/llm-service');
+jest.mock('@/lib/services/llm-service', () => ({
+  llmService: {
+    batchAnalyzeResponses: jest.fn(),
+    healthCheck: jest.fn(),
+    getConfig: jest.fn(() => ({
+      provider: 'openai',
+      model: 'gpt-4o',
+      temperature: 0.2,
+      maxTokens: 1200,
+      timeout: 45000,
+      retries: 3,
+    })),
+  },
+}));
 jest.mock('next/headers', () => ({
   cookies: jest.fn(() => ({
     get: jest.fn(),
@@ -69,7 +90,7 @@ const mockSupabase = {
     in: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
-    single: jest.fn(),
+    single: jest.fn().mockResolvedValue({ data: null, error: null }),
   })),
 };
 

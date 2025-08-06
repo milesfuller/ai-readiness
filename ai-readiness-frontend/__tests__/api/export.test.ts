@@ -16,12 +16,17 @@
 // Mock NextRequest and NextResponse before importing
 jest.mock('next/server', () => {
   class MockNextRequest {
-    constructor(url, options = {}) {
+    constructor(url: string, options: any = {}) {
       this.url = url;
       this.method = options.method || 'GET';
       this.headers = new Map(Object.entries(options.headers || {}));
       this._body = options.body;
     }
+
+    url: string;
+    method: string;
+    headers: Map<string, string>;
+    _body?: string;
 
     async json() {
       return JSON.parse(this._body || '{}');
@@ -35,7 +40,7 @@ jest.mock('next/server', () => {
   return {
     NextRequest: MockNextRequest,
     NextResponse: {
-      json: (data, options = {}) => ({
+      json: (data: any, options: any = {}) => ({
         status: options.status || 200,
         json: () => Promise.resolve(data),
         headers: new Map(Object.entries(options.headers || {})),
@@ -51,7 +56,18 @@ import { createServerClient } from '@supabase/ssr';
 
 // Mock dependencies
 jest.mock('@supabase/ssr');
-jest.mock('@/lib/services/export-service');
+jest.mock('@/lib/services/export-service', () => ({
+  exportService: {
+    exportData: jest.fn(),
+    generateSurveyPDF: jest.fn(),
+    generateOrganizationReport: jest.fn(),
+    getAvailableFormats: jest.fn(() => [
+      { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
+      { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
+      { value: 'pdf', label: 'PDF', description: 'Portable Document Format' }
+    ]),
+  },
+}));
 jest.mock('next/headers', () => ({
   cookies: jest.fn(() => ({
     get: jest.fn(() => ({ value: 'test-cookie' })),
@@ -72,24 +88,104 @@ const mockSupabase = {
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     slice: jest.fn().mockReturnThis(),
-    single: jest.fn(),
+    single: jest.fn().mockResolvedValue({ data: null, error: null }),
   })),
 };
 
 const mockExportService = exportService as jest.Mocked<typeof exportService>;
 
-beforeEach(() => {
+// Helper function to set up different mock scenarios
+const setupMockScenario = (scenario: 'authenticated_user' | 'authenticated_admin' | 'authenticated_org_admin' | 'unauthenticated' | 'no_profile') => {
   jest.clearAllMocks();
+  
+  switch (scenario) {
+    case 'unauthenticated':
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Not authenticated'),
+      });
+      break;
+    case 'no_profile':
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-1' } },
+        error: null,
+      });
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockReturnThis(),
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        slice: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: new Error('Profile not found') }),
+      });
+      break;
+    case 'authenticated_user':
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-1' } },
+        error: null,
+      });
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockReturnThis(),
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        slice: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: { role: 'user', organization_id: 'org-1' }, error: null }),
+      });
+      break;
+    case 'authenticated_admin':
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'admin-1' } },
+        error: null,
+      });
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockReturnThis(),
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        slice: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: { role: 'admin', organization_id: 'org-1' }, error: null }),
+      });
+      break;
+    case 'authenticated_org_admin':
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'org-admin-1' } },
+        error: null,
+      });
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockReturnThis(),
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        gte: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        slice: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: { role: 'org_admin', organization_id: 'org-1' }, error: null }),
+      });
+      break;
+  }
+  
   (createServerClient as jest.Mock).mockReturnValue(mockSupabase);
+};
+
+beforeEach(() => {
+  setupMockScenario('unauthenticated'); // default
 });
 
 describe('/api/export', () => {
   describe('POST /api/export - Authentication & Authorization', () => {
     it('should return 401 for unauthenticated requests', async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({
-        data: { user: null },
-        error: new Error('Not authenticated'),
-      });
+      setupMockScenario('unauthenticated');
 
       const request = new NextRequest('http://localhost:3000/api/export', {
         method: 'POST',
@@ -137,7 +233,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'user', organizationId: 'org-1' },
+        data: { role: 'user', organization_id: 'org-1' },
         error: null,
       });
 
@@ -165,7 +261,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -204,7 +300,7 @@ describe('/api/export', () => {
 
       mockSupabase.from().select().eq().single
         .mockResolvedValueOnce({
-          data: { role: 'org_admin', organizationId: 'org-1' },
+          data: { role: 'org_admin', organization_id: 'org-1' },
           error: null,
         })
         .mockResolvedValueOnce({
@@ -235,7 +331,7 @@ describe('/api/export', () => {
 
       mockSupabase.from().select().eq().single
         .mockResolvedValueOnce({
-          data: { role: 'org_admin', organizationId: 'org-1' },
+          data: { role: 'org_admin', organization_id: 'org-1' },
           error: null,
         })
         .mockResolvedValueOnce({
@@ -268,7 +364,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -448,7 +544,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -461,7 +557,7 @@ describe('/api/export', () => {
     });
 
     it('should handle XSS attempts in export options', async () => {
-      for (const xssPayload of global.testHelpers.xssPayloads) {
+      for (const xssPayload of (global as any).testHelpers.xssPayloads) {
         const request = new NextRequest('http://localhost:3000/api/export', {
           method: 'POST',
           body: JSON.stringify({
@@ -493,7 +589,7 @@ describe('/api/export', () => {
     });
 
     it('should handle SQL injection attempts in survey/organization IDs', async () => {
-      for (const sqlPayload of global.testHelpers.sqlInjectionPayloads) {
+      for (const sqlPayload of (global as any).testHelpers.sqlInjectionPayloads) {
         const request = new NextRequest('http://localhost:3000/api/export', {
           method: 'POST',
           body: JSON.stringify({
@@ -592,7 +688,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -714,7 +810,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -748,7 +844,7 @@ describe('/api/export', () => {
     it('should handle survey not found errors', async () => {
       mockSupabase.from().select().eq().single
         .mockResolvedValueOnce({
-          data: { role: 'org_admin', organizationId: 'org-1' },
+          data: { role: 'org_admin', organization_id: 'org-1' },
           error: null,
         })
         .mockResolvedValueOnce({
@@ -862,7 +958,11 @@ describe('/api/export', () => {
         error: null,
       });
 
-      mockExportService.getAvailableFormats.mockReturnValue(['csv', 'json', 'pdf']);
+      mockExportService.getAvailableFormats.mockReturnValue([
+        { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
+        { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
+        { value: 'pdf', label: 'PDF', description: 'Portable Document Format' }
+      ]);
 
       const request = new NextRequest('http://localhost:3000/api/export', {
         method: 'GET',
@@ -894,7 +994,11 @@ describe('/api/export', () => {
         error: null,
       });
 
-      mockExportService.getAvailableFormats.mockReturnValue(['csv', 'json', 'pdf']);
+      mockExportService.getAvailableFormats.mockReturnValue([
+        { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
+        { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
+        { value: 'pdf', label: 'PDF', description: 'Portable Document Format' }
+      ]);
 
       const request = new NextRequest('http://localhost:3000/api/export', {
         method: 'GET',
@@ -923,7 +1027,10 @@ describe('/api/export', () => {
         error: new Error('Stats fetch failed'),
       });
 
-      mockExportService.getAvailableFormats.mockReturnValue(['csv', 'json']);
+      mockExportService.getAvailableFormats.mockReturnValue([
+        { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
+        { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' }
+      ]);
 
       const request = new NextRequest('http://localhost:3000/api/export', {
         method: 'GET',
@@ -948,7 +1055,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -1028,7 +1135,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organizationId: 'org-1' },
+        data: { role: 'admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -1038,7 +1145,7 @@ describe('/api/export', () => {
       });
 
       // Simulate rate limiting after 3 export requests
-      const rateLimiter = global.testHelpers.simulateRateLimit(3);
+      const rateLimiter = (global as any).testHelpers.simulateRateLimit(3);
       
       mockExportService.exportData.mockImplementation(async () => {
         rateLimiter(); // This will throw after 3 calls

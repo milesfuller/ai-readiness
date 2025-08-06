@@ -41,6 +41,9 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
     expect(loginResult.success).toBeTruthy();
     expect(loginResult.url).toContain('/dashboard');
     
+    // Wait for page stabilization
+    await page.waitForLoadState('networkidle');
+    
     console.log('✅ Authentication setup complete for survey testing');
   });
 
@@ -64,7 +67,9 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
         'a:has-text("Create Survey")',
         'a:has-text("New Survey")',
         '[data-testid="create-survey"]',
-        '.create-survey-btn'
+        '.create-survey-btn',
+        '[role="button"]:has-text("Create")',
+        '.btn-create-survey'
       ];
 
       let surveyCreationStarted = false;
@@ -73,19 +78,25 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
         if (await element.isVisible().catch(() => false)) {
           console.log(`📋 Found create survey button: ${selector}`);
           await element.click();
+          await page.waitForTimeout(2000);
           surveyCreationStarted = true;
           break;
         }
       }
 
       if (!surveyCreationStarted) {
-        // Try direct navigation
+        // Try direct navigation to various survey creation routes
         console.log('🔄 Attempting direct navigation to survey creation...');
-        await page.goto('/survey/create');
-        await page.waitForTimeout(2000);
+        const surveyRoutes = ['/survey/create', '/surveys/create', '/survey/new', '/admin/surveys/create'];
         
-        if (page.url().includes('survey') && (page.url().includes('create') || page.url().includes('new'))) {
-          surveyCreationStarted = true;
+        for (const route of surveyRoutes) {
+          await page.goto(route);
+          await page.waitForTimeout(2000);
+          
+          if (page.url().includes('survey') && (page.url().includes('create') || page.url().includes('new'))) {
+            surveyCreationStarted = true;
+            break;
+          }
         }
       }
 
@@ -108,13 +119,18 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
         'input[name="title"]',
         'input[placeholder*="title"]',
         'input[placeholder*="name"]',
-        '[data-testid="survey-title"]'
+        '[data-testid="survey-title"]',
+        '#survey-title',
+        '.survey-title-input',
+        'input[id*="title"]'
       ];
 
       for (const selector of titleSelectors) {
         const field = page.locator(selector).first();
         if (await field.isVisible().catch(() => false)) {
+          await field.clear();
           await field.fill(surveyData.title);
+          await expect(field).toHaveValue(surveyData.title);
           console.log('✅ Survey title filled');
           break;
         }
@@ -124,13 +140,18 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
       const descriptionSelectors = [
         'textarea[name="description"]',
         'textarea[placeholder*="description"]',
-        '[data-testid="survey-description"]'
+        '[data-testid="survey-description"]',
+        '#survey-description',
+        '.survey-description-input',
+        'textarea[id*="description"]'
       ];
 
       for (const selector of descriptionSelectors) {
         const field = page.locator(selector).first();
         if (await field.isVisible().catch(() => false)) {
+          await field.clear();
           await field.fill(surveyData.description);
+          await expect(field).toHaveValue(surveyData.description);
           console.log('✅ Survey description filled');
           break;
         }
@@ -146,9 +167,9 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
 
       for (const selector of saveSelectors) {
         const button = page.locator(selector).first();
-        if (await button.isVisible().catch(() => false)) {
+        if (await button.isVisible().catch(() => false) && await button.isEnabled().catch(() => false)) {
           await button.click();
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(3000);
           console.log('✅ Survey saved successfully');
           break;
         }
@@ -263,13 +284,30 @@ test.describe('Survey Flow Testing - Complete Workflow Validation', () => {
 
       console.log('📋 Starting survey navigation test...');
 
-      // Navigate to survey taking interface
-      await page.goto(`/survey/take/${testSurvey.id}`);
-      await page.waitForTimeout(2000);
+      // Try multiple survey URLs to find working interface
+      const surveyUrls = [
+        `/survey/take/${testSurvey.id}`,
+        `/survey/${testSurvey.id}`,
+        `/surveys/${testSurvey.id}`,
+        `/survey/demo`,
+        `/survey`
+      ];
+      
+      let surveyLoaded = false;
+      for (const url of surveyUrls) {
+        await page.goto(url);
+        await page.waitForTimeout(2000);
+        
+        if (page.url().includes('survey') && await page.locator('form, .survey-question, [data-testid="survey"]').first().isVisible().catch(() => false)) {
+          surveyLoaded = true;
+          console.log(`✅ Survey loaded at ${url}`);
+          break;
+        }
+      }
 
-      if (!page.url().includes('survey')) {
-        console.log('⚠️ Survey taking interface not available');
-        return;
+      if (!surveyLoaded) {
+        console.log('⚠️ Survey taking interface not available - testing with mock navigation');
+        // Continue with basic navigation test using any form elements found
       }
 
       // Test forward navigation
@@ -1078,7 +1116,25 @@ async function fillQuestionDetails(page: any, question: any, index: number) {
 
 async function findOrCreateTestSurvey(page: any) {
     // Try to find existing test survey or create one
-    // This is a simplified version - in reality would check database
+    // Check multiple possible survey URLs/IDs
+    const possibleSurveyIds = ['test-survey-123', 'demo-survey', 'sample-survey', '1'];
+    
+    for (const surveyId of possibleSurveyIds) {
+      try {
+        await page.goto(`/survey/${surveyId}`);
+        await page.waitForTimeout(1000);
+        
+        // Check if survey exists by looking for survey content
+        const hasSurveyContent = await page.locator('form, .survey-question, [data-testid="survey"]').first().isVisible().catch(() => false);
+        if (hasSurveyContent) {
+          return { id: surveyId, title: 'Found Survey', questions: [] };
+        }
+      } catch (error) {
+        // Continue to next survey ID
+      }
+    }
+    
+    // Return mock survey data if none found
     return {
       id: 'test-survey-123',
       title: 'Test Survey for E2E Testing',
@@ -1093,40 +1149,106 @@ async function findOrCreateTestSurvey(page: any) {
 async function answerCurrentQuestion(page: any): Promise<boolean> {
     // Answer the current question based on what type it is
     let answered = false;
+    
+    // Wait for question to be fully loaded
+    await page.waitForTimeout(1000);
 
-    // Text inputs
-    const textInput = page.locator('input[type="text"], textarea').first();
-    if (await textInput.isVisible().catch(() => false)) {
-      await textInput.fill('Test response for text question');
-      answered = true;
+    // Enhanced text inputs with more selectors
+    const textInputSelectors = [
+      'input[type="text"]:visible',
+      'textarea:visible',
+      'input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):visible',
+      '[data-testid="text-input"]:visible',
+      '.text-input:visible'
+    ];
+    
+    for (const selector of textInputSelectors) {
+      const textInput = page.locator(selector).first();
+      if (await textInput.isVisible().catch(() => false)) {
+        await textInput.clear();
+        await textInput.fill('Test response for text question');
+        await expect(textInput).toHaveValue('Test response for text question');
+        answered = true;
+        break;
+      }
     }
 
-    // Radio buttons
-    const radioInput = page.locator('input[type="radio"]').first();
-    if (await radioInput.isVisible().catch(() => false)) {
-      await radioInput.check();
-      answered = true;
+    if (!answered) {
+      // Enhanced radio buttons
+      const radioSelectors = [
+        'input[type="radio"]:visible',
+        '[role="radio"]:visible',
+        '.radio-option:visible',
+        '[data-testid="radio-option"]:visible'
+      ];
+      
+      for (const selector of radioSelectors) {
+        const radioInput = page.locator(selector).first();
+        if (await radioInput.isVisible().catch(() => false)) {
+          await radioInput.check();
+          await expect(radioInput).toBeChecked();
+          answered = true;
+          break;
+        }
+      }
     }
 
-    // Checkboxes
-    const checkboxInput = page.locator('input[type="checkbox"]').first();
-    if (await checkboxInput.isVisible().catch(() => false)) {
-      await checkboxInput.check();
-      answered = true;
+    if (!answered) {
+      // Enhanced checkboxes
+      const checkboxSelectors = [
+        'input[type="checkbox"]:visible',
+        '[role="checkbox"]:visible',
+        '.checkbox-option:visible'
+      ];
+      
+      for (const selector of checkboxSelectors) {
+        const checkboxInput = page.locator(selector).first();
+        if (await checkboxInput.isVisible().catch(() => false)) {
+          await checkboxInput.check();
+          await expect(checkboxInput).toBeChecked();
+          answered = true;
+          break;
+        }
+      }
     }
 
-    // Range/scale inputs
-    const rangeInput = page.locator('input[type="range"]').first();
-    if (await rangeInput.isVisible().catch(() => false)) {
-      await rangeInput.fill('7');
-      answered = true;
+    if (!answered) {
+      // Enhanced range/scale inputs
+      const rangeSelectors = [
+        'input[type="range"]:visible',
+        '[role="slider"]:visible',
+        '.range-slider:visible',
+        '.scale-input:visible'
+      ];
+      
+      for (const selector of rangeSelectors) {
+        const rangeInput = page.locator(selector).first();
+        if (await rangeInput.isVisible().catch(() => false)) {
+          await rangeInput.fill('7');
+          answered = true;
+          break;
+        }
+      }
     }
 
-    // Rating buttons
-    const ratingButton = page.locator('button[data-rating], .rating-button').first();
-    if (await ratingButton.isVisible().catch(() => false)) {
-      await ratingButton.click();
-      answered = true;
+    if (!answered) {
+      // Enhanced rating buttons
+      const ratingSelectors = [
+        'button[data-rating]:visible',
+        '.rating-button:visible',
+        'button:has-text("4"):visible',
+        'button:has-text("5"):visible',
+        '[data-testid="rating-button"]:visible'
+      ];
+      
+      for (const selector of ratingSelectors) {
+        const ratingButton = page.locator(selector).first();
+        if (await ratingButton.isVisible().catch(() => false) && await ratingButton.isEnabled().catch(() => false)) {
+          await ratingButton.click();
+          answered = true;
+          break;
+        }
+      }
     }
 
     return answered;

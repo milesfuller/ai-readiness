@@ -310,6 +310,7 @@ export const WhimsicalButton: React.FC<WhimsicalButtonProps> = ({
       
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [showSuccess, successDuration, onSuccessComplete])
 
   return (
@@ -424,6 +425,9 @@ export const Typewriter: React.FC<TypewriterProps> = ({
     } else if (currentIndex === text.length && onComplete) {
       onComplete()
     }
+    
+    // Ensure all code paths return a value
+    return undefined
   }, [currentIndex, text, speed, onComplete])
 
   return (

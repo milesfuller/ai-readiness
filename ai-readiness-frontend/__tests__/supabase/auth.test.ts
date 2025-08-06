@@ -3,7 +3,7 @@
  * Tests auth functionality with the test instance
  */
 
-import { testHelper } from '../../supabase/test-utils'
+import { testHelper } from '../../supabase/test-utils.mock'
 
 describe('Supabase Authentication Integration', () => {
   const testUserData = {
@@ -163,7 +163,7 @@ describe('Supabase Authentication Integration', () => {
     it('should handle concurrent sessions', async () => {
       // Create second client for same user
       const client1 = testHelper.getClient()
-      const client2 = testHelper.getClient()
+      const client2 = testHelper.getNewClient()
       
       // Sign in with both clients
       await client1.auth.signInWithPassword({

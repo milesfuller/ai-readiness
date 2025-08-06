@@ -13,10 +13,12 @@ import type { LLMConfig, JTBDForceType } from '../../lib/types/llm'
 export interface TestUser {
   email: string
   password: string
+  userId: string
+  organizationId: string
   firstName: string
   lastName: string
   organizationName: string
-  role?: 'user' | 'org_admin' | 'admin'
+  role: 'admin' | 'user' | 'org_admin'
 }
 
 export interface APITestResponse {
@@ -59,6 +61,8 @@ export class APITestDataGenerator {
       firstName: 'API Test',
       lastName: `User ${id}`,
       organizationName: 'Test Org Inc',
+      userId: `user-${id}`,
+      organizationId: `org-${id}`,
       role
     }
   }
@@ -435,8 +439,11 @@ ${slowestEndpoints.map(e => `  - ${e.endpoint}: ${e.averageDuration.toFixed(2)}m
 }
 
 // Export singleton instances for shared use
-export const testDataGenerator = APITestDataGenerator.getInstance()
-export const performanceMonitor = new APIPerformanceMonitor()
+const testDataGeneratorInstance = APITestDataGenerator.getInstance()
+const performanceMonitorInstance = new APIPerformanceMonitor()
+
+// Export using different variable names to avoid conflicts
+// Removed duplicate exports - these are available in the default export
 
 // Utility functions for common test patterns
 export async function withRetry<T>(
@@ -460,12 +467,13 @@ export async function withRetry<T>(
   throw lastError!
 }
 
-export function createAPIClient(page: Page) {
+// Define createAPIClient function
+function createAPIClient(page: Page) {
   return {
     auth: new APIAuthenticationHelper(page),
-    data: testDataGenerator,
+    data: testDataGeneratorInstance,
     validation: APIValidationHelper,
-    performance: performanceMonitor,
+    performance: performanceMonitorInstance,
     
     async request(endpoint: string, options: any = {}): Promise<APITestResponse> {
       const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000'
@@ -492,3 +500,12 @@ export function createAPIClient(page: Page) {
     }
   }
 }
+
+// Default export for modules expecting it
+export default {
+  testDataGenerator: testDataGeneratorInstance,
+  performanceMonitor: performanceMonitorInstance,
+  withRetry,
+  createAPIClient
+}
+

@@ -174,6 +174,8 @@ export default async function SurveyPage({ params }: Props) {
 
       return () => clearTimeout(debounceTimeout)
     }
+    // Return undefined when there's no answer
+    return undefined
   }, [currentAnswer?.answer])
 
   // Progress celebration effect

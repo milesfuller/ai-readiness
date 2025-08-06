@@ -3,7 +3,7 @@
  * Comprehensive tests for all security components
  */
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import {
   applySecurityHeaders,
   checkRateLimit,
@@ -40,8 +40,8 @@ function createMockRequest(options: {
 
 describe('Security Headers', () => {
   test('should apply basic security headers', () => {
-    const response = new Response('test')
-    const securedResponse = applySecurityHeaders(response)
+    const response = NextResponse.json({ test: 'data' })
+    const securedResponse = applySecurityHeaders(response as NextResponse)
     
     expect(securedResponse.headers.get('X-Frame-Options')).toBe('DENY')
     expect(securedResponse.headers.get('X-Content-Type-Options')).toBe('nosniff')
@@ -50,8 +50,8 @@ describe('Security Headers', () => {
   })
 
   test('should apply CSP headers when enabled', () => {
-    const response = new Response('test')
-    const securedResponse = applySecurityHeaders(response, {
+    const response = NextResponse.json({ test: 'data' })
+    const securedResponse = applySecurityHeaders(response as NextResponse, {
       csp: {
         enabled: true,
         reportOnly: false,
@@ -68,8 +68,8 @@ describe('Security Headers', () => {
   })
 
   test('should apply HSTS in production', () => {
-    const response = new Response('test')
-    const securedResponse = applySecurityHeaders(response, {
+    const response = NextResponse.json({ test: 'data' })
+    const securedResponse = applySecurityHeaders(response as NextResponse, {
       hsts: {
         enabled: true,
         maxAge: 31536000,

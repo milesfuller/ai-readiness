@@ -177,10 +177,10 @@ export class ServiceHealthMonitor extends EventEmitter {
       status = {
         serviceId,
         status: 'unhealthy',
-        message: `Health check failed: ${error.message}`,
+        message: `Health check failed: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: new Date(),
         responseTime: Date.now() - startTime,
-        metadata: { error: error.message }
+        metadata: { error: error instanceof Error ? error.message : String(error) }
       };
 
       this.updateServiceMetrics(serviceId, Date.now() - startTime, false);
@@ -512,8 +512,8 @@ export class ServiceHealthMonitor extends EventEmitter {
     } catch (error) {
       return {
         healthy: false,
-        message: error.message,
-        metadata: { error: error.message }
+        message: error instanceof Error ? error.message : String(error),
+        metadata: { error: error instanceof Error ? error.message : String(error) }
       };
     }
   }

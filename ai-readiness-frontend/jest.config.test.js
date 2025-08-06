@@ -3,17 +3,14 @@
 
 const baseConfig = require('./jest.config.js')
 
-module.exports = (async () => {
-  const config = await baseConfig()
-  return {
-    ...config,
+module.exports = {
+  ...baseConfig,
   displayName: 'Supabase Integration Tests',
   testEnvironment: 'node',
   
   // Test-specific setup
   setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js',
-    '<rootDir>/supabase/test-setup.js'
+    '<rootDir>/jest.setup.database.js'
   ],
   
   // Focus on integration tests
@@ -21,9 +18,6 @@ module.exports = (async () => {
     '**/__tests__/integration/**/*.(test|spec).(js|jsx|ts|tsx)',
     '**/__tests__/supabase/**/*.(test|spec).(js|jsx|ts|tsx)'
   ],
-  
-  // Test environment variables
-  setupFiles: ['<rootDir>/supabase/test-env.js'],
   
   // Longer timeout for database operations
   testTimeout: 30000,
@@ -45,12 +39,10 @@ module.exports = (async () => {
   
   // Module name mapping for test environment
   moduleNameMapper: {
-    ...config.moduleNameMapper,
+    ...baseConfig.moduleNameMapper,
     '^@/supabase/(.*)$': '<rootDir>/supabase/$1'
   },
   
   // Parallel testing (disabled for database tests to avoid conflicts)
   maxWorkers: 1
-  }
-})()
 }

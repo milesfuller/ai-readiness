@@ -251,7 +251,7 @@ export class AuthenticationFlowCoordinator extends EventEmitter {
           expiresAt: new Date(sessionData.expiresAt)
         };
 
-        if (this.isSessionValid(session)) {
+        if (session && this.isSessionValid(session)) {
           this.activeSessions.set(session.sessionId, session);
           console.log(`✅ Authentication state restored from: ${filePath}`);
           return session;

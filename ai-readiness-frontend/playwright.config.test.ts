@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import path from 'path';
+import * as path from 'path';
 
 /**
  * Test-specific Playwright configuration for local Supabase testing
@@ -173,13 +173,12 @@ export default defineConfig({
     // Start Next.js app
     {
       command: 'npm run dev',
-      url: 'http://localhost:3000',
       port: 3000,
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
       env: {
-        NODE_ENV: 'test',
         ...process.env,
+        NODE_ENV: 'test',
       },
     },
   ],

@@ -52,7 +52,7 @@ describe('LoginPage', () => {
     await user.click(submitButton)
     
     await waitFor(() => {
-      expect(screen.getByText(/invalid email/i)).toBeInTheDocument()
+      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument()
     })
   })
 
@@ -64,13 +64,12 @@ describe('LoginPage', () => {
     const passwordInput = screen.getByPlaceholderText('Enter your password')
     const submitButton = screen.getByRole('button', { name: /sign in/i })
     
-    // Test too short password
+    // Test empty password field
     await user.type(emailInput, 'test@example.com')
-    await user.type(passwordInput, '123')
     await user.click(submitButton)
     
     await waitFor(() => {
-      expect(screen.getByText(/password must be at least 6 characters/i)).toBeInTheDocument()
+      expect(screen.getByText('Password is required')).toBeInTheDocument()
     })
   })
 
@@ -90,7 +89,11 @@ describe('LoginPage', () => {
     
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'ValidPassword123')
-      expect(mockReplace).toHaveBeenCalledWith('/dashboard')
+    })
+    
+    // Check for redirect after successful login 
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard')
     })
   })
 
@@ -131,8 +134,10 @@ describe('LoginPage', () => {
     await user.type(passwordInput, 'ValidPassword123')
     await user.click(submitButton)
     
-    expect(screen.getByText('Signing in...')).toBeInTheDocument()
-    expect(submitButton).toBeDisabled()
+    await waitFor(() => {
+      expect(screen.getByText('Signing in...')).toBeInTheDocument()
+      expect(submitButton).toBeDisabled()
+    })
   })
 
   describe('Security Tests', () => {

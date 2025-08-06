@@ -7,7 +7,6 @@ import { EventEmitter } from 'events';
 import { ServiceHealthMonitor } from './ServiceHealthMonitor';
 import { AuthenticationFlowCoordinator } from './AuthenticationFlowCoordinator';
 import { MockIntegrationManager } from './MockIntegrationManager';
-import { ConfigurationManager } from './ConfigurationManager';
 
 export interface ServiceStatus {
   serviceId: string;
@@ -147,7 +146,7 @@ export class TestInfrastructureManager extends EventEmitter {
   private healthMonitor: ServiceHealthMonitor;
   private authCoordinator: AuthenticationFlowCoordinator;
   private mockManager: MockIntegrationManager;
-  private configManager: ConfigurationManager;
+  // private configManager: ConfigurationManager; // Not implemented yet
   private services: Map<string, ServiceStatus> = new Map();
   private activeTestPlans: Map<string, TestPlan> = new Map();
 
@@ -156,7 +155,7 @@ export class TestInfrastructureManager extends EventEmitter {
     this.healthMonitor = new ServiceHealthMonitor();
     this.authCoordinator = new AuthenticationFlowCoordinator();
     this.mockManager = new MockIntegrationManager();
-    this.configManager = new ConfigurationManager();
+    // this.configManager = new ConfigurationManager(); // Not implemented yet
     
     this.setupEventHandlers();
   }
@@ -169,11 +168,12 @@ export class TestInfrastructureManager extends EventEmitter {
     
     try {
       // Load configuration
-      const config = await this.configManager.loadTestConfiguration('e2e');
-      await this.configManager.validateConfiguration(config);
+      // const config = await this.configManager.loadTestConfiguration('e2e');
+      // await this.configManager.validateConfiguration(config);
+      const config = { services: ['supabase', 'mock-server'] }; // Default config
 
       // Determine services to start
-      const servicesToStart = requiredServices || config.services.map(s => s.id);
+      const servicesToStart = requiredServices || config.services;
       
       // Start services in dependency order
       const startupPlan = this.createStartupPlan(servicesToStart, config);
@@ -231,7 +231,7 @@ export class TestInfrastructureManager extends EventEmitter {
       // Validate mock integration
       const mockValidation = await this.mockManager.validateMockToAppIntegration();
       if (!mockValidation.valid) {
-        errors.push(...mockValidation.errors.map(e => `Mock validation: ${e}`));
+        errors.push(...mockValidation.failedEndpoints.map(e => `Mock validation failed: ${e}`));
         warnings.push(...mockValidation.warnings.map(w => `Mock warning: ${w}`));
       }
 
@@ -261,7 +261,7 @@ export class TestInfrastructureManager extends EventEmitter {
       console.error('❌ Service validation failed:', error);
       const result: ValidationResult = {
         valid: false,
-        errors: [`Validation error: ${error.message}`],
+        errors: [`Validation error: ${error instanceof Error ? error.message : String(error)}`],
         warnings,
         details
       };
@@ -371,7 +371,7 @@ export class TestInfrastructureManager extends EventEmitter {
       // Validate mock integration
       const validation = await this.mockManager.validateMockToAppIntegration();
       if (!validation.valid) {
-        throw new Error(`Mock configuration validation failed: ${validation.errors.join(', ')}`);
+        throw new Error(`Mock configuration validation failed: ${validation.failedEndpoints.join(', ')}`);
       }
       
       console.log('✅ Mock services configured successfully');
@@ -396,16 +396,23 @@ export class TestInfrastructureManager extends EventEmitter {
       if (result.valid) {
         console.log('✅ Mock integration validated successfully');
       } else {
-        console.warn('⚠️ Mock integration validation failed:', result.errors);
+        console.warn('⚠️ Mock integration validation failed:', result.failedEndpoints);
       }
       
-      this.emit('mocks:validated', result);
-      return result;
+      const validationResult: ValidationResult = {
+        valid: result.valid,
+        errors: result.failedEndpoints.map(e => `Failed endpoint: ${e}`),
+        warnings: result.warnings,
+        details: result.details
+      };
+      
+      this.emit('mocks:validated', validationResult);
+      return validationResult;
     } catch (error) {
       console.error('❌ Mock integration validation error:', error);
       const result: ValidationResult = {
         valid: false,
-        errors: [`Mock validation error: ${error.message}`],
+        errors: [`Mock validation error: ${error instanceof Error ? error.message : String(error)}`],
         warnings: [],
         details: {}
       };
@@ -464,7 +471,7 @@ export class TestInfrastructureManager extends EventEmitter {
         status: 'failure',
         duration: Date.now() - startTime,
         scenarioResults: [],
-        errors: [{ code: 'EXECUTION_ERROR', message: error.message, context: {} }],
+        errors: [{ code: 'EXECUTION_ERROR', message: error instanceof Error ? error.message : String(error), context: {} }],
         metrics: {
           totalDuration: Date.now() - startTime,
           averageStepDuration: 0,
@@ -668,7 +675,7 @@ export class TestInfrastructureManager extends EventEmitter {
         status: 'failure',
         duration: Date.now() - startTime,
         stepResults,
-        errors: [{ code: 'SCENARIO_ERROR', message: error.message, context: { scenario: scenario.id } }]
+        errors: [{ code: 'SCENARIO_ERROR', message: error instanceof Error ? error.message : String(error), context: { scenario: scenario.id } }]
       };
     }
   }
@@ -691,7 +698,7 @@ export class TestInfrastructureManager extends EventEmitter {
         stepId: step.id,
         status: 'failure',
         duration: Date.now() - startTime,
-        error: { code: 'STEP_ERROR', message: error.message, context: { step: step.id } }
+        error: { code: 'STEP_ERROR', message: error instanceof Error ? error.message : String(error), context: { step: step.id } }
       };
     }
   }
@@ -713,7 +720,7 @@ export class TestInfrastructureManager extends EventEmitter {
 
   private async determineRecoveryAction(failure: TestFailure): Promise<RecoveryAction | null> {
     // Analyze failure and determine appropriate recovery action
-    if (failure.error.message.includes('connection')) {
+    if (this.isErrorWithMessage(failure.error) && failure.error.message.includes('connection')) {
       return {
         type: 'restart_service',
         target: 'network',
@@ -721,7 +728,7 @@ export class TestInfrastructureManager extends EventEmitter {
       };
     }
     
-    if (failure.error.message.includes('timeout')) {
+    if (this.isErrorWithMessage(failure.error) && failure.error.message.includes('timeout')) {
       return {
         type: 'retry',
         target: failure.stepId,
@@ -730,6 +737,10 @@ export class TestInfrastructureManager extends EventEmitter {
     }
     
     return null;
+  }
+
+  private isErrorWithMessage(error: Error): error is Error & { message: string } {
+    return error && typeof error === 'object' && 'message' in error && typeof error.message === 'string';
   }
 
   private async executeRecoveryAction(action: RecoveryAction): Promise<void> {

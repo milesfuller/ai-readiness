@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import path from 'path';
+import * as path from 'path';
 
 /**
  * Comprehensive E2E Playwright Configuration
@@ -29,12 +29,17 @@ export default defineConfig({
   },
   
   /* Reporter configuration */
-  reporter: [
-    ['html', { open: 'never', outputFolder: 'test-results/e2e-report' }],
-    ['json', { outputFile: 'test-results/e2e-results.json' }],
-    ['junit', { outputFile: 'test-results/e2e-junit.xml' }],
-    ...(process.env.CI ? [['github']] : [['list']]),
-  ],
+  reporter: process.env.CI 
+    ? [
+        ['html', { open: 'never', outputFolder: 'test-results/e2e-report' }],
+        ['json', { outputFile: 'test-results/e2e-results.json' }],
+        ['junit', { outputFile: 'test-results/e2e-junit.xml' }],
+        ['github']
+      ]
+    : [
+        ['html', { open: 'never', outputFolder: 'test-results/e2e-report' }],
+        ['list']
+      ],
   
   /* Global test settings */
   use: {

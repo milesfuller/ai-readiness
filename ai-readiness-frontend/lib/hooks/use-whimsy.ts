@@ -76,6 +76,9 @@ export const useSuccessAnimation = (trigger: boolean, duration: number = 2000) =
       
       return () => clearTimeout(timer)
     }
+    
+    // Return undefined explicitly when no cleanup is needed
+    return undefined
   }, [trigger, duration])
 
   return isAnimating

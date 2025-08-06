@@ -109,8 +109,8 @@ export class TestRateLimitHandler {
     return this.executeWithRetry(
       async () => {
         const response = await fetch(url, {
-          timeout: 30000,
           ...options,
+          signal: AbortSignal.timeout(30000),
         });
 
         if (response.status === 429) {

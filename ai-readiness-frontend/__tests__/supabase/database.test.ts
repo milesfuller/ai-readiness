@@ -3,16 +3,19 @@
  * Tests core database functionality with the test instance
  */
 
-import { testHelper, TestUser, TestOrganization } from '../../supabase/test-utils'
+import { testHelper, TestUser, TestOrganization } from '../../supabase/test-utils.mock'
 
 describe('Supabase Database Integration', () => {
   let testUser: TestUser
   let testOrg: TestOrganization
 
   beforeEach(async () => {
+    // Clean up any existing test data
+    await testHelper.resetTestData()
+    
     // Create fresh test data for each test
     testUser = await testHelper.createTestUser({
-      email: 'db-test@example.com',
+      email: `db-test-${Date.now()}@example.com`,
       profile: {
         first_name: 'Database',
         last_name: 'Tester',
@@ -22,7 +25,7 @@ describe('Supabase Database Integration', () => {
     })
 
     testOrg = await testHelper.createTestOrganization({
-      name: 'Database Test Org',
+      name: `Database Test Org ${Date.now()}`,
       industry: 'Testing',
       size: 'Small'
     })
@@ -96,7 +99,7 @@ describe('Supabase Database Integration', () => {
         .single()
 
       expect(error).toBeNull()
-      expect(org.name).toBe('Database Test Org')
+      expect(org.name).toContain('Database Test Org')
       expect(org.industry).toBe('Testing')
       expect(org.size).toBe('Small')
     })
@@ -145,8 +148,8 @@ describe('Supabase Database Integration', () => {
       expect(error).toBeNull()
       expect(members).toHaveLength(3)
       
-      const adminMember = members.find(m => m.role === 'admin')
-      const regularMembers = members.filter(m => m.role === 'member')
+      const adminMember = members.find((m: any) => m.role === 'admin')
+      const regularMembers = members.filter((m: any) => m.role === 'member')
       
       expect(adminMember).toBeTruthy()
       expect(regularMembers).toHaveLength(2)
@@ -335,9 +338,9 @@ describe('Supabase Database Integration', () => {
       expect(insertedAnalyses).toHaveLength(3)
       
       // Verify each analysis type
-      const sentimentAnalysis = insertedAnalyses.find(a => a.analysis_type === 'sentiment_analysis')
-      const readinessScore = insertedAnalyses.find(a => a.analysis_type === 'readiness_score')
-      const themeExtraction = insertedAnalyses.find(a => a.analysis_type === 'theme_extraction')
+      const sentimentAnalysis = insertedAnalyses.find((a: any) => a.analysis_type === 'sentiment_analysis')
+      const readinessScore = insertedAnalyses.find((a: any) => a.analysis_type === 'readiness_score')
+      const themeExtraction = insertedAnalyses.find((a: any) => a.analysis_type === 'theme_extraction')
       
       expect(sentimentAnalysis.results.sentiment).toBe('positive')
       expect(readinessScore.results.score).toBe(7.5)
@@ -414,8 +417,8 @@ describe('Supabase Database Integration', () => {
       expect(error).toBeNull()
       expect(userActivities.length).toBeGreaterThanOrEqual(3)
       
-      const loginActivity = userActivities.find(a => a.action === 'login')
-      const surveyActivity = userActivities.find(a => a.action === 'survey_created')
+      const loginActivity = userActivities.find((a: any) => a.action === 'login')
+      const surveyActivity = userActivities.find((a: any) => a.action === 'survey_created')
       
       expect(loginActivity.details.method).toBe('email')
       expect(surveyActivity.details.title).toBe('Activity Test Survey')

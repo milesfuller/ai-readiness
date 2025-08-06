@@ -10,36 +10,45 @@
  * - Performance
  */
 
+// Import types first
+import type { MockNextRequest, MockNextRequestOptions } from '../../types/mocks'
+import { createMockNextRequest, createMockNextResponse } from '../../utils/mock-factories'
+
 // Mock NextRequest and NextResponse before importing
 jest.mock('next/server', () => {
   class MockNextRequest {
-    constructor(url, options = {}) {
-      this.url = url;
-      this.method = options.method || 'GET';
-      this.headers = new Map(Object.entries(options.headers || {}));
-      this._body = options.body;
+    public url: string
+    public method: string
+    public headers: Map<string, string>
+    public _body: string
+
+    constructor(url: string, options: MockNextRequestOptions = {}) {
+      this.url = url
+      this.method = options.method || 'GET'
+      this.headers = new Map(Object.entries(options.headers || {}))
+      this._body = options.body || ''
     }
 
-    async json() {
-      return JSON.parse(this._body || '{}');
+    async json(): Promise<any> {
+      return JSON.parse(this._body || '{}')
     }
 
-    async text() {
-      return this._body || '';
+    async text(): Promise<string> {
+      return this._body || ''
     }
   }
 
   return {
     NextRequest: MockNextRequest,
     NextResponse: {
-      json: (data, options = {}) => ({
+      json: (data: any, options: { status?: number; headers?: Record<string, string> } = {}) => ({
         status: options.status || 200,
         json: () => Promise.resolve(data),
         headers: new Map(Object.entries(options.headers || {})),
       }),
     },
-  };
-});
+  }
+})
 
 import { NextRequest } from 'next/server';
 import { POST, GET } from '@/app/api/llm/analyze/route';
@@ -48,7 +57,20 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 
 // Mock dependencies
 jest.mock('@supabase/auth-helpers-nextjs');
-jest.mock('@/lib/services/llm-service');
+jest.mock('@/lib/services/llm-service', () => ({
+  llmService: {
+    analyzeSurveyResponse: jest.fn(),
+    healthCheck: jest.fn(),
+    getConfig: jest.fn(() => ({
+      provider: 'openai',
+      model: 'gpt-4o',
+      temperature: 0.2,
+      maxTokens: 1200,
+      timeout: 45000,
+      retries: 3,
+    })),
+  },
+}));
 jest.mock('next/headers', () => ({
   cookies: jest.fn(() => ({
     get: jest.fn(),
@@ -65,7 +87,7 @@ const mockSupabase = {
     insert: jest.fn().mockReturnThis(),
     update: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
-    single: jest.fn(),
+    single: jest.fn().mockResolvedValue({ data: null, error: null }),
   })),
 };
 
@@ -495,7 +517,7 @@ describe('/api/llm/analyze', () => {
     });
 
     it('should handle XSS attempts in request body', async () => {
-      for (const xssPayload of global.testHelpers.xssPayloads) {
+      for (const xssPayload of (global as any).testHelpers.xssPayloads) {
         const request = new NextRequest('http://localhost:3000/api/llm/analyze', {
           method: 'POST',
           body: JSON.stringify({
@@ -529,7 +551,7 @@ describe('/api/llm/analyze', () => {
     });
 
     it('should handle SQL injection attempts in request body', async () => {
-      for (const sqlPayload of global.testHelpers.sqlInjectionPayloads) {
+      for (const sqlPayload of (global as any).testHelpers.sqlInjectionPayloads) {
         const request = new NextRequest('http://localhost:3000/api/llm/analyze', {
           method: 'POST',
           body: JSON.stringify({
@@ -819,7 +841,7 @@ describe('/api/llm/analyze', () => {
       });
 
       // Simulate rate limiting after 5 requests
-      const rateLimiter = global.testHelpers.simulateRateLimit(5);
+      const rateLimiter = (global as any).testHelpers.simulateRateLimit(5);
       
       mockLLMService.analyzeSurveyResponse.mockImplementation(async () => {
         rateLimiter(); // This will throw after 5 calls

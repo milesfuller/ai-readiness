@@ -8,18 +8,14 @@ import UiTestHelpers from './ui-test-helpers';
  */
 
 test.describe('Enhanced Deployment Validation Suite', () => {
-  let apiHelpers: ApiTestHelpers;
+  let apiHelpers: typeof ApiTestHelpers;
   let uiHelpers: UiTestHelpers;
 
   test.beforeEach(async ({ page }) => {
-    apiHelpers = new ApiTestHelpers(page);
+    apiHelpers = ApiTestHelpers;
     uiHelpers = new UiTestHelpers(page);
     
-    // Setup comprehensive mocking
-    await apiHelpers.mockApiEndpoints();
-    await apiHelpers.mockSupabaseAuth();
-    await apiHelpers.setupConsoleErrorMocking();
-    await apiHelpers.mockFormValidation();
+    // Setup basic API helpers - specific mocking handled in tests as needed
   });
 
   test.describe('Environment & Configuration (Fixed)', () => {
@@ -280,7 +276,7 @@ test.describe('Enhanced Deployment Validation Suite', () => {
         
         // Try to submit empty form
         const submitButton = page.locator('button[type="submit"], [data-testid="submit-button"]').first();
-        await uiHelpers.clickButton(submitButton, { waitForLoad: false });
+        await uiHelpers.clickButton(await submitButton.textContent() || 'Submit', { waitForLoad: false });
         
         // Check for validation errors using enhanced error checking
         const errors = await uiHelpers.checkFormValidation({ shouldHaveErrors: true });
@@ -318,7 +314,7 @@ test.describe('Enhanced Deployment Validation Suite', () => {
           await expect(passwordInput).toHaveAttribute('type', 'password');
           
           // Click toggle
-          await uiHelpers.clickButton(toggleButton, { waitForLoad: false });
+          await uiHelpers.clickButton(await toggleButton.textContent() || 'Toggle', { waitForLoad: false });
           
           // Password should be visible
           await expect(passwordInput).toHaveAttribute('type', 'text');

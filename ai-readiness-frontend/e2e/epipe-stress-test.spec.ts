@@ -155,7 +155,7 @@ test.describe('EPIPE Stress Tests', () => {
       });
     } catch (error) {
       // Timeout is expected, just verify it's handled gracefully
-      expect(error.message).toMatch(/timeout|network/i);
+      expect((error as Error).message).toMatch(/timeout|network/i);
     }
     
     // Page should still be functional

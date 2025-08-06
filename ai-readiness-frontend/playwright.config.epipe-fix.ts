@@ -58,8 +58,8 @@ export default defineConfig({
       ['list', { 
         printSteps: false, // Prevent large console outputs
         quiet: true,       // Minimize console noise
-      }]
-    ]),
+      }] as const
+    ] as const),
   ],
   
   /* Browser configuration optimized for stability */
@@ -180,9 +180,6 @@ export default defineConfig({
     /* CRITICAL: Redirect outputs to files instead of console */
     stdout: process.env.CI ? 'pipe' : 'ignore',
     stderr: process.env.CI ? 'pipe' : 'ignore',
-    
-    /* Server health validation */
-    reuseExistingServer: !process.env.CI,
   },
   
   /* Output management */

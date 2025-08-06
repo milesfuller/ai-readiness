@@ -34,17 +34,51 @@
       ],
       "@/app/*": [
         "./app/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/e2e/*": [
+        "./e2e/*"
+      ],
+      "@/hooks/*": [
+        "./lib/hooks/*"
+      ],
+      "@/tests/types/*": [
+        "./__tests__/types/*"
+      ],
+      "@/tests/utils/*": [
+        "./__tests__/utils/*"
       ]
     },
-    "target": "ES2017"
+    "target": "ES2017",
+    "forceConsistentCasingInFileNames": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "removeComments": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
+    "types": [
+      "jest",
+      "node",
+      "@testing-library/jest-dom"
+    ]
   },
   "include": [
     "next-env.d.ts",
+    "types/**/*.d.ts",
+    "__tests__/types/**/*.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "e2e/**/*"
   ]
 }

@@ -155,6 +155,7 @@ const CircularProgress = React.forwardRef<
     } else {
       setDisplayValue(value)
     }
+    return undefined
   }, [value, animated])
   
   const getStrokeColor = () => {

@@ -96,6 +96,11 @@ export default function LoginPage() {
             data-testid="email-input"
             {...register('email')}
           />
+          {errors.email && (
+            <div className="text-sm text-destructive" data-testid="email-error" role="alert">
+              {errors.email.message}
+            </div>
+          )}
         </div>
 
         {/* Password Field */}
@@ -109,6 +114,11 @@ export default function LoginPage() {
             data-testid="password-input"
             {...register('password')}
           />
+          {errors.password && (
+            <div className="text-sm text-destructive" data-testid="password-error" role="alert">
+              {errors.password.message}
+            </div>
+          )}
         </div>
 
         {/* Remember Me & Forgot Password */}

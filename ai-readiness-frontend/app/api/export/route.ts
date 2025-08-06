@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     // Get user profile and role
     const { data: userProfile, error: profileError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Check organization access for org_admin
     if (userProfile.role === 'org_admin') {
-      if (organizationId && organizationId !== userProfile.organizationId) {
+      if (organizationId && organizationId !== userProfile.organization_id) {
         return NextResponse.json(
           { error: 'Access denied: Cannot access other organization data' },
           { status: 403 }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        if (survey.organization_id !== userProfile.organizationId) {
+        if (survey.organization_id !== userProfile.organization_id) {
           return NextResponse.json(
             { error: 'Access denied: Survey not in your organization' },
             { status: 403 }
@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
 
     // Get user profile
     const { data: userProfile, error: profileError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()

@@ -1,6 +1,10 @@
 // Jest configuration for the AI Readiness Assessment
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js',
+    '<rootDir>/types/jest-dom.d.ts',
+    '<rootDir>/__tests__/types/global.d.ts'
+  ],
   moduleNameMapper: {
     // Handle module aliases
     '^@/components/(.*)$': '<rootDir>/components/$1',
@@ -8,6 +12,13 @@ const customJestConfig = {
     '^@/hooks/(.*)$': '<rootDir>/lib/hooks/$1',
     '^@/types/(.*)$': '<rootDir>/types/$1',
     '^@/app/(.*)$': '<rootDir>/app/$1',
+    '^@/e2e/(.*)$': '<rootDir>/e2e/$1',
+    '^@/(.*)$': '<rootDir>/$1',
+    // Test type definitions
+    '^@/tests/types/(.*)$': '<rootDir>/__tests__/types/$1',
+    // Mock external modules that cause issues
+    '^lodash$': 'lodash',
+    '^recharts$': 'recharts',
   },
   testEnvironment: 'jest-environment-jsdom',
   testPathIgnorePatterns: ['/node_modules/', '/.next/', '/e2e/', '/playwright-report/', '/test-results/'],
@@ -55,7 +66,7 @@ const customJestConfig = {
     }],
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(@supabase|@supabase/.*|nanoid|uuid|jose|@next|framer-motion|recharts|isows|ws|@floating-ui|@realtime-js|@auth-helpers|@ssr)/)',
+    '/node_modules/(?!(@supabase|@supabase/.*|nanoid|uuid|jose|@next|framer-motion|recharts|lodash|isows|ws|@floating-ui|@realtime-js|@auth-helpers|@ssr)/)',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
 }

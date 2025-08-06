@@ -190,7 +190,7 @@ export class MockIntegrationManager extends EventEmitter {
       console.error('❌ Mock validation failed:', error);
       const result: ValidationResult = {
         valid: false,
-        errors: [`Validation error: ${error.message}`],
+        errors: [`Validation error: ${error instanceof Error ? error.message : String(error)}`],
         warnings,
         details
       };
@@ -276,7 +276,7 @@ export class MockIntegrationManager extends EventEmitter {
 
         } catch (error) {
           failedEndpoints.push(mockKey);
-          details[mockKey] = { success: false, error: error.message };
+          details[mockKey] = { success: false, error: error instanceof Error ? error.message : String(error) };
         }
       }
 
@@ -303,7 +303,7 @@ export class MockIntegrationManager extends EventEmitter {
         valid: false,
         testedEndpoints,
         failedEndpoints,
-        warnings: [...warnings, `Validation error: ${error.message}`],
+        warnings: [...warnings, `Validation error: ${error instanceof Error ? error.message : String(error)}`],
         details
       };
 
@@ -563,7 +563,7 @@ export class MockIntegrationManager extends EventEmitter {
     } catch (error) {
       return {
         valid: false,
-        errors: [`Schema validation error: ${error.message}`],
+        errors: [`Schema validation error: ${error instanceof Error ? error.message : String(error)}`],
         warnings,
         details: { schema, response }
       };
@@ -606,7 +606,7 @@ export class MockIntegrationManager extends EventEmitter {
         success: false,
         responseTime,
         status: 0,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }

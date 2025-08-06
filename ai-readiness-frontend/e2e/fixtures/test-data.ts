@@ -7,8 +7,9 @@ import type {
   SurveyResponse, 
   Organization,
   JTBDForces,
-  ExportOptions 
+  ExportOptions
 } from '../../lib/types'
+import type { Route } from '@playwright/test'
 
 // Test Organizations
 export const TEST_ORGANIZATIONS = [
@@ -559,4 +560,175 @@ export function getTestCredentials(role: 'admin' | 'org_admin' | 'user' = 'admin
     userId: user.id,
     organizationId: user.organizationId
   }
+}
+
+// Export test credentials for common usage
+export const TEST_CREDENTIALS = {
+  ADMIN_USER: getTestCredentials('admin'),
+  ORG_ADMIN_USER: getTestCredentials('org_admin'),
+  VALID_USER: getTestCredentials('user'),
+} as const;
+
+// Types for test helpers
+export interface TestUser {
+  email: string;
+  password: string;
+  userId: string;
+  organizationId: string;
+}
+
+export interface AuthTestHelpers {
+  login: (credentials: TestUser, options?: { expectSuccess?: boolean; timeout?: number }) => Promise<{ success: boolean; url: string }>;
+  logout: () => Promise<void>;
+  checkAuthState: () => Promise<boolean>;
+}
+
+export interface TestDataManager {
+  cleanup: () => Promise<void>;
+  createTestSurvey: (questions: number, title: string) => Promise<{ id: string; title: string; questions: any[] }>;
+  generateTestResponses: (survey: any, count: number) => any[];
+  simulateNetworkConditions: (condition: 'normal' | 'offline' | 'slow') => Promise<void>;
+}
+
+// Create auth test helpers
+export function createAuthTestHelpers(page: any): AuthTestHelpers {
+  return {
+    async login(credentials: TestUser, options: { expectSuccess?: boolean; timeout?: number } = {}) {
+      const { expectSuccess = true, timeout = 10000 } = options;
+      
+      try {
+        // Navigate to login page
+        await page.goto('/auth/login');
+        await page.waitForLoadState('networkidle', { timeout });
+        
+        // Fill login form
+        const emailInput = page.locator('[data-testid="email-input"], input[type="email"], input[name="email"]').first();
+        const passwordInput = page.locator('[data-testid="password-input"], input[type="password"], input[name="password"]').first();
+        const submitButton = page.locator('[data-testid="login-submit"], button[type="submit"], button:has-text("Login"), button:has-text("Sign In")').first();
+        
+        if (await emailInput.isVisible()) {
+          await emailInput.fill(credentials.email);
+        }
+        
+        if (await passwordInput.isVisible()) {
+          await passwordInput.fill(credentials.password);
+        }
+        
+        if (await submitButton.isVisible()) {
+          await submitButton.click();
+        }
+        
+        // Wait for navigation or error
+        await page.waitForTimeout(2000);
+        
+        const currentUrl = page.url();
+        const success = currentUrl.includes('/dashboard') || currentUrl.includes('/admin');
+        
+        return { success, url: currentUrl };
+      } catch (error) {
+        console.error('Login failed:', error);
+        return { success: false, url: page.url() };
+      }
+    },
+    
+    async logout() {
+      try {
+        const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign Out"), [data-testid="logout"]').first();
+        if (await logoutButton.isVisible()) {
+          await logoutButton.click();
+          await page.waitForTimeout(1000);
+        }
+        
+        // Clear storage
+        await page.evaluate(() => {
+          localStorage.clear();
+          sessionStorage.clear();
+        });
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    },
+    
+    async checkAuthState() {
+      try {
+        const currentUrl = page.url();
+        return currentUrl.includes('/dashboard') || currentUrl.includes('/admin');
+      } catch (error) {
+        return false;
+      }
+    }
+  };
+}
+
+// Create test data manager
+export function createTestDataManager(page: any): TestDataManager {
+  return {
+    async cleanup() {
+      try {
+        // Clear any test data
+        await page.evaluate(() => {
+          localStorage.removeItem('test-survey-data');
+          localStorage.removeItem('test-user-data');
+        });
+      } catch (error) {
+        console.error('Cleanup failed:', error);
+      }
+    },
+    
+    async createTestSurvey(questions: number, title: string) {
+      const survey = {
+        id: `test-survey-${Date.now()}`,
+        title,
+        questions: Array.from({ length: questions }, (_, i) => ({
+          id: `q${i + 1}`,
+          type: 'text',
+          title: `Test Question ${i + 1}`,
+          required: true,
+          order: i + 1
+        }))
+      };
+      
+      // Store in localStorage for mock usage
+      await page.evaluate((surveyData: any) => {
+        const surveys = JSON.parse(localStorage.getItem('test-surveys') || '[]');
+        surveys.push(surveyData);
+        localStorage.setItem('test-surveys', JSON.stringify(surveys));
+      }, survey);
+      
+      return survey;
+    },
+    
+    generateTestResponses(survey: any, count: number) {
+      return Array.from({ length: count }, (_, i) => ({
+        id: `response-${i + 1}`,
+        surveyId: survey.id,
+        userId: `user-${i + 1}`,
+        responses: survey.questions.map((q: any) => ({
+          questionId: q.id,
+          answer: `Test response ${i + 1} for ${q.title}`
+        })),
+        completedAt: new Date().toISOString()
+      }));
+    },
+    
+    async simulateNetworkConditions(condition: 'normal' | 'offline' | 'slow') {
+      try {
+        if (condition === 'offline') {
+          await page.context().setOffline(true);
+        } else if (condition === 'slow') {
+          await page.context().setOffline(false);
+          // Simulate slow network with route delays
+          await page.route('**/*', async (route: Route) => {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await route.continue();
+          });
+        } else {
+          await page.context().setOffline(false);
+          await page.unrouteAll();
+        }
+      } catch (error) {
+        console.error('Network simulation failed:', error);
+      }
+    }
+  };
 }

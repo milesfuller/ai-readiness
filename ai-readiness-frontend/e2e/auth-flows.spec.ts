@@ -53,16 +53,16 @@ test.describe('Complete Authentication Flows', () => {
       await page.goto('/auth/login');
       
       // Verify login form is present
-      await expect(page.locator('form')).toBeVisible();
-      await expect(page.locator('input[type="email"]')).toBeVisible();
-      await expect(page.locator('input[type="password"]')).toBeVisible();
+      await expect(page.locator('[data-testid="login-form"]')).toBeVisible();
+      await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
+      await expect(page.locator('[data-testid="password-input"]')).toBeVisible();
       
-      // Fill in valid credentials
-      await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
-      await page.fill('input[type="password"]', TEST_CREDENTIALS.VALID_USER.password);
+      // Fill in valid credentials using data-testid selectors
+      await page.fill('[data-testid="email-input"]', TEST_CREDENTIALS.VALID_USER.email);
+      await page.fill('[data-testid="password-input"]', TEST_CREDENTIALS.VALID_USER.password);
       
       // Click submit button
-      const submitButton = page.locator('button[type="submit"]');
+      const submitButton = page.locator('[data-testid="login-submit"]');
       await expect(submitButton).toBeVisible();
       await expect(submitButton).toBeEnabled();
       
@@ -94,10 +94,10 @@ test.describe('Complete Authentication Flows', () => {
       
       await page.goto('/auth/login');
       
-      await page.fill('input[type="email"]', TEST_CREDENTIALS.ADMIN_USER.email);
-      await page.fill('input[type="password"]', TEST_CREDENTIALS.ADMIN_USER.password);
+      await page.fill('[data-testid="email-input"]', TEST_CREDENTIALS.ADMIN_USER.email);
+      await page.fill('[data-testid="password-input"]', TEST_CREDENTIALS.ADMIN_USER.password);
       
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       
       // Should redirect to dashboard
       await page.waitForURL('/dashboard', { timeout: 5000 });
@@ -119,10 +119,10 @@ test.describe('Complete Authentication Flows', () => {
       // Check the remember me checkbox
       await page.check('input[type="checkbox"]');
       
-      await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
-      await page.fill('input[type="password"]', TEST_CREDENTIALS.VALID_USER.password);
+      await page.fill('[data-testid="email-input"]', TEST_CREDENTIALS.VALID_USER.email);
+      await page.fill('[data-testid="password-input"]', TEST_CREDENTIALS.VALID_USER.password);
       
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       await page.waitForURL('/dashboard', { timeout: 5000 });
       
       // Close and reopen browser (new context simulates this)
@@ -148,13 +148,13 @@ test.describe('Complete Authentication Flows', () => {
       
       await page.goto('/auth/login');
       
-      await page.fill('input[type="email"]', TEST_CREDENTIALS.INVALID_USER.email);
-      await page.fill('input[type="password"]', TEST_CREDENTIALS.INVALID_USER.password);
+      await page.fill('[data-testid="email-input"]', TEST_CREDENTIALS.INVALID_USER.email);
+      await page.fill('[data-testid="password-input"]', TEST_CREDENTIALS.INVALID_USER.password);
       
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       
       // Should show error message
-      await expect(page.locator('[role="alert"], .text-destructive, .bg-destructive')).toBeVisible();
+      await expect(page.locator('[data-testid="login-error"]')).toBeVisible();
       
       // Should stay on login page
       expect(page.url()).toContain('/auth/login');
@@ -175,13 +175,13 @@ test.describe('Complete Authentication Flows', () => {
       await page.goto('/auth/login');
       
       // Try to submit empty form
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       
       // Should show validation errors (wait for form validation)
       await page.waitForTimeout(1000);
       
       // Check for email field validation
-      const emailField = page.locator('input[type="email"]');
+      const emailField = page.locator('[data-testid="email-input"]');
       const emailError = await emailField.evaluate(el => {
         if (el instanceof HTMLInputElement) {
           return el.validationMessage || el.getAttribute('aria-invalid');
@@ -199,13 +199,13 @@ test.describe('Complete Authentication Flows', () => {
       
       await page.goto('/auth/login');
       
-      await page.fill('input[type="email"]', 'not-an-email');
-      await page.fill('input[type="password"]', 'SomePassword123!');
+      await page.fill('[data-testid="email-input"]', 'not-an-email');
+      await page.fill('[data-testid="password-input"]', 'SomePassword123!');
       
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       
       // Should show validation error or stay on page
-      const emailField = page.locator('input[type="email"]');
+      const emailField = page.locator('[data-testid="email-input"]');
       const isInvalid = await emailField.evaluate(el => {
         if (el instanceof HTMLInputElement) {
           return !el.validity.valid || el.getAttribute('aria-invalid') === 'true';
@@ -228,7 +228,7 @@ test.describe('Complete Authentication Flows', () => {
       await page.goto('/auth/login');
       await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
       await page.fill('input[type="password"]', TEST_CREDENTIALS.VALID_USER.password);
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       await page.waitForURL('/dashboard', { timeout: 5000 });
       
       // Navigate to different pages
@@ -252,7 +252,7 @@ test.describe('Complete Authentication Flows', () => {
       await page.goto('/auth/login');
       await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
       await page.fill('input[type="password"]', TEST_CREDENTIALS.VALID_USER.password);
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       await page.waitForURL('/dashboard', { timeout: 5000 });
       
       // Manually clear session to simulate expiration
@@ -293,7 +293,7 @@ test.describe('Complete Authentication Flows', () => {
       await page.goto('/auth/login');
       await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
       await page.fill('input[type="password"]', TEST_CREDENTIALS.VALID_USER.password);
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       await page.waitForURL('/dashboard', { timeout: 5000 });
       
       // Look for logout button/link
@@ -343,7 +343,7 @@ test.describe('Complete Authentication Flows', () => {
         await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
         
         // Submit form
-        await page.click('button[type="submit"]');
+        await page.click('[data-testid="login-submit"]');
         
         // Should show success message or confirmation
         await page.waitForTimeout(2000);
@@ -399,7 +399,7 @@ test.describe('Complete Authentication Flows', () => {
       await page.fill('input[type="email"]', TEST_CREDENTIALS.VALID_USER.email);
       await page.fill('input[type="password"]', TEST_CREDENTIALS.VALID_USER.password);
       
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       
       // Look for success indicators (checkmarks, success text, etc.)
       const successElements = page.locator('.animate-pulse, :has-text("Welcome back"), :has-text("Redirecting"), .button-success');
@@ -428,7 +428,7 @@ test.describe('Complete Authentication Flows', () => {
       // Record timing of redirect
       const startTime = Date.now();
       
-      await page.click('button[type="submit"]');
+      await page.click('[data-testid="login-submit"]');
       
       // Should redirect immediately without setTimeout delay
       await page.waitForURL('/dashboard', { timeout: 3000 });
@@ -473,13 +473,13 @@ test.describe('Registration Flow Tests', () => {
     await page.goto('/auth/register');
     
     // Test empty form submission
-    await page.click('button[type="submit"]');
+    await page.click('[data-testid="login-submit"]');
     
     // Should show validation errors
     await page.waitForTimeout(1000);
     
-    const emailField = page.locator('input[type="email"]');
-    const passwordField = page.locator('input[type="password"]').first();
+    const emailField = page.locator('[data-testid="email-input"]');
+    const passwordField = page.locator('[data-testid="password-input"]').first();
     
     const emailInvalid = await emailField.evaluate(el => {
       if (el instanceof HTMLInputElement) {
@@ -507,8 +507,8 @@ test.describe('Registration Flow Tests', () => {
     // Use unique email for testing
     const testEmail = `test.${Date.now()}@aireadiness.com`;
     
-    await page.fill('input[type="email"]', testEmail);
-    await page.fill('input[type="password"]', 'TestPass123!');
+    await page.fill('[data-testid="email-input"]', testEmail);
+    await page.fill('[data-testid="password-input"]', 'TestPass123!');
     
     // Fill confirm password if present
     const confirmPasswordField = page.locator('input[name="confirmPassword"], input[placeholder*="confirm"]');
@@ -516,7 +516,7 @@ test.describe('Registration Flow Tests', () => {
       await confirmPasswordField.fill('TestPass123!');
     }
     
-    await page.click('button[type="submit"]');
+    await page.click('[data-testid="login-submit"]');
     
     // Should show success message or redirect to verification
     await page.waitForTimeout(3000);

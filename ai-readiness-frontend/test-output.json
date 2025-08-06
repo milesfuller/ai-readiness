@@ -1,0 +1,2280 @@
+
+> ai-readiness-frontend@0.1.0 test:e2e
+> playwright test e2e/auth-flows.spec.ts --reporter=json
+
+{
+  "config": {
+    "configFile": "/workspaces/ai-readiness/ai-readiness-frontend/playwright.config.ts",
+    "rootDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 5,
+    "metadata": {
+      "testType": "e2e",
+      "environment": "test",
+      "timestamp": "2025-08-06T00:51:40.335Z",
+      "platform": "linux",
+      "nodeVersion": "v20.19.3",
+      "actualWorkers": 1
+    },
+    "preserveOutput": "failures-only",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T00:51:40.335Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T00:51:40.335Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T00:51:40.335Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T00:51:40.335Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/workspaces/ai-readiness/ai-readiness-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "metadata": {
+          "testType": "e2e",
+          "environment": "test",
+          "timestamp": "2025-08-06T00:51:40.335Z",
+          "platform": "linux",
+          "nodeVersion": "v20.19.3",
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/workspaces/ai-readiness/ai-readiness-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.2",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3000,
+      "reuseExistingServer": true,
+      "timeout": 180000,
+      "env": {
+        "DOCKER_BUILDKIT": "1",
+        "CLAUDE_FLOW_AUTO_PUSH": "false",
+        "USER": "node",
+        "CLAUDE_CODE_ENTRYPOINT": "cli",
+        "npm_config_user_agent": "npm/10.8.2 node/v20.19.3 linux x64 workspaces/false",
+        "GIT_EDITOR": "true",
+        "NODE_VERSION": "20.19.3",
+        "HOSTNAME": "640bba4db740",
+        "YARN_VERSION": "1.22.22",
+        "GIT_ASKPASS": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/extensions/git/dist/askpass.sh",
+        "npm_node_execpath": "/usr/local/bin/node",
+        "SHLVL": "3",
+        "BROWSER": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/bin/helpers/browser.sh",
+        "npm_config_noproxy": "",
+        "HOME": "/home/node",
+        "TERM_PROGRAM_VERSION": "1.102.3",
+        "VSCODE_IPC_HOOK_CLI": "/tmp/vscode-ipc-03d9fa30-7b87-4ea1-86b1-4311dc5ce240.sock",
+        "npm_package_json": "/workspaces/ai-readiness/ai-readiness-frontend/package.json",
+        "NVM_SYMLINK_CURRENT": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "VSCODE_GIT_ASKPASS_MAIN": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/extensions/git/dist/askpass-main.js",
+        "VSCODE_GIT_ASKPASS_NODE": "/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/node",
+        "npm_config_userconfig": "/home/node/.npmrc",
+        "npm_config_local_prefix": "/workspaces/ai-readiness/ai-readiness-frontend",
+        "COLORTERM": "truecolor",
+        "REMOTE_CONTAINERS": "true",
+        "COLOR": "0",
+        "NVM_DIR": "/usr/local/share/nvm",
+        "CLAUDE_FLOW_TELEMETRY_ENABLED": "true",
+        "CLAUDE_FLOW_HOOKS_ENABLED": "true",
+        "CLAUDE_FLOW_REMOTE_EXECUTION": "true",
+        "REMOTE_CONTAINERS_IPC": "/tmp/vscode-remote-containers-ipc-18d59274-77ce-4290-b692-009ee7a586e9.sock",
+        "_": "/usr/local/bin/npm",
+        "npm_config_prefix": "/usr/local/share/npm-global",
+        "npm_config_npm_version": "10.8.2",
+        "PROMPT_DIRTRIM": "4",
+        "TERM": "xterm-256color",
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta",
+        "npm_config_cache": "/home/node/.npm",
+        "npm_config_node_gyp": "/usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+        "PATH": "/workspaces/ai-readiness/ai-readiness-frontend/node_modules/.bin:/workspaces/ai-readiness/node_modules/.bin:/workspaces/node_modules/.bin:/node_modules/.bin:/usr/local/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/vscode/vscode-server/bin/linux-x64/488a1f239235055e34e673291fb8d8c810886f81/bin/remote-cli:/usr/local/share/nvm/current/bin:/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:/usr/local/share/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/node/.local/bin:/home/node/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand",
+        "NODE": "/usr/local/bin/node",
+        "npm_package_name": "ai-readiness-frontend",
+        "COREPACK_ENABLE_AUTO_PIN": "0",
+        "PLAYWRIGHT_BROWSERS_PATH": "/home/node/.cache/ms-playwright",
+        "CLAUDE_FLOW_AUTO_COMMIT": "false",
+        "REMOTE_CONTAINERS_SOCKETS": "[]",
+        "CLAUDE_FLOW_CHECKPOINTS_ENABLED": "true",
+        "LANG": "en_US.UTF-8",
+        "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
+        "VSCODE_GIT_IPC_HANDLE": "/tmp/vscode-git-afec277a8c.sock",
+        "TERM_PROGRAM": "vscode",
+        "npm_lifecycle_script": "playwright test",
+        "SHELL": "/bin/bash",
+        "npm_package_version": "0.1.0",
+        "npm_lifecycle_event": "test:e2e",
+        "CLAUDECODE": "1",
+        "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "",
+        "npm_config_globalconfig": "/usr/local/share/npm-global/etc/npmrc",
+        "npm_config_init_module": "/home/node/.npm-init.js",
+        "PWD": "/workspaces/ai-readiness/ai-readiness-frontend",
+        "npm_execpath": "/usr/local/lib/node_modules/npm/bin/npm-cli.js",
+        "NVM_CD_FLAGS": "",
+        "npm_config_global_prefix": "/usr/local/share/npm-global",
+        "npm_command": "run-script",
+        "NVM_RC_VERSION": "",
+        "INIT_CWD": "/workspaces/ai-readiness/ai-readiness-frontend",
+        "EDITOR": "vi",
+        "BROWSERSLIST_IGNORE_OLD_DATA": "true",
+        "NODE_ENV": "test",
+        "PLAYWRIGHT_TEST": "true",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      },
+      "ignoreHTTPSErrors": true,
+      "retryTimeout": 30000,
+      "stdout": "ignore",
+      "stderr": "ignore"
+    }
+  },
+  "suites": [
+    {
+      "title": "auth-flows.spec.ts",
+      "file": "auth-flows.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Complete Authentication Flows",
+          "file": "auth-flows.spec.ts",
+          "line": 34,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Successful Authentication",
+              "file": "auth-flows.spec.ts",
+              "line": 47,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "login with valid credentials and redirect to dashboard",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-08-06T00:51:43.968Z",
+                          "annotations": [],
+                          "attachments": []
+                        },
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            },
+                            {
+                              "message": "Error: ENOENT: no such file or directory, open '/workspaces/ai-readiness/ai-readiness-frontend/test-results/.playwright-artifacts-1/b6000307a4a6ee4c153110b89f054b86.zip'"
+                            },
+                            {
+                              "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2025-08-06T00:51:45.032Z",
+                          "annotations": [],
+                          "attachments": []
+                        },
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 2,
+                          "startTime": "2025-08-06T00:53:17.199Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-47796df33dbee6e91d8c",
+                  "file": "auth-flows.spec.ts",
+                  "line": 49,
+                  "column": 9
+                },
+                {
+                  "title": "admin login with elevated permissions",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-08-06T00:53:19.059Z",
+                          "annotations": [],
+                          "attachments": []
+                        },
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2025-08-06T00:53:20.462Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/auth-flows-Complete-Authen-0903c-n-with-elevated-permissions-chromium-retry1/trace.zip"
+                            }
+                          ]
+                        },
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 2,
+                          "startTime": "2025-08-06T00:53:21.387Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-b7cff2a94bc6c91811de",
+                  "file": "auth-flows.spec.ts",
+                  "line": 92,
+                  "column": 9
+                },
+                {
+                  "title": "remember me checkbox persists session",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 3,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-08-06T00:53:22.182Z",
+                          "annotations": [],
+                          "attachments": []
+                        },
+                        {
+                          "workerIndex": 7,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 4,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2025-08-06T00:53:23.022Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/auth-flows-Complete-Authen-28f07-e-checkbox-persists-session-chromium-retry1/trace.zip"
+                            }
+                          ]
+                        },
+                        {
+                          "workerIndex": 8,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 3,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 2,
+                          "startTime": "2025-08-06T00:53:23.867Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-f71ef089928850366a55",
+                  "file": "auth-flows.spec.ts",
+                  "line": 114,
+                  "column": 9
+                },
+                {
+                  "title": "login with valid credentials and redirect to dashboard",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-3eed00c1d90b899705d0",
+                  "file": "auth-flows.spec.ts",
+                  "line": 49,
+                  "column": 9
+                },
+                {
+                  "title": "admin login with elevated permissions",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-eb38da2a7bf412bb7d3c",
+                  "file": "auth-flows.spec.ts",
+                  "line": 92,
+                  "column": 9
+                },
+                {
+                  "title": "remember me checkbox persists session",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-12cd793fc221b50c9050",
+                  "file": "auth-flows.spec.ts",
+                  "line": 114,
+                  "column": 9
+                },
+                {
+                  "title": "login with valid credentials and redirect to dashboard",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-01fee48e3439fd30229a",
+                  "file": "auth-flows.spec.ts",
+                  "line": 49,
+                  "column": 9
+                },
+                {
+                  "title": "admin login with elevated permissions",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-4b41d88f8760b01415a5",
+                  "file": "auth-flows.spec.ts",
+                  "line": 92,
+                  "column": 9
+                },
+                {
+                  "title": "remember me checkbox persists session",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-ee82c2dcc201231aae58",
+                  "file": "auth-flows.spec.ts",
+                  "line": 114,
+                  "column": 9
+                },
+                {
+                  "title": "login with valid credentials and redirect to dashboard",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-670e6b43e09b334d0ff6",
+                  "file": "auth-flows.spec.ts",
+                  "line": 49,
+                  "column": 9
+                },
+                {
+                  "title": "admin login with elevated permissions",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-62e55bd4c9afdcff682b",
+                  "file": "auth-flows.spec.ts",
+                  "line": 92,
+                  "column": 9
+                },
+                {
+                  "title": "remember me checkbox persists session",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-b32d463d6aa38a3c4a54",
+                  "file": "auth-flows.spec.ts",
+                  "line": 114,
+                  "column": 9
+                },
+                {
+                  "title": "login with valid credentials and redirect to dashboard",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-afe95aa081cb51f4dd22",
+                  "file": "auth-flows.spec.ts",
+                  "line": 49,
+                  "column": 9
+                },
+                {
+                  "title": "admin login with elevated permissions",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-1b809f35bf4146345348",
+                  "file": "auth-flows.spec.ts",
+                  "line": 92,
+                  "column": 9
+                },
+                {
+                  "title": "remember me checkbox persists session",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-3b2ddd23fe8f6cf64041",
+                  "file": "auth-flows.spec.ts",
+                  "line": 114,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Failed Authentication Scenarios",
+              "file": "auth-flows.spec.ts",
+              "line": 144,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "login with invalid credentials shows error message",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 9,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 3,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-08-06T00:53:24.683Z",
+                          "annotations": [],
+                          "attachments": []
+                        },
+                        {
+                          "workerIndex": 10,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 3,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2025-08-06T00:53:25.499Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/auth-flows-Complete-Authen-d336b-entials-shows-error-message-chromium-retry1/trace.zip"
+                            }
+                          ]
+                        },
+                        {
+                          "workerIndex": 11,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 3,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 2,
+                          "startTime": "2025-08-06T00:53:26.321Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-a78ce1b84d708114b202",
+                  "file": "auth-flows.spec.ts",
+                  "line": 146,
+                  "column": 9
+                },
+                {
+                  "title": "login with empty fields shows validation errors",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 12,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 4,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-08-06T00:53:27.125Z",
+                          "annotations": [],
+                          "attachments": []
+                        },
+                        {
+                          "workerIndex": 13,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 4,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2025-08-06T00:53:27.943Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/workspaces/ai-readiness/ai-readiness-frontend/test-results/auth-flows-Complete-Authen-3aed4-lds-shows-validation-errors-chromium-retry1/trace.zip"
+                            }
+                          ]
+                        },
+                        {
+                          "workerIndex": 14,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 3,
+                          "error": {
+                            "message": "Error: options.wsEndpoint is required",
+                            "stack": "Error: options.wsEndpoint is required"
+                          },
+                          "errors": [
+                            {
+                              "message": "Error: options.wsEndpoint is required"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 2,
+                          "startTime": "2025-08-06T00:53:28.765Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-1757680853b611803fe8",
+                  "file": "auth-flows.spec.ts",
+                  "line": 172,
+                  "column": 9
+                },
+                {
+                  "title": "login with malformed email shows error",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-d92b17f317c5df3f2546",
+                  "file": "auth-flows.spec.ts",
+                  "line": 197,
+                  "column": 9
+                },
+                {
+                  "title": "login with invalid credentials shows error message",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-be8e3bce1c565c755da5",
+                  "file": "auth-flows.spec.ts",
+                  "line": 146,
+                  "column": 9
+                },
+                {
+                  "title": "login with empty fields shows validation errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-fec2fe8afddca7d1ef08",
+                  "file": "auth-flows.spec.ts",
+                  "line": 172,
+                  "column": 9
+                },
+                {
+                  "title": "login with malformed email shows error",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-da0408c316d9ed145b43",
+                  "file": "auth-flows.spec.ts",
+                  "line": 197,
+                  "column": 9
+                },
+                {
+                  "title": "login with invalid credentials shows error message",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-5bd8a362ea6e605fe89d",
+                  "file": "auth-flows.spec.ts",
+                  "line": 146,
+                  "column": 9
+                },
+                {
+                  "title": "login with empty fields shows validation errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-3e778f2b88fe2933548f",
+                  "file": "auth-flows.spec.ts",
+                  "line": 172,
+                  "column": 9
+                },
+                {
+                  "title": "login with malformed email shows error",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-1899418942ce920fd843",
+                  "file": "auth-flows.spec.ts",
+                  "line": 197,
+                  "column": 9
+                },
+                {
+                  "title": "login with invalid credentials shows error message",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-146d0a6716de961213bd",
+                  "file": "auth-flows.spec.ts",
+                  "line": 146,
+                  "column": 9
+                },
+                {
+                  "title": "login with empty fields shows validation errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-6089d5fd92ce2f318c92",
+                  "file": "auth-flows.spec.ts",
+                  "line": 172,
+                  "column": 9
+                },
+                {
+                  "title": "login with malformed email shows error",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-d5a3e66127f3874d619b",
+                  "file": "auth-flows.spec.ts",
+                  "line": 197,
+                  "column": 9
+                },
+                {
+                  "title": "login with invalid credentials shows error message",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-27a5706313d9b779acac",
+                  "file": "auth-flows.spec.ts",
+                  "line": 146,
+                  "column": 9
+                },
+                {
+                  "title": "login with empty fields shows validation errors",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-d2edd9b89a038512d0a8",
+                  "file": "auth-flows.spec.ts",
+                  "line": 172,
+                  "column": 9
+                },
+                {
+                  "title": "login with malformed email shows error",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-4f89b084a6ffd58cf746",
+                  "file": "auth-flows.spec.ts",
+                  "line": 197,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Session Management",
+              "file": "auth-flows.spec.ts",
+              "line": 222,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "session persists across page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-07a8a450ac09f8ddd4d0",
+                  "file": "auth-flows.spec.ts",
+                  "line": 224,
+                  "column": 9
+                },
+                {
+                  "title": "session expires and redirects to login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-4c5ce2a8d2266606cadc",
+                  "file": "auth-flows.spec.ts",
+                  "line": 248,
+                  "column": 9
+                },
+                {
+                  "title": "session persists across page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-8c482856d024db76b2fa",
+                  "file": "auth-flows.spec.ts",
+                  "line": 224,
+                  "column": 9
+                },
+                {
+                  "title": "session expires and redirects to login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-fd4c3e35c896e82e25c3",
+                  "file": "auth-flows.spec.ts",
+                  "line": 248,
+                  "column": 9
+                },
+                {
+                  "title": "session persists across page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-34275b66c06c4e3daf28",
+                  "file": "auth-flows.spec.ts",
+                  "line": 224,
+                  "column": 9
+                },
+                {
+                  "title": "session expires and redirects to login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-fe2e0a76b7936ca7e83a",
+                  "file": "auth-flows.spec.ts",
+                  "line": 248,
+                  "column": 9
+                },
+                {
+                  "title": "session persists across page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-9cbfd73760b43706cac3",
+                  "file": "auth-flows.spec.ts",
+                  "line": 224,
+                  "column": 9
+                },
+                {
+                  "title": "session expires and redirects to login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-053ccd13b6ef250ca642",
+                  "file": "auth-flows.spec.ts",
+                  "line": 248,
+                  "column": 9
+                },
+                {
+                  "title": "session persists across page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-c9febb653387d08ea391",
+                  "file": "auth-flows.spec.ts",
+                  "line": 224,
+                  "column": 9
+                },
+                {
+                  "title": "session expires and redirects to login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-3ea1cd33f03600b6ff9b",
+                  "file": "auth-flows.spec.ts",
+                  "line": 248,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Logout Functionality",
+              "file": "auth-flows.spec.ts",
+              "line": 287,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "successful logout clears session and redirects",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-e1d0fdf8ac1babc878d7",
+                  "file": "auth-flows.spec.ts",
+                  "line": 289,
+                  "column": 9
+                },
+                {
+                  "title": "successful logout clears session and redirects",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-dc7107dd69cf067c93f7",
+                  "file": "auth-flows.spec.ts",
+                  "line": 289,
+                  "column": 9
+                },
+                {
+                  "title": "successful logout clears session and redirects",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-0840db02cf451106be5a",
+                  "file": "auth-flows.spec.ts",
+                  "line": 289,
+                  "column": 9
+                },
+                {
+                  "title": "successful logout clears session and redirects",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-c1fb3b40700ec6bd7183",
+                  "file": "auth-flows.spec.ts",
+                  "line": 289,
+                  "column": 9
+                },
+                {
+                  "title": "successful logout clears session and redirects",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-f63afd0b3f174b6bc1b9",
+                  "file": "auth-flows.spec.ts",
+                  "line": 289,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Password Reset Flow",
+              "file": "auth-flows.spec.ts",
+              "line": 326,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "password reset form submits successfully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-f43d4070e58800540746",
+                  "file": "auth-flows.spec.ts",
+                  "line": 328,
+                  "column": 9
+                },
+                {
+                  "title": "password reset form submits successfully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-b119360c6304381c4c3c",
+                  "file": "auth-flows.spec.ts",
+                  "line": 328,
+                  "column": 9
+                },
+                {
+                  "title": "password reset form submits successfully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-dd63cbe411691a136cf7",
+                  "file": "auth-flows.spec.ts",
+                  "line": 328,
+                  "column": 9
+                },
+                {
+                  "title": "password reset form submits successfully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-916f1483db6593cf488b",
+                  "file": "auth-flows.spec.ts",
+                  "line": 328,
+                  "column": 9
+                },
+                {
+                  "title": "password reset form submits successfully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-c9b69b729ea94337e1be",
+                  "file": "auth-flows.spec.ts",
+                  "line": 328,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "UI and Loading States",
+              "file": "auth-flows.spec.ts",
+              "line": 366,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "loading states display correctly during authentication",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-6ba397f7c88c40ec58dd",
+                  "file": "auth-flows.spec.ts",
+                  "line": 368,
+                  "column": 9
+                },
+                {
+                  "title": "success animation displays after login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-2212114c87f7a2b026ba",
+                  "file": "auth-flows.spec.ts",
+                  "line": 394,
+                  "column": 9
+                },
+                {
+                  "title": "loading states display correctly during authentication",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-b4ab739948fc6814d321",
+                  "file": "auth-flows.spec.ts",
+                  "line": 368,
+                  "column": 9
+                },
+                {
+                  "title": "success animation displays after login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-bd071bd728c779fa813b",
+                  "file": "auth-flows.spec.ts",
+                  "line": 394,
+                  "column": 9
+                },
+                {
+                  "title": "loading states display correctly during authentication",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-caf9ab405860e65840e6",
+                  "file": "auth-flows.spec.ts",
+                  "line": 368,
+                  "column": 9
+                },
+                {
+                  "title": "success animation displays after login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-f39232585605cc72fbc4",
+                  "file": "auth-flows.spec.ts",
+                  "line": 394,
+                  "column": 9
+                },
+                {
+                  "title": "loading states display correctly during authentication",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-363dfe716d17ba1850f6",
+                  "file": "auth-flows.spec.ts",
+                  "line": 368,
+                  "column": 9
+                },
+                {
+                  "title": "success animation displays after login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-6d5e925fabd1e6cecf0d",
+                  "file": "auth-flows.spec.ts",
+                  "line": 394,
+                  "column": 9
+                },
+                {
+                  "title": "loading states display correctly during authentication",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-353db1b2dacc09ca53b3",
+                  "file": "auth-flows.spec.ts",
+                  "line": 368,
+                  "column": 9
+                },
+                {
+                  "title": "success animation displays after login",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-286c37a68022f83c2d01",
+                  "file": "auth-flows.spec.ts",
+                  "line": 394,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Critical Bug Verification",
+              "file": "auth-flows.spec.ts",
+              "line": 418,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "verify setTimeout removal - no redirect delay",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-01c2e8bad0d8f32b68a7",
+                  "file": "auth-flows.spec.ts",
+                  "line": 420,
+                  "column": 9
+                },
+                {
+                  "title": "multiple rapid login attempts handled correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-d334cb5529eb46b22967",
+                  "file": "auth-flows.spec.ts",
+                  "line": 444,
+                  "column": 9
+                },
+                {
+                  "title": "verify setTimeout removal - no redirect delay",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-75f23714e066c7e67445",
+                  "file": "auth-flows.spec.ts",
+                  "line": 420,
+                  "column": 9
+                },
+                {
+                  "title": "multiple rapid login attempts handled correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-03c1c9d84b0166cc1051",
+                  "file": "auth-flows.spec.ts",
+                  "line": 444,
+                  "column": 9
+                },
+                {
+                  "title": "verify setTimeout removal - no redirect delay",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-a5ef07beaad8ac556426",
+                  "file": "auth-flows.spec.ts",
+                  "line": 420,
+                  "column": 9
+                },
+                {
+                  "title": "multiple rapid login attempts handled correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-6b5ddf677a9b27a5e29b",
+                  "file": "auth-flows.spec.ts",
+                  "line": 444,
+                  "column": 9
+                },
+                {
+                  "title": "verify setTimeout removal - no redirect delay",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-dbe8b6c16c1ebdf38067",
+                  "file": "auth-flows.spec.ts",
+                  "line": 420,
+                  "column": 9
+                },
+                {
+                  "title": "multiple rapid login attempts handled correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Chrome",
+                      "projectName": "Mobile Chrome",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-1763e6aa2502ce9749b6",
+                  "file": "auth-flows.spec.ts",
+                  "line": 444,
+                  "column": 9
+                },
+                {
+                  "title": "verify setTimeout removal - no redirect delay",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-8867536b44732180606d",
+                  "file": "auth-flows.spec.ts",
+                  "line": 420,
+                  "column": 9
+                },
+                {
+                  "title": "multiple rapid login attempts handled correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "Mobile Safari",
+                      "projectName": "Mobile Safari",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "0c6c160bbdde4ceadf0a-e395f443b3ab478ce07d",
+                  "file": "auth-flows.spec.ts",
+                  "line": 444,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Registration Flow Tests",
+          "file": "auth-flows.spec.ts",
+          "line": 468,
+          "column": 6,
+          "specs": [
+            {
+              "title": "registration form validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-d123ec0667a7f54eeb28",
+              "file": "auth-flows.spec.ts",
+              "line": 470,
+              "column": 7
+            },
+            {
+              "title": "registration with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-49c07e12a488f0cb47f1",
+              "file": "auth-flows.spec.ts",
+              "line": 502,
+              "column": 7
+            },
+            {
+              "title": "registration form validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-4e824cfde163b9c4c9f3",
+              "file": "auth-flows.spec.ts",
+              "line": 470,
+              "column": 7
+            },
+            {
+              "title": "registration with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-b2784a4bf4a9f9c47efa",
+              "file": "auth-flows.spec.ts",
+              "line": 502,
+              "column": 7
+            },
+            {
+              "title": "registration form validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-71122a56145e6b410ef2",
+              "file": "auth-flows.spec.ts",
+              "line": 470,
+              "column": 7
+            },
+            {
+              "title": "registration with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-eaae5bee0b51d8c826bb",
+              "file": "auth-flows.spec.ts",
+              "line": 502,
+              "column": 7
+            },
+            {
+              "title": "registration form validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-2fb400052852dd8f50aa",
+              "file": "auth-flows.spec.ts",
+              "line": 470,
+              "column": 7
+            },
+            {
+              "title": "registration with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-c28a8f6e04be58a13729",
+              "file": "auth-flows.spec.ts",
+              "line": 502,
+              "column": 7
+            },
+            {
+              "title": "registration form validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-a765c9606b8e69fd9bfc",
+              "file": "auth-flows.spec.ts",
+              "line": 470,
+              "column": 7
+            },
+            {
+              "title": "registration with valid data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0c6c160bbdde4ceadf0a-09e1dcb2464f2b0d1dd2",
+              "file": "auth-flows.spec.ts",
+              "line": 502,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 5 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-08-06T00:51:40.342Z",
+    "duration": 108456.307,
+    "expected": 0,
+    "skipped": 75,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

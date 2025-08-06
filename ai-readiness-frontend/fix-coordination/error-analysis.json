@@ -1,0 +1,93 @@
+{
+  "session": {
+    "started": "2025-08-06",
+    "coordinator": "Fix Coordinator Agent",
+    "status": "ACTIVE"
+  },
+  "baseline": {
+    "total_errors": 192,
+    "error_categories": {
+      "mock_infrastructure": {
+        "count": 76,
+        "priority": "HIGH",
+        "description": "MockNextRequest type definitions and test helpers"
+      },
+      "e2e_tests": {
+        "count": 58,
+        "priority": "HIGH", 
+        "description": "TestUser types and Playwright integration issues"
+      },
+      "api_tests": {
+        "count": 42,
+        "priority": "MEDIUM",
+        "description": "API route test type annotations"
+      },
+      "configuration": {
+        "count": 16,
+        "priority": "LOW",
+        "description": "Config file type issues"
+      }
+    }
+  },
+  "files_affected": {
+    "__tests__/api/export.test.ts": {
+      "errors": 21,
+      "types": ["parameter_types", "mock_properties", "global_access"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "__tests__/api/llm/analyze.test.ts": {
+      "errors": 10,
+      "types": ["parameter_types", "mock_properties"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "__tests__/api/llm/batch.test.ts": {
+      "errors": 11,
+      "types": ["parameter_types", "mock_properties"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "e2e/dashboard-flows.spec.ts": {
+      "errors": 20,
+      "types": ["test_user_types"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "e2e/survey-flows.spec.ts": {
+      "errors": 4,
+      "types": ["test_user_types"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "e2e/enhanced-deployment-validation.spec.ts": {
+      "errors": 2,
+      "types": ["import_export", "type_mismatch"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "e2e/epipe-stress-test.spec.ts": {
+      "errors": 1,
+      "types": ["unknown_type"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "e2e/fixtures/test-data.ts": {
+      "errors": 1,
+      "types": ["parameter_types"],
+      "assigned_agent": null,
+      "status": "pending"
+    },
+    "playwright.config.test.ts": {
+      "errors": 1,
+      "types": ["duplicate_property"],
+      "assigned_agent": null,
+      "status": "pending"
+    }
+  },
+  "monitoring": {
+    "last_check": "2025-08-06-initial",
+    "check_interval_minutes": 5,
+    "next_check": "pending_agent_assignment"
+  }
+}

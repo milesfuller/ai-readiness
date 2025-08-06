@@ -25,21 +25,32 @@ export default defineConfig({
   },
   
   /* Enhanced reporter configuration with EPIPE error mitigation */
-  reporter: [
-    ['html', { 
-      open: 'never',
-      outputFolder: 'playwright-report',
-      attachmentsBaseURL: undefined // Prevent URL resolution issues
-    }],
-    ['json', { 
-      outputFile: 'test-results/results.json',
-      attachmentsBaseURL: undefined // Prevent attachment URL issues
-    }],
-    ...(process.env.CI 
-      ? [['github'], ['junit', { outputFile: 'test-results/junit.xml' }]] 
-      : [['list', { printSteps: true }]]
-    ),
-  ],
+  reporter: process.env.CI 
+    ? [
+        ['html', { 
+          open: 'never',
+          outputFolder: 'playwright-report',
+          attachmentsBaseURL: undefined // Prevent URL resolution issues
+        }],
+        ['json', { 
+          outputFile: 'test-results/results.json',
+          attachmentsBaseURL: undefined // Prevent attachment URL issues
+        }],
+        ['github'],
+        ['junit', { outputFile: 'test-results/junit.xml' }]
+      ]
+    : [
+        ['html', { 
+          open: 'never',
+          outputFolder: 'playwright-report',
+          attachmentsBaseURL: undefined // Prevent URL resolution issues
+        }],
+        ['json', { 
+          outputFile: 'test-results/results.json',
+          attachmentsBaseURL: undefined // Prevent attachment URL issues
+        }],
+        ['list', { printSteps: true }]
+      ],
   
   /* Global test settings with enhanced stability */
   use: {
@@ -51,7 +62,7 @@ export default defineConfig({
     /* Enhanced tracing and debugging for better error analysis */
     trace: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: process.env.CI ? 'retain-on-failure' : 'retain-on-first-failure',
+    video: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
     
     /* Browser settings optimized for stability */
     headless: process.env.PLAYWRIGHT_HEADLESS !== 'false',
@@ -60,11 +71,6 @@ export default defineConfig({
     /* Extended timeout settings to prevent EPIPE errors */
     actionTimeout: 30000, // Increased from 15s to 30s
     navigationTimeout: 60000, // Increased from 30s to 60s
-    
-    /* Connection settings to prevent EPIPE errors */
-    connectOptions: {
-      timeout: 60000, // Connection timeout
-    },
     
     /* Test environment headers with connection optimization */
     extraHTTPHeaders: {
@@ -89,22 +95,27 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // Fixed Chrome configuration - minimal args to prevent wsEndpoint issues
         launchOptions: {
+          headless: process.env.PLAYWRIGHT_HEADLESS !== 'false',
           args: [
             '--no-sandbox',
             '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
           ],
+          // Explicitly disable wsEndpoint to prevent connection issues
+          executablePath: undefined,
         },
       },
     },
-    // Disable other browsers in test mode to reduce complexity and EPIPE potential
-    ...(process.env.CI || process.env.NODE_ENV === 'test' ? [] : [
+    // In test mode, only run chromium to prevent wsEndpoint and configuration conflicts
+    ...(process.env.NODE_ENV === 'test' ? [] : [
       {
         name: 'firefox',
         use: { 
           ...devices['Desktop Firefox'],
           launchOptions: {
             firefoxUserPrefs: {
-              'network.http.max-connections-per-server': 1, // Reduce connections
+              'network.http.max-connections-per-server': 1,
             },
           },
         },
@@ -113,7 +124,6 @@ export default defineConfig({
         name: 'webkit',
         use: { ...devices['Desktop Safari'] },
       },
-      /* Test against mobile viewports in full test mode only */
       {
         name: 'Mobile Chrome',
         use: { 
@@ -155,17 +165,14 @@ export default defineConfig({
     /* Wait for stable server before tests */
     ignoreHTTPSErrors: true,
     
-    /* Server health check with retry logic */
-    retryTimeout: 30000, // 30 second retry timeout
-    
     /* Enhanced server startup logging for debugging */
     stdout: process.env.CI ? 'pipe' : 'ignore',
     stderr: process.env.CI ? 'pipe' : 'ignore',
   },
   
-  /* Global setup and teardown - temporarily disabled to fix wsEndpoint issue */
-  globalSetup: undefined, // Disabled to prevent browser conflicts
-  globalTeardown: undefined, // Disabled to prevent browser conflicts
+  /* Global setup and teardown - disabled to fix wsEndpoint issue */
+  // globalSetup: require.resolve('./e2e/global-setup.ts'),
+  // globalTeardown: require.resolve('./e2e/global-teardown.ts'),
   
   /* Test output directory */
   outputDir: 'test-results/',

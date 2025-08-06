@@ -68,8 +68,9 @@ export class UiTestHelpers {
     const button = await this.waitForInteractive(selector, timeout);
     
     // Check if button is already in loading state
-    const isLoading = await button.evaluate(btn => {
-      return btn.disabled || btn.classList.contains('loading') || btn.textContent?.includes('Loading');
+    const isLoading = await button.evaluate((btn: Element) => {
+      const element = btn as HTMLButtonElement;
+      return element.disabled || btn.classList.contains('loading') || btn.textContent?.includes('Loading');
     });
     
     if (isLoading && !force) {
@@ -123,8 +124,8 @@ export class UiTestHelpers {
     const form = this.page.locator(selector);
     await expect(form).toBeVisible();
     
-    const submitButton = form.locator('button[type="submit"]');
-    await this.clickButton(submitButton.first(), { timeout });
+    const submitButtonSelector = 'button[type="submit"]';
+    await this.clickButton(submitButtonSelector, { timeout });
     
     if (waitForNavigation || expectedUrl) {
       if (expectedUrl) {
@@ -169,7 +170,7 @@ export class UiTestHelpers {
     // Check HTML5 validation
     const invalidInputs = await this.page.locator('input:invalid, select:invalid, textarea:invalid').all();
     for (const input of invalidInputs) {
-      const validationMessage = await input.evaluate(el => {
+      const validationMessage = await input.evaluate((el: Element) => {
         if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
           return el.validationMessage;
         }

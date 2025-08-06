@@ -1,0 +1,295 @@
+__tests__/api/export.test.ts(19,17): error TS7006: Parameter 'url' implicitly has an 'any' type.
+__tests__/api/export.test.ts(20,12): error TS2339: Property 'url' does not exist on type 'MockNextRequest'.
+__tests__/api/export.test.ts(21,12): error TS2339: Property 'method' does not exist on type 'MockNextRequest'.
+__tests__/api/export.test.ts(21,29): error TS2339: Property 'method' does not exist on type '{}'.
+__tests__/api/export.test.ts(22,12): error TS2339: Property 'headers' does not exist on type 'MockNextRequest'.
+__tests__/api/export.test.ts(22,53): error TS2339: Property 'headers' does not exist on type '{}'.
+__tests__/api/export.test.ts(23,12): error TS2339: Property '_body' does not exist on type 'MockNextRequest'.
+__tests__/api/export.test.ts(23,28): error TS2339: Property 'body' does not exist on type '{}'.
+__tests__/api/export.test.ts(27,30): error TS2339: Property '_body' does not exist on type 'MockNextRequest'.
+__tests__/api/export.test.ts(31,19): error TS2339: Property '_body' does not exist on type 'MockNextRequest'.
+__tests__/api/export.test.ts(38,14): error TS7006: Parameter 'data' implicitly has an 'any' type.
+__tests__/api/export.test.ts(39,25): error TS2339: Property 'status' does not exist on type '{}'.
+__tests__/api/export.test.ts(41,49): error TS2339: Property 'headers' does not exist on type '{}'.
+__tests__/api/export.test.ts(952,62): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(952,69): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(952,77): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(984,62): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(984,69): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(984,77): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(1013,62): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/api/export.test.ts(1013,69): error TS2322: Type 'string' is not assignable to type '{ value: string; label: string; description: string; }'.
+__tests__/components/auth/login.test.tsx(34,46): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(35,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(36,61): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(37,64): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(38,62): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(39,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(40,41): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(55,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(72,56): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(117,61): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(138,49): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(139,28): error TS2339: Property 'toBeDisabled' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(206,26): error TS2339: Property 'toHaveAttribute' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(207,29): error TS2339: Property 'toHaveAttribute' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(216,63): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(219,66): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(222,44): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(225,52): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(228,64): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/login.test.tsx(245,56): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<Element | null>'.
+__tests__/components/auth/register.test.tsx(36,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(37,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(38,55): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(39,54): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(40,61): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(41,73): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(42,60): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(43,61): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(44,69): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(55,53): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(56,56): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(69,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(82,74): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(95,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(111,125): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(153,59): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(184,57): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(185,59): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(241,20): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(247,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(248,57): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(249,57): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(250,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(259,57): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(262,56): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(265,65): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(268,59): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(271,71): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(274,68): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/auth/register.test.tsx(277,44): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(62,92): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(63,60): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(64,87): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(65,42): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(66,60): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(73,27): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(74,27): error TS2339: Property 'toHaveClass' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(84,89): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(85,53): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(91,41): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(99,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(100,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(110,26): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(111,27): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(128,74): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(129,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Matchers<void, HTMLElement | null>'.
+__tests__/components/survey/survey-question.test.tsx(134,80): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Matchers<void, HTMLElement | null>'.
+__tests__/components/survey/survey-question.test.tsx(135,52): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(144,24): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(160,55): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(167,24): error TS2339: Property 'toHaveAttribute' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(187,52): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(194,34): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(222,79): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(223,75): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(230,26): error TS2339: Property 'toBeDisabled' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(237,26): error TS2339: Property 'toBeDisabled' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(243,75): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(272,24): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(275,24): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(285,24): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(293,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(294,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(300,79): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(301,75): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(310,53): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(313,70): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(316,71): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(319,74): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(330,26): error TS2339: Property 'toHaveFocus' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(339,40): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(340,40): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(347,26): error TS2339: Property 'toHaveClass' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(354,40): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(422,87): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/survey-question.test.tsx(435,24): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(79,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(80,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(81,66): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(88,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(94,36): error TS2339: Property 'toHaveClass' does not exist on type 'JestMatchers<ChildNode | null>'.
+__tests__/components/survey/voice-recorder.test.tsx(114,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(115,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(127,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(128,42): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(129,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(142,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(155,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(176,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(189,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(195,26): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement | null>'.
+__tests__/components/survey/voice-recorder.test.tsx(207,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(215,56): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Matchers<void, HTMLElement | null>'.
+__tests__/components/survey/voice-recorder.test.tsx(230,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(244,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(249,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(250,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(262,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(269,80): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(275,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(286,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(293,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(294,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(306,51): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(307,84): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(318,84): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(351,42): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(365,55): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(374,71): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(386,28): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(413,38): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(423,28): error TS2339: Property 'toHaveClass' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(434,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(443,34): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(457,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(471,58): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(491,72): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(502,26): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(517,84): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(527,37): error TS2339: Property 'toHaveValue' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/components/survey/voice-recorder.test.tsx(546,70): error TS2339: Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(183,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(184,48): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(185,48): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(195,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(196,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(197,49): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(198,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(208,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(209,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(210,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(236,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(246,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(247,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(291,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(292,49): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(307,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(308,49): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(321,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(344,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(356,24): error TS18048: 'result.error' is possibly 'undefined'.
+__tests__/lib/hooks/use-auth.test.tsx(379,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(392,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(424,24): error TS18048: 'result.error' is possibly 'undefined'.
+__tests__/lib/hooks/use-auth.test.tsx(447,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(460,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(482,24): error TS18048: 'result.error' is possibly 'undefined'.
+__tests__/lib/hooks/use-auth.test.tsx(505,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(518,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(542,24): error TS18048: 'result.error' is possibly 'undefined'.
+__tests__/lib/hooks/use-auth.test.tsx(565,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(578,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(602,24): error TS18048: 'result.error' is possibly 'undefined'.
+__tests__/lib/hooks/use-auth.test.tsx(625,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(664,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(665,53): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(666,53): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(702,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(743,60): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(797,56): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(801,51): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(811,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(836,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(837,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(843,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+__tests__/lib/hooks/use-auth.test.tsx(853,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(854,49): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(873,52): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(878,50): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(892,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/hooks/use-auth.test.tsx(904,48): error TS2339: Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'.
+__tests__/lib/security/security.test.ts(44,50): error TS2345: Argument of type 'Response' is not assignable to parameter of type 'NextResponse<unknown>'.
+__tests__/lib/security/security.test.ts(54,50): error TS2345: Argument of type 'Response' is not assignable to parameter of type 'NextResponse<unknown>'.
+__tests__/lib/security/security.test.ts(72,50): error TS2345: Argument of type 'Response' is not assignable to parameter of type 'NextResponse<unknown>'.
+__tests__/supabase/database.test.ts(151,40): error TS7006: Parameter 'm' implicitly has an 'any' type.
+__tests__/supabase/database.test.ts(152,45): error TS7006: Parameter 'm' implicitly has an 'any' type.
+__tests__/supabase/database.test.ts(341,55): error TS7006: Parameter 'a' implicitly has an 'any' type.
+__tests__/supabase/database.test.ts(342,52): error TS7006: Parameter 'a' implicitly has an 'any' type.
+__tests__/supabase/database.test.ts(343,53): error TS7006: Parameter 'a' implicitly has an 'any' type.
+__tests__/supabase/database.test.ts(420,49): error TS7006: Parameter 'a' implicitly has an 'any' type.
+__tests__/supabase/database.test.ts(421,50): error TS7006: Parameter 'a' implicitly has an 'any' type.
+__tests__/types/mocks.ts(226,7): error TS2403: Subsequent variable declarations must have the same type.  Variable 'ResizeObserver' must be of type '{ new (callback: ResizeObserverCallback): ResizeObserver; prototype: ResizeObserver; }', but here has type 'MockedClass<{ new (callback: ResizeObserverCallback): ResizeObserver; prototype: ResizeObserver; }>'.
+__tests__/types/mocks.ts(227,7): error TS2403: Subsequent variable declarations must have the same type.  Variable 'IntersectionObserver' must be of type '{ new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit | undefined): IntersectionObserver; prototype: IntersectionObserver; }', but here has type 'MockedClass<{ new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit | undefined): IntersectionObserver; prototype: IntersectionObserver; }>'.
+__tests__/types/mocks.ts(228,7): error TS2403: Subsequent variable declarations must have the same type.  Variable 'MediaRecorder' must be of type '{ new (stream: MediaStream, options?: MediaRecorderOptions | undefined): MediaRecorder; prototype: MediaRecorder; isTypeSupported(type: string): boolean; }', but here has type 'MockedClass<{ new (stream: MediaStream, options?: MediaRecorderOptions | undefined): MediaRecorder; prototype: MediaRecorder; isTypeSupported(type: string): boolean; }>'.
+__tests__/types/mocks.ts(231,7): error TS2300: Duplicate identifier 'fetch'.
+__tests__/types/mocks.ts(231,7): error TS2502: 'fetch' is referenced directly or indirectly in its own type annotation.
+__tests__/types/mocks.ts(234,5): error TS2717: Subsequent property declarations must have the same type.  Property 'matchMedia' must be of type '(query: string) => MediaQueryList', but here has type 'MockedFunction<(query: string) => MediaQueryList>'.
+__tests__/types/mocks.ts(281,18): error TS2430: Interface 'MockHeaders' incorrectly extends interface 'Map<string, string>'.
+__tests__/types/mocks.ts(350,22): error TS2552: Cannot find name 'SpeechRecognitionEvent'. Did you mean 'SpeechRecognitionResult'?
+__tests__/types/mocks.ts(351,21): error TS2552: Cannot find name 'SpeechRecognitionErrorEvent'. Did you mean 'SpeechRecognitionResult'?
+__tests__/utils/mock-factories.ts(82,7): error TS2322: Type 'Mock<() => { data: { subscription: { unsubscribe: Mock<() => void>; }; }; }>' is not assignable to type 'MockedFunction<(callback: any) => { data: { subscription: { unsubscribe: MockedFunction<() => void>; }; }; }>'.
+__tests__/utils/mock-factories.ts(91,5): error TS2322: Type 'Mock<() => { select: Mock<UnknownFunction>; insert: Mock<UnknownFunction>; update: Mock<UnknownFunction>; delete: Mock<...>; ... 6 more ...; single: Mock<...>; }>' is not assignable to type 'MockedFunction<(table: string) => MockSupabaseQueryBuilder>'.
+__tests__/utils/mock-factories.ts(102,43): error TS2345: Argument of type '{ data: null; error: null; }' is not assignable to parameter of type 'never'.
+__tests__/utils/mock-factories.ts(161,20): error TS2554: Expected 1 arguments, but got 0.
+__tests__/utils/mock-factories.ts(161,36): error TS2554: Expected 2 arguments, but got 0.
+__tests__/utils/mock-factories.ts(173,20): error TS2554: Expected 1 arguments, but got 0.
+__tests__/utils/mock-factories.ts(173,36): error TS2554: Expected 2 arguments, but got 0.
+__tests__/utils/mock-factories.ts(189,20): error TS2554: Expected 1 arguments, but got 0.
+__tests__/utils/mock-factories.ts(189,36): error TS2554: Expected 2 arguments, but got 0.
+__tests__/utils/mock-factories.ts(205,20): error TS2554: Expected 1 arguments, but got 0.
+__tests__/utils/mock-factories.ts(205,36): error TS2554: Expected 2 arguments, but got 0.
+__tests__/utils/mock-factories.ts(231,3): error TS2322: Type 'Mock<UnknownFunction>' is not assignable to type '{ new (callback: ResizeObserverCallback): ResizeObserver; prototype: ResizeObserver; }'.
+__tests__/utils/mock-factories.ts(237,3): error TS2322: Type 'Mock<UnknownFunction>' is not assignable to type '{ new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit | undefined): IntersectionObserver; prototype: IntersectionObserver; }'.
+__tests__/utils/mock-factories.ts(257,3): error TS2322: Type 'Mock<UnknownFunction>' is not assignable to type '{ (input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>; (input: string | Request | URL, init?: RequestInit | undefined): Promise<...>; }'.
+__tests__/utils/mock-factories.ts(304,51): error TS2344: Type 'T' does not satisfy the constraint 'object'.
+__tests__/utils/mock-factories.ts(305,28): error TS2344: Type 'T' does not satisfy the constraint 'object'.
+__tests__/utils/mock-factories.ts(312,18): error TS2352: Conversion of type 'Mock<T>' to type 'MockedFunction<T>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+app/survey/[sessionId]/page.tsx(169,13): error TS7030: Not all code paths return a value.
+components/ui/progress.tsx(149,19): error TS7030: Not all code paths return a value.
+components/ui/whimsy.tsx(303,13): error TS7030: Not all code paths return a value.
+components/ui/whimsy.tsx(416,13): error TS7030: Not all code paths return a value.
+e2e/api-integration.spec.ts(10,3): error TS2305: Module '"../lib/types"' has no exported member 'LLMConfig'.
+e2e/auth-login-redirect.spec.ts(151,55): error TS18046: 'error' is of type 'unknown'.
+e2e/critical-paths-basic.spec.ts(46,68): error TS2353: Object literal may only specify known properties, and 'timeout' does not exist in type '{ has?: Locator | undefined; hasNot?: Locator | undefined; hasNotText?: string | RegExp | undefined; hasText?: string | RegExp | undefined; }'.
+e2e/critical-user-journey.spec.ts(379,25): error TS2304: Cannot find name 'createAuthTestHelpers'.
+e2e/critical-user-journey.spec.ts(384,50): error TS2304: Cannot find name 'TEST_CREDENTIALS'.
+e2e/critical-user-journey.spec.ts(403,48): error TS2304: Cannot find name 'TEST_CREDENTIALS'.
+e2e/critical-user-journey.spec.ts(439,25): error TS2304: Cannot find name 'createAuthTestHelpers'.
+e2e/critical-user-journey.spec.ts(463,49): error TS2304: Cannot find name 'TEST_CREDENTIALS'.
+e2e/critical-user-journey.spec.ts(505,25): error TS2304: Cannot find name 'createAuthTestHelpers'.
+e2e/critical-user-journey.spec.ts(521,51): error TS2304: Cannot find name 'TEST_CREDENTIALS'.
+e2e/dashboard-flows.spec.ts(33,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(242,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(313,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(350,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(378,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(405,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(437,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(498,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(537,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(561,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(589,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(621,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(661,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(701,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(731,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(752,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/dashboard-flows.spec.ts(777,31): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/enhanced-deployment-validation.spec.ts(11,19): error TS2749: 'ApiTestHelpers' refers to a value, but is being used as a type here. Did you mean 'typeof ApiTestHelpers'?
+e2e/enhanced-deployment-validation.spec.ts(15,22): error TS2351: This expression is not constructable.
+e2e/enhanced-deployment-validation.spec.ts(283,37): error TS2345: Argument of type 'Locator' is not assignable to parameter of type 'string'.
+e2e/enhanced-deployment-validation.spec.ts(321,39): error TS2345: Argument of type 'Locator' is not assignable to parameter of type 'string'.
+e2e/epipe-stress-test.spec.ts(158,14): error TS18046: 'error' is of type 'unknown'.
+e2e/fixtures/test-data.ts(722,43): error TS7006: Parameter 'route' implicitly has an 'any' type.
+e2e/survey-flows.spec.ts(36,49): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/survey-flows.spec.ts(1263,29): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/survey-flows.spec.ts(1330,29): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/survey-flows.spec.ts(1389,29): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/survey-flows.spec.ts(1403,36): error TS2345: Argument of type '{ email: "admin@test-aireadiness.com" | "orgadmin@test-aireadiness.com" | "user@test-aireadiness.com" | "analyst@test-aireadiness.com"; password: "TestPassword123!"; userId: "user-admin-001" | ... 2 more ... | "user-regular-002"; organizationId: "org-test-001"; }' is not assignable to parameter of type 'TestUser'.
+e2e/utils/api-test-helpers.ts(441,14): error TS2451: Cannot redeclare block-scoped variable 'testDataGenerator'.
+e2e/utils/api-test-helpers.ts(442,14): error TS2451: Cannot redeclare block-scoped variable 'performanceMonitor'.
+e2e/utils/api-test-helpers.ts(456,16): error TS2300: Duplicate identifier 'helpers'.
+lib/hooks/use-llm-analysis.ts(251,13): error TS7030: Not all code paths return a value.
+lib/hooks/use-whimsy.ts(70,13): error TS7030: Not all code paths return a value.

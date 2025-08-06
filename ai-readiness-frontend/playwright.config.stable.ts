@@ -100,7 +100,7 @@ export default defineConfig({
   /* Enhanced web server with maximum stability */
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    port: 3000,
     reuseExistingServer: false, // Always start fresh
     timeout: 300000, // 5 minutes startup timeout
     
