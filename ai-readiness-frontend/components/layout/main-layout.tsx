@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Header } from "./header"
 import { Sidebar } from "./sidebar"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { User, UserRole } from "@/lib/types"
 
 interface MainLayoutProps {
-  user?: User
+  user?: SupabaseUser | User
   children: React.ReactNode
   currentPath?: string
   className?: string
@@ -19,7 +20,15 @@ const MainLayout = React.forwardRef<HTMLDivElement, MainLayoutProps>(
     const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
 
-    const userRole: UserRole = user?.role || 'user'
+    const getUserRole = (user?: SupabaseUser | User): UserRole => {
+      if (!user) return 'user'
+      if ('role' in user && user.role) {
+        return user.role as UserRole
+      }
+      return 'user'
+    }
+
+    const userRole: UserRole = getUserRole(user)
 
     const router = useRouter()
     

@@ -24,10 +24,11 @@ import {
   Shield,
   BarChart3
 } from "lucide-react"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { User as UserType, UserRole } from "@/lib/types"
 
 interface HeaderProps {
-  user?: UserType
+  user?: SupabaseUser | UserType
   onMenuClick?: () => void
   className?: string
 }
@@ -35,6 +36,14 @@ interface HeaderProps {
 const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
   ({ user, onMenuClick, className }, ref) => {
     const router = useRouter()
+
+    const getUserRole = (user?: SupabaseUser | UserType): UserRole => {
+      if (!user) return 'user'
+      if ('role' in user && user.role) {
+        return user.role as UserRole
+      }
+      return 'user'
+    }
     
     const handleLogout = async () => {
       try {
@@ -137,11 +146,11 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
                     <Button variant="ghost" className="relative h-[44px] w-[44px] rounded-full" data-testid="user-profile" aria-label="User profile menu">
                       <Avatar className="h-10 w-10">
                         <AvatarImage 
-                          src={user.profile?.avatar} 
-                          alt={user.email}
+                          src={(user && 'profile' in user) ? user.profile?.avatar : undefined} 
+                          alt={user?.email}
                         />
                         <AvatarFallback className="bg-teal-500/10 border border-teal-500/20">
-                          {user.email.charAt(0).toUpperCase()}
+                          {user?.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -151,18 +160,18 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-2">
-                          {getRoleIcon(user.role)}
+                          {getRoleIcon(getUserRole(user))}
                           <span className="text-sm font-medium">
-                            {getRoleLabel(user.role)}
+                            {getRoleLabel(getUserRole(user))}
                           </span>
                         </div>
                         <p className="text-sm font-medium leading-none">
-                          {user.profile?.firstName} {user.profile?.lastName}
+                          {(user && 'profile' in user) ? `${user.profile?.firstName} ${user.profile?.lastName}` : user?.email}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground">
-                          {user.email}
+                          {user?.email}
                         </p>
-                        {user.profile?.department && (
+                        {(user && 'profile' in user && user.profile?.department) && (
                           <p className="text-xs leading-none text-muted-foreground">
                             {user.profile.department}
                           </p>
