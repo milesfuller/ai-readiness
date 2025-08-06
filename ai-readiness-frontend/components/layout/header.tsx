@@ -1,4 +1,8 @@
+'use client'
+
 import * as React from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from '@/lib/supabase/client'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,6 +34,25 @@ interface HeaderProps {
 
 const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
   ({ user, onMenuClick, className }, ref) => {
+    const router = useRouter()
+    
+    const handleLogout = async () => {
+      try {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        router.push('/auth/login')
+      } catch (error) {
+        console.error('Logout error:', error)
+        // Still redirect to login on error
+        router.push('/auth/login')
+      }
+    }
+    
+    const handleNotifications = () => {
+      // For now, just navigate to a notifications page
+      // In the future, this could open a dropdown with actual notifications
+      router.push('/notifications')
+    }
     const getRoleIcon = (role: UserRole) => {
       switch (role) {
         case 'admin':
@@ -94,7 +117,13 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
             {/* Right side - User menu */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative min-h-[44px] min-w-[44px]" aria-label="Notifications">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative min-h-[44px] min-w-[44px]" 
+                aria-label="Notifications"
+                onClick={handleNotifications}
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
                   3
@@ -143,19 +172,19 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
                     
                     <DropdownMenuSeparator />
                     
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/profile')}>
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
                     </DropdownMenuItem>
                     
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </DropdownMenuItem>
                     
                     <DropdownMenuSeparator />
                     
-                    <DropdownMenuItem className="text-red-400 focus:text-red-400">
+                    <DropdownMenuItem className="text-red-400 focus:text-red-400" onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>
@@ -165,7 +194,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 
               {/* Login button if no user */}
               {!user && (
-                <Button variant="default" size="sm" className="min-h-[44px] px-4">
+                <Button variant="default" size="sm" className="min-h-[44px] px-4" onClick={() => router.push('/auth/login')}>
                   Sign In
                 </Button>
               )}
