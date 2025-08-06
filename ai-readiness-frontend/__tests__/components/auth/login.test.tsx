@@ -5,24 +5,26 @@ import { useRouter } from 'next/navigation'
 import LoginPage from '@/app/auth/login/page'
 import { useAuth } from '@/lib/hooks/use-auth'
 
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 // Mock the modules
-jest.mock('@/lib/hooks/use-auth')
-jest.mock('next/navigation')
+vi.mock('@/lib/hooks/use-auth')
+vi.mock('next/navigation')
 
 describe('LoginPage', () => {
-  const mockSignIn = jest.fn()
-  const mockPush = jest.fn()
-  const mockReplace = jest.fn()
+  const mockSignIn = vi.fn()
+  const mockPush = vi.fn()
+  const mockReplace = vi.fn()
   
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     
     // Setup mocks
-    ;(useAuth as jest.Mock).mockReturnValue({
+    ;(useAuth as any).mockReturnValue({
       signIn: mockSignIn,
     })
-    ;(useRouter as jest.Mock).mockReturnValue({
+    ;(useRouter as any).mockReturnValue({
       push: mockPush,
       replace: mockReplace,
     })

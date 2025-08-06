@@ -4,13 +4,13 @@ import React from 'react'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AuthProvider, useAuth } from '@/lib/auth/context'
-import { createBrowserClient } from '@/lib/supabase/client-browser'
+import { createClient } from '@/lib/supabase/client'
 import type { Session, User as SupabaseUser, AuthError } from '@supabase/supabase-js'
 import type { User as AppUser } from '@/lib/types'
 
-// Mock the supabase browser client
-jest.mock('@/lib/supabase/client-browser', () => ({
-  createBrowserClient: jest.fn(() => ({
+// Mock the supabase client
+jest.mock('@/lib/supabase/client', () => ({
+  createClient: jest.fn(() => ({
     auth: {
       getSession: jest.fn(),
       signInWithPassword: jest.fn(),

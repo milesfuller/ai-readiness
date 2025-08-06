@@ -1,46 +1,131 @@
-import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
-import { registerClient, getClient } from './singleton'
+/**
+ * Consolidated Browser Supabase Client
+ * 
+ * This client handles all browser-side Supabase operations.
+ * Consolidates functionality from client-browser.ts and client.ts with simplified singleton pattern.
+ */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-// Singleton function that ensures only one client instance exists
+// Simple in-memory client cache to prevent multiple instances
+let clientInstance: SupabaseClient | null = null
+
+/**
+ * Create a browser-side Supabase client with cookie-based session management
+ * This function consolidates client-browser.ts and client.ts functionality
+ */
 export function createClient(): SupabaseClient {
-  // Check if instance already exists in global registry
-  const existingClient = getClient('general')
-  if (existingClient) {
-    return existingClient
+  // Return existing instance if available (simple singleton)
+  if (clientInstance) {
+    return clientInstance
   }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
     // Only log errors in development, and only if not in test environment
     if (process.env.NODE_ENV !== 'production' && !process.env.X_TEST_ENVIRONMENT) {
-      console.error('Supabase environment variables:', {
-        url: supabaseUrl ? 'Set' : 'Missing',
-        key: supabaseAnonKey ? 'Set' : 'Missing'
+      console.error('Missing Supabase environment variables:', {
+        url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING',
+        key: supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'MISSING'
       })
     }
-    throw new Error('Missing Supabase environment variables')
+    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required')
   }
 
-  // Create new client instance
-  const client = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+  // Detect test environment for different configuration
+  const isTestEnv = process.env.NODE_ENV === 'test' || 
+                   process.env.ENVIRONMENT === 'test' || 
+                   !!process.env.X_TEST_ENVIRONMENT ||
+                   supabaseUrl.includes('localhost:54321')
+
+  // Create SSR-compatible browser client with cookie-based session management
+  clientInstance = createSupabaseBrowserClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        if (typeof document === 'undefined') return undefined
+        const value = document.cookie
+          .split('; ')
+          .find(row => row.startsWith(`${name}=`))
+          ?.split('=')[1]
+        return value
+      },
+      set(name: string, value: string, options?: any) {
+        if (typeof document === 'undefined') return
+        const cookieOptions = [
+          `${name}=${value}`,
+          'path=/',
+          'samesite=lax',
+          ...(options?.maxAge ? [`max-age=${options.maxAge}`] : []),
+          ...(options?.httpOnly ? ['httponly'] : []),
+          ...(options?.secure || process.env.NODE_ENV === 'production' ? ['secure'] : [])
+        ].join('; ')
+        document.cookie = cookieOptions
+      },
+      remove(name: string, options?: any) {
+        if (typeof document === 'undefined') return
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=lax`
+      }
+    },
     auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-      flowType: 'pkce'
+      autoRefreshToken: !isTestEnv, // Disable auto-refresh in tests
+      persistSession: true, // Always persist sessions
+      detectSessionInUrl: !isTestEnv, // Disable URL detection in tests
+      flowType: 'pkce',
+      // For tests, use a shorter session timeout
+      ...(isTestEnv && {
+        storageKey: 'sb-test-auth-token',
+        debug: true
+      })
     },
     global: {
       headers: {
-        'x-application-name': 'ai-readiness'
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+        'x-application-name': 'ai-readiness',
+        ...(isTestEnv && {
+          'x-test-mode': 'true',
+          'x-client-info': 'ai-readiness-test'
+        })
+      }
+    },
+    db: {
+      schema: 'public'
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: isTestEnv ? 5 : 10 // Reduce events in test
       }
     }
   })
 
-  // Register in singleton registry and return
-  return registerClient('general', client)
+  return clientInstance
 }
 
-// For backward compatibility - now uses singleton
+/**
+ * Browser client alias for compatibility
+ */
+export const createBrowserClient = createClient
+
+/**
+ * Legacy singleton instance for backward compatibility
+ */
 export const supabase = createClient()
+
+/**
+ * Clear the client instance (useful for testing)
+ */
+export function clearClient(): void {
+  clientInstance = null
+  console.debug('[Browser Client] Client instance cleared')
+}
+
+/**
+ * Check if client instance exists
+ */
+export function hasClientInstance(): boolean {
+  return clientInstance !== null
+}

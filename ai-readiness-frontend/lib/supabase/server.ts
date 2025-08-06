@@ -1,37 +1,84 @@
-import { createServerClient as createSSRServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+/**
+ * Consolidated Server Supabase Client
+ * 
+ * This client handles all server-side Supabase operations with proper cookie management.
+ * Consolidates functionality from server-client.ts and parts of singleton.ts.
+ */
 
-export async function createClient() {
+import { createServerClient as createSupabaseServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+/**
+ * Create a server-side Supabase client with cookie management
+ * This function consolidates the previous server-client.ts functionality
+ */
+export async function createClient(): Promise<SupabaseClient> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables')
+    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required')
   }
 
   const cookieStore = await cookies()
 
-  // Detect test environment
+  // Detect test environment for different configuration
   const isTestEnv = process.env.NODE_ENV === 'test' || 
                    process.env.ENVIRONMENT === 'test' || 
+                   !!process.env.X_TEST_ENVIRONMENT ||
                    supabaseUrl.includes('localhost:54321')
 
-  return createSSRServerClient(supabaseUrl, supabaseAnonKey, {
+  return createSupabaseServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value
       },
-      set(name: string, value: string, options?: any) {
-        cookieStore.set(name, value, options)
+      set(name: string, value: string, options: CookieOptions) {
+        try {
+          cookieStore.set({ 
+            name, 
+            value, 
+            ...options,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            path: '/',
+          })
+        } catch (error) {
+          // The `set` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
+          if (!isTestEnv) {
+            console.debug('[Server Client] Cookie set failed in Server Component context')
+          }
+        }
       },
-      remove(name: string, options?: any) {
-        cookieStore.delete(name)
+      remove(name: string, options: CookieOptions) {
+        try {
+          cookieStore.set({ 
+            name, 
+            value: '', 
+            ...options,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            path: '/',
+            maxAge: 0,
+          })
+        } catch (error) {
+          // The `remove` method was called from a Server Component.
+          if (!isTestEnv) {
+            console.debug('[Server Client] Cookie removal failed in Server Component context')
+          }
+        }
       }
     },
     auth: {
       autoRefreshToken: false,
       persistSession: isTestEnv, // Enable persistence in test mode for better session handling
-      debug: isTestEnv
+      debug: isTestEnv,
+      flowType: 'pkce'
     },
     global: {
       headers: {
@@ -39,20 +86,67 @@ export async function createClient() {
         'Authorization': `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal',
+        'x-application-name': 'ai-readiness',
         ...(isTestEnv && {
           'x-test-mode': 'true',
           'x-server-client': 'true'
         })
       }
+    },
+    db: {
+      schema: 'public'
     }
   })
 }
 
-// Export createServerClient as an alias
-export const createServerClient = createClient
+/**
+ * Synchronous version for legacy compatibility
+ * Note: This creates a new client each time - use sparingly
+ */
+export function createServerClient() {
+  const cookieStore = cookies()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Create a server client with cookie handling for auth
-export async function createServerClientWithAuth() {
-  // Just use the main createClient function which now handles cookies
-  return createClient()
+  return createSupabaseServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value
+      },
+      set(name: string, value: string, options: CookieOptions) {
+        try {
+          cookieStore.set({ 
+            name, 
+            value, 
+            ...options,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            path: '/',
+          })
+        } catch (error) {
+          // Ignored in Server Components
+        }
+      },
+      remove(name: string, options: CookieOptions) {
+        try {
+          cookieStore.set({ 
+            name, 
+            value: '', 
+            ...options,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            path: '/',
+            maxAge: 0,
+          })
+        } catch (error) {
+          // Ignored in Server Components  
+        }
+      },
+    },
+  })
 }
+
+// Alias for backwards compatibility
+export const createServerClientWithAuth = createClient

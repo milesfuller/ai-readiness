@@ -1,0 +1,649 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Prevent multiple runs for the same PR
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+  MINIMUM_COVERAGE: 75
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+
+jobs:
+  # Fast feedback - run immediately
+  quick-validation:
+    name: 🚀 Quick Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.draft == false
+
+    outputs:
+      changes-detected: ${{ steps.changes.outputs.changes-detected }}
+      test-files-changed: ${{ steps.changes.outputs.test-files-changed }}
+      component-files-changed: ${{ steps.changes.outputs.component-files-changed }}
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔍 Analyze changes
+        id: changes
+        run: |
+          echo "Analyzing changed files in PR #${{ env.PR_NUMBER }}..."
+          
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Check for different types of changes
+          TEST_CHANGES=$(echo "$CHANGED_FILES" | grep -E '\.(test|spec)\.(ts|tsx|js|jsx)$' || echo "")
+          COMPONENT_CHANGES=$(echo "$CHANGED_FILES" | grep -E 'components/.*\.(ts|tsx)$' || echo "")
+          CONFIG_CHANGES=$(echo "$CHANGED_FILES" | grep -E '\.(json|yml|yaml|config\.(ts|js))$' || echo "")
+          
+          # Set outputs
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "changes-detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes-detected=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ -n "$TEST_CHANGES" ]; then
+            echo "test-files-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "test-files-changed=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ -n "$COMPONENT_CHANGES" ]; then
+            echo "component-files-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "component-files-changed=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Store changed files for other jobs
+          echo "$CHANGED_FILES" > changed-files.txt
+
+      - name: Upload changed files list
+        uses: actions/upload-artifact@v4
+        with:
+          name: changed-files
+          path: changed-files.txt
+          retention-days: 1
+
+      - name: 🎨 Quick lint check
+        run: |
+          # Only lint changed files for speed
+          if [ -f changed-files.txt ]; then
+            LINT_FILES=$(grep -E '\.(ts|tsx|js|jsx)$' changed-files.txt | head -20 || echo "")
+            if [ -n "$LINT_FILES" ]; then
+              echo "Linting changed files..."
+              npx eslint $LINT_FILES --max-warnings 5
+            else
+              echo "No TypeScript/JavaScript files to lint"
+            fi
+          fi
+
+      - name: 📋 Quick type check
+        run: npm run type-check
+
+  # Component boundary validation - critical for Next.js apps
+  boundary-validation:
+    name: 🧱 Component Boundaries
+    runs-on: ubuntu-latest
+    needs: quick-validation
+    timeout-minutes: 8
+    if: needs.quick-validation.outputs.component-files-changed == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔍 Validate component boundaries
+        run: |
+          echo "🧱 Running comprehensive component boundary validation..."
+          npm run validate:components:ci:json > boundary-report.json
+          
+          # Check for critical boundary violations
+          if jq -e '.violations | length > 0' boundary-report.json > /dev/null; then
+            echo "❌ Component boundary violations found!"
+            jq -r '.violations[] | "❌ \(.file): \(.issue)"' boundary-report.json
+            exit 1
+          fi
+          
+          echo "✅ Component boundaries validated successfully"
+
+      - name: 📊 Comment boundary report on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let report = '';
+            try {
+              const data = JSON.parse(fs.readFileSync('boundary-report.json', 'utf8'));
+              
+              report = `## 🧱 Component Boundary Validation Failed
+              
+              The following component boundary violations were found:
+              
+              `;
+              
+              data.violations.forEach(violation => {
+                report += `- **${violation.file}**: ${violation.issue}\n`;
+              });
+              
+              report += `
+              
+              ### 📝 How to Fix
+              
+              1. **Server Component Issues**: Remove client-side hooks (`useState`, `useEffect`) or add \`'use client'\` directive
+              2. **Client Component Issues**: Remove server-side imports or move to server component
+              3. **Import Issues**: Ensure proper separation between client and server code
+              
+              Please fix these issues before merging.`;
+              
+            } catch (error) {
+              report = '## 🧱 Component Boundary Validation Failed\n\nCould not parse validation report.';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  # Security validation - run on all PRs
+  security-validation:
+    name: 🔒 Security Validation
+    runs-on: ubuntu-latest
+    needs: quick-validation
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Download changed files
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files
+          path: .
+
+      - name: 🔍 Security scan on changed files
+        run: |
+          echo "🔒 Running security scan on PR changes..."
+          
+          # Check for hardcoded secrets in changed files
+          if [ -f changed-files.txt ]; then
+            echo "Scanning changed files for potential secrets..."
+            
+            SECRETS_PATTERNS=(
+              "sk-[a-zA-Z0-9]{32,}"
+              "pk_[a-zA-Z0-9]{32,}"
+              "AKIA[0-9A-Z]{16}"
+              "-----BEGIN [A-Z]+ PRIVATE KEY-----"
+              "password\s*=\s*['\"][^'\"]+['\"]"
+            )
+            
+            SECRETS_FOUND=false
+            for pattern in "${SECRETS_PATTERNS[@]}"; do
+              if grep -Hn -E "$pattern" $(cat changed-files.txt | grep -E '\.(ts|tsx|js|jsx|json|env)$' | head -20) 2>/dev/null; then
+                SECRETS_FOUND=true
+                echo "❌ Potential secret found matching pattern: $pattern"
+              fi
+            done
+            
+            if [ "$SECRETS_FOUND" = true ]; then
+              echo "❌ Potential secrets detected in changed files!"
+              exit 1
+            fi
+            
+            echo "✅ No secrets detected in changed files"
+          fi
+
+      - name: 🛡️ Dependency vulnerability scan
+        run: |
+          echo "🛡️ Scanning for dependency vulnerabilities..."
+          
+          # Check for high/critical vulnerabilities
+          AUDIT_OUTPUT=$(npm audit --audit-level high --json 2>/dev/null || echo '{"vulnerabilities":{}}')
+          
+          HIGH_COUNT=$(echo "$AUDIT_OUTPUT" | jq -r '.metadata.vulnerabilities.high // 0')
+          CRITICAL_COUNT=$(echo "$AUDIT_OUTPUT" | jq -r '.metadata.vulnerabilities.critical // 0')
+          
+          echo "High vulnerabilities: $HIGH_COUNT"
+          echo "Critical vulnerabilities: $CRITICAL_COUNT"
+          
+          if [ "$HIGH_COUNT" -gt 0 ] || [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "❌ High/Critical vulnerabilities found!"
+            npm audit --audit-level high
+            exit 1
+          fi
+          
+          echo "✅ No high/critical vulnerabilities found"
+
+      - name: 🔐 Security test execution
+        run: |
+          echo "🔐 Running security tests..."
+          npm run test:security
+          echo "✅ Security tests passed"
+
+  # Targeted testing based on changes
+  targeted-tests:
+    name: 🎯 Targeted Tests
+    runs-on: ubuntu-latest
+    needs: [quick-validation, boundary-validation]
+    timeout-minutes: 15
+    if: always() && needs.quick-validation.outputs.changes-detected == 'true'
+
+    strategy:
+      matrix:
+        test-type: [unit, integration]
+        fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Download changed files
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files
+          path: .
+
+      - name: 🧪 Run ${{ matrix.test-type }} tests for changed files
+        run: |
+          echo "🎯 Running ${{ matrix.test-type }} tests for changed components..."
+          
+          if [ ! -f changed-files.txt ]; then
+            echo "No changed files found, running all tests"
+            npm run test:${{ matrix.test-type }}
+            exit 0
+          fi
+          
+          # Find test files related to changed files
+          CHANGED_FILES=$(cat changed-files.txt)
+          TEST_PATTERNS=""
+          
+          for file in $CHANGED_FILES; do
+            if [[ "$file" =~ \.(ts|tsx)$ ]] && [[ "$file" =~ ^(components|lib|app)/ ]]; then
+              # Convert file path to test pattern
+              BASE_NAME=$(basename "$file" | sed 's/\.(ts|tsx)$//')
+              DIR_NAME=$(dirname "$file")
+              
+              # Look for corresponding test files
+              POTENTIAL_TESTS=(
+                "$DIR_NAME/__tests__/$BASE_NAME.test.ts"
+                "$DIR_NAME/__tests__/$BASE_NAME.test.tsx"
+                "__tests__/$DIR_NAME/$BASE_NAME.test.ts"
+                "__tests__/$DIR_NAME/$BASE_NAME.test.tsx"
+                "__tests__/**/*$BASE_NAME*.test.ts"
+                "__tests__/**/*$BASE_NAME*.test.tsx"
+              )
+              
+              for pattern in "${POTENTIAL_TESTS[@]}"; do
+                if ls $pattern 2>/dev/null; then
+                  TEST_PATTERNS="$TEST_PATTERNS --testPathPattern=$pattern"
+                fi
+              done
+            fi
+          done
+          
+          if [ -n "$TEST_PATTERNS" ]; then
+            echo "Running targeted tests with patterns: $TEST_PATTERNS"
+            npm run test:${{ matrix.test-type }} -- $TEST_PATTERNS --coverage
+          else
+            echo "No specific test patterns found, running category tests"
+            npm run test:${{ matrix.test-type }}
+          fi
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            coverage/
+            test-results/
+          retention-days: 3
+
+  # Critical E2E tests - only run for important changes
+  critical-e2e:
+    name: 🎭 Critical E2E Tests
+    runs-on: ubuntu-latest
+    needs: [quick-validation, targeted-tests]
+    timeout-minutes: 20
+    if: |
+      always() && 
+      (needs.quick-validation.outputs.component-files-changed == 'true' ||
+       contains(github.event.pull_request.labels.*.name, 'needs-e2e'))
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: 🚀 Setup minimal test environment
+        run: |
+          # Start minimal infrastructure for E2E
+          npm run infra:setup || echo "⚠️ Infrastructure setup failed, continuing with limited tests"
+          sleep 5
+        env:
+          NODE_ENV: test
+
+      - name: 🎭 Run critical path E2E tests
+        run: |
+          # Run only critical/smoke tests for PR validation
+          npm run test:e2e:epipe-safe -- \
+            --grep "critical|smoke|login|auth" \
+            --reporter=line \
+            --workers=1 \
+            --timeout=15000
+        env:
+          CI: true
+          NODE_ENV: test
+          PLAYWRIGHT_WORKERS: 1
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          npm run infra:stop || echo "Cleanup completed"
+
+      - name: Upload E2E results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 5
+
+  # Coverage analysis and reporting
+  coverage-analysis:
+    name: 📊 Coverage Analysis
+    runs-on: ubuntu-latest
+    needs: [targeted-tests]
+    timeout-minutes: 10
+    if: always() && needs.targeted-tests.result != 'cancelled'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          merge-multiple: true
+          path: coverage-combined/
+
+      - name: 📈 Analyze coverage changes
+        run: |
+          echo "📊 Analyzing coverage changes..."
+          
+          # Generate coverage report for current PR
+          npm run test:coverage -- --passWithNoTests > coverage-current.txt 2>&1 || true
+          
+          # Extract coverage percentage
+          CURRENT_COVERAGE=$(grep "All files" coverage-current.txt | awk '{print $10}' | sed 's/%//' || echo "0")
+          echo "Current coverage: $CURRENT_COVERAGE%"
+          
+          # Compare with minimum threshold
+          if (( $(echo "$CURRENT_COVERAGE < $MINIMUM_COVERAGE" | bc -l) )); then
+            echo "❌ Coverage $CURRENT_COVERAGE% is below minimum $MINIMUM_COVERAGE%"
+            COVERAGE_STATUS="❌ Below Threshold"
+          else
+            echo "✅ Coverage meets minimum threshold"
+            COVERAGE_STATUS="✅ Meets Threshold"
+          fi
+          
+          # Save coverage info for PR comment
+          cat > coverage-info.json << EOF
+          {
+            "current_coverage": $CURRENT_COVERAGE,
+            "minimum_threshold": $MINIMUM_COVERAGE,
+            "status": "$COVERAGE_STATUS",
+            "details_available": true
+          }
+          EOF
+
+      - name: Upload coverage analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-analysis
+          path: |
+            coverage-info.json
+            coverage/
+          retention-days: 3
+
+  # PR Summary and Comment
+  pr-summary:
+    name: 📝 PR Summary
+    runs-on: ubuntu-latest
+    needs: [quick-validation, boundary-validation, security-validation, targeted-tests, critical-e2e, coverage-analysis]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: artifacts/
+
+      - name: 📊 Generate PR validation summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Job results
+            const jobs = {
+              'Quick Validation': '${{ needs.quick-validation.result }}',
+              'Boundary Validation': '${{ needs.boundary-validation.result }}',
+              'Security Validation': '${{ needs.security-validation.result }}',
+              'Targeted Tests': '${{ needs.targeted-tests.result }}',
+              'Critical E2E': '${{ needs.critical-e2e.result }}',
+              'Coverage Analysis': '${{ needs.coverage-analysis.result }}'
+            };
+            
+            // Generate status emoji
+            const getStatusEmoji = (status) => {
+              switch(status) {
+                case 'success': return '✅';
+                case 'failure': return '❌';
+                case 'cancelled': return '⏭️';
+                case 'skipped': return '⏭️';
+                default: return '⏳';
+              }
+            };
+            
+            // Build summary
+            let summary = `## 🔍 Pull Request Validation Summary
+            
+            ### 📋 Validation Results
+            
+            | Check | Status | Details |
+            |-------|--------|---------|`;
+            
+            for (const [job, status] of Object.entries(jobs)) {
+              const emoji = getStatusEmoji(status);
+              const statusText = status === 'skipped' ? 'Skipped' : status.charAt(0).toUpperCase() + status.slice(1);
+              summary += `\n| ${job} | ${emoji} ${statusText} | - |`;
+            }
+            
+            // Add coverage information if available
+            try {
+              if (fs.existsSync('artifacts/coverage-info.json')) {
+                const coverageInfo = JSON.parse(fs.readFileSync('artifacts/coverage-info.json', 'utf8'));
+                summary += `
+                
+            ### 📊 Coverage Information
+            
+            - **Current Coverage**: ${coverageInfo.current_coverage}%
+            - **Minimum Required**: ${coverageInfo.minimum_threshold}%
+            - **Status**: ${coverageInfo.status}`;
+              }
+            } catch (error) {
+              console.log('Could not read coverage info:', error.message);
+            }
+            
+            // Add recommendations
+            const hasFailures = Object.values(jobs).some(status => status === 'failure');
+            
+            if (hasFailures) {
+              summary += `
+              
+            ### ⚠️ Action Required
+            
+            Some validation checks failed. Please review the failed jobs and address the issues before merging.
+            
+            #### Common Fixes:
+            - **Boundary Violations**: Add \`'use client'\` directive or remove client-side code from server components
+            - **Security Issues**: Remove hardcoded secrets and fix vulnerability warnings
+            - **Test Failures**: Fix failing tests or add missing test coverage
+            - **Coverage**: Add tests to meet minimum coverage threshold`;
+            } else {
+              summary += `
+              
+            ### ✅ Ready for Review
+            
+            All validation checks passed! This PR is ready for code review.`;
+            }
+            
+            summary += `
+            
+            ---
+            
+            **PR #${{ github.event.pull_request.number }}** | **Base**: \`${{ github.base_ref }}\` ← **Head**: \`${{ github.head_ref }}\``;
+            
+            // Post comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('Pull Request Validation Summary')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: summary
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: summary
+              });
+            }
+
+      - name: ✅ Validation complete
+        run: |
+          echo "📝 PR validation summary posted to PR #${{ env.PR_NUMBER }}"
+          
+          # Check if any critical validations failed
+          CRITICAL_FAILURES=""
+          
+          if [ "${{ needs.quick-validation.result }}" == "failure" ]; then
+            CRITICAL_FAILURES="$CRITICAL_FAILURES quick-validation"
+          fi
+          
+          if [ "${{ needs.boundary-validation.result }}" == "failure" ]; then
+            CRITICAL_FAILURES="$CRITICAL_FAILURES boundary-validation"
+          fi
+          
+          if [ "${{ needs.security-validation.result }}" == "failure" ]; then
+            CRITICAL_FAILURES="$CRITICAL_FAILURES security-validation"
+          fi
+          
+          if [ -n "$CRITICAL_FAILURES" ]; then
+            echo "❌ Critical validation failures: $CRITICAL_FAILURES"
+            echo "Please fix these issues before merging."
+            exit 1
+          fi
+          
+          echo "✅ All critical validations passed!"

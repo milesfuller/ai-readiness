@@ -1,0 +1,499 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+  schedule:
+    # Run performance tests daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18'
+  LIGHTHOUSE_RUNS: 3
+
+jobs:
+  lighthouse-analysis:
+    name: 🚀 Lighthouse Performance Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        page:
+          - { name: 'Home', url: '/' }
+          - { name: 'Dashboard', url: '/dashboard' }
+          - { name: 'Survey', url: '/survey' }
+          - { name: 'Login', url: '/auth/login' }
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🏗️ Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: 🚀 Start application
+        run: |
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+          
+          # Wait for app to be ready
+          echo "Waiting for application to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "✅ Application is ready"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+        env:
+          NODE_ENV: production
+          PORT: 3000
+
+      - name: 🔍 Lighthouse CI
+        run: |
+          # Install Lighthouse CI
+          npm install -g @lhci/cli@0.12.x
+          
+          # Create Lighthouse CI config
+          cat > lighthouserc.json << EOF
+          {
+            "ci": {
+              "collect": {
+                "url": ["http://localhost:3000${{ matrix.page.url }}"],
+                "numberOfRuns": ${{ env.LIGHTHOUSE_RUNS }},
+                "settings": {
+                  "preset": "desktop",
+                  "chromeFlags": "--no-sandbox --headless",
+                  "throttling": {
+                    "rttMs": 40,
+                    "throughputKbps": 10240,
+                    "cpuSlowdownMultiplier": 1,
+                    "requestLatencyMs": 0,
+                    "downloadThroughputKbps": 10240,
+                    "uploadThroughputKbps": 1024
+                  }
+                }
+              },
+              "assert": {
+                "assertions": {
+                  "categories:performance": ["error", {"minScore": 0.75}],
+                  "categories:accessibility": ["error", {"minScore": 0.9}],
+                  "categories:best-practices": ["error", {"minScore": 0.8}],
+                  "categories:seo": ["error", {"minScore": 0.8}],
+                  "first-contentful-paint": ["error", {"maxNumericValue": 2000}],
+                  "largest-contentful-paint": ["error", {"maxNumericValue": 4000}],
+                  "cumulative-layout-shift": ["error", {"maxNumericValue": 0.1}]
+                }
+              },
+              "upload": {
+                "target": "temporary-public-storage"
+              }
+            }
+          }
+          EOF
+          
+          # Run Lighthouse CI
+          echo "🚀 Running Lighthouse analysis for ${{ matrix.page.name }} page..."
+          lhci collect --config=lighthouserc.json
+          lhci assert --config=lighthouserc.json || LIGHTHOUSE_FAILED=true
+          
+          # Generate reports
+          lhci upload --config=lighthouserc.json > lighthouse-upload.txt || true
+          
+          # Parse results
+          if [ -f ".lighthouseci/lhr-*.json" ]; then
+            LATEST_REPORT=$(ls -t .lighthouseci/lhr-*.json | head -1)
+            
+            # Extract key metrics
+            PERFORMANCE_SCORE=$(cat "$LATEST_REPORT" | jq -r '.categories.performance.score * 100 | floor')
+            ACCESSIBILITY_SCORE=$(cat "$LATEST_REPORT" | jq -r '.categories.accessibility.score * 100 | floor')
+            BEST_PRACTICES_SCORE=$(cat "$LATEST_REPORT" | jq -r '."best-practices".score * 100 | floor' 2>/dev/null || echo "N/A")
+            SEO_SCORE=$(cat "$LATEST_REPORT" | jq -r '.categories.seo.score * 100 | floor')
+            
+            FCP=$(cat "$LATEST_REPORT" | jq -r '.audits."first-contentful-paint".displayValue // "N/A"')
+            LCP=$(cat "$LATEST_REPORT" | jq -r '.audits."largest-contentful-paint".displayValue // "N/A"')
+            CLS=$(cat "$LATEST_REPORT" | jq -r '.audits."cumulative-layout-shift".displayValue // "N/A"')
+            
+            # Create results summary
+            cat > lighthouse-results-${{ matrix.page.name }}.json << EOF
+          {
+            "page": "${{ matrix.page.name }}",
+            "url": "${{ matrix.page.url }}",
+            "performance": $PERFORMANCE_SCORE,
+            "accessibility": $ACCESSIBILITY_SCORE,
+            "bestPractices": "$BEST_PRACTICES_SCORE",
+            "seo": $SEO_SCORE,
+            "metrics": {
+              "fcp": "$FCP",
+              "lcp": "$LCP",
+              "cls": "$CLS"
+            },
+            "timestamp": "$(date -Iseconds)"
+          }
+          EOF
+            
+            echo "📊 Results for ${{ matrix.page.name }}:"
+            echo "- Performance: $PERFORMANCE_SCORE/100"
+            echo "- Accessibility: $ACCESSIBILITY_SCORE/100" 
+            echo "- Best Practices: $BEST_PRACTICES_SCORE/100"
+            echo "- SEO: $SEO_SCORE/100"
+            echo "- FCP: $FCP"
+            echo "- LCP: $LCP"
+            echo "- CLS: $CLS"
+          fi
+          
+          # Check if assertions failed
+          if [ "$LIGHTHOUSE_FAILED" = true ]; then
+            echo "❌ Lighthouse assertions failed for ${{ matrix.page.name }}"
+            exit 1
+          fi
+          
+          echo "✅ Lighthouse analysis completed successfully"
+
+      - name: 📊 Upload Lighthouse Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report-${{ matrix.page.name }}
+          path: |
+            .lighthouseci/
+            lighthouse-results-${{ matrix.page.name }}.json
+            lighthouse-upload.txt
+          retention-days: 14
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          if [ -n "$APP_PID" ]; then
+            kill $APP_PID 2>/dev/null || true
+          fi
+
+  bundle-analysis:
+    name: 📦 Bundle Size Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🏗️ Build with bundle analysis
+        run: |
+          # Build with bundle analyzer
+          npm run build
+          
+          # Generate bundle size report
+          echo "📦 Analyzing bundle size..."
+          
+          # Check if we have bundle analyzer output
+          if [ -d ".next/static" ]; then
+            # Calculate total bundle size
+            TOTAL_SIZE=$(du -sh .next | cut -f1)
+            STATIC_SIZE=$(du -sh .next/static | cut -f1)
+            
+            echo "Build completed:"
+            echo "- Total build size: $TOTAL_SIZE"
+            echo "- Static assets size: $STATIC_SIZE"
+            
+            # Find the largest chunks
+            echo "Largest JavaScript chunks:"
+            find .next/static -name "*.js" -type f -exec du -h {} + | sort -rh | head -10
+            
+            # Check bundle size thresholds
+            TOTAL_SIZE_KB=$(du -s .next | cut -f1)
+            MAX_SIZE_KB=51200  # 50MB limit
+            
+            if [ "$TOTAL_SIZE_KB" -gt "$MAX_SIZE_KB" ]; then
+              echo "❌ Bundle size ${TOTAL_SIZE_KB}KB exceeds limit ${MAX_SIZE_KB}KB"
+              exit 1
+            fi
+            
+            echo "✅ Bundle size is within acceptable limits"
+            
+            # Create bundle report
+            cat > bundle-report.json << EOF
+          {
+            "totalSizeKB": $TOTAL_SIZE_KB,
+            "maxSizeKB": $MAX_SIZE_KB,
+            "totalSizeHuman": "$TOTAL_SIZE",
+            "staticSizeHuman": "$STATIC_SIZE",
+            "timestamp": "$(date -Iseconds)",
+            "status": "passed"
+          }
+          EOF
+            
+          else
+            echo "❌ Build output not found"
+            exit 1
+          fi
+        env:
+          NODE_ENV: production
+          ANALYZE: true
+
+      - name: 📊 Bundle Size Comparison (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "📊 Comparing bundle sizes with base branch..."
+          
+          # Checkout base branch
+          git fetch origin ${{ github.base_ref }}
+          git checkout origin/${{ github.base_ref }}
+          
+          # Build base version
+          npm ci --prefer-offline --no-audit
+          npm run build
+          
+          BASE_SIZE_KB=$(du -s .next | cut -f1)
+          
+          # Checkout back to PR branch
+          git checkout ${{ github.sha }}
+          npm ci --prefer-offline --no-audit
+          npm run build
+          
+          PR_SIZE_KB=$(du -s .next | cut -f1)
+          
+          # Calculate difference
+          SIZE_DIFF=$((PR_SIZE_KB - BASE_SIZE_KB))
+          SIZE_DIFF_PERCENT=$(echo "scale=2; $SIZE_DIFF * 100 / $BASE_SIZE_KB" | bc -l)
+          
+          echo "Bundle size comparison:"
+          echo "- Base branch: ${BASE_SIZE_KB}KB"
+          echo "- PR branch: ${PR_SIZE_KB}KB"
+          echo "- Difference: ${SIZE_DIFF}KB (${SIZE_DIFF_PERCENT}%)"
+          
+          # Create comparison report
+          cat > bundle-comparison.json << EOF
+          {
+            "baseSizeKB": $BASE_SIZE_KB,
+            "prSizeKB": $PR_SIZE_KB,
+            "differenceKB": $SIZE_DIFF,
+            "differencePercent": $SIZE_DIFF_PERCENT,
+            "timestamp": "$(date -Iseconds)"
+          }
+          EOF
+          
+          # Check if size increase is significant
+          if [ "$SIZE_DIFF" -gt 1024 ]; then  # More than 1MB increase
+            echo "⚠️ Bundle size increased by more than 1MB"
+            echo "bundle-size-warning=true" >> $GITHUB_ENV
+          fi
+
+      - name: Upload Bundle Analysis
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bundle-analysis
+          path: |
+            bundle-report.json
+            bundle-comparison.json
+          retention-days: 7
+
+  performance-summary:
+    name: 📋 Performance Summary
+    runs-on: ubuntu-latest
+    needs: [lighthouse-analysis, bundle-analysis]
+    if: always()
+
+    steps:
+      - name: Download all performance reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: lighthouse-report-*
+          merge-multiple: true
+          path: lighthouse-reports/
+
+      - name: Download bundle analysis
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-analysis
+          path: bundle-reports/
+
+      - name: 📊 Generate Performance Summary
+        run: |
+          echo "## 🚀 Performance Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Lighthouse results table
+          echo "### 🔍 Lighthouse Scores" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Page | Performance | Accessibility | Best Practices | SEO | FCP | LCP |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------------|---------------|----------------|-----|-----|-----|" >> $GITHUB_STEP_SUMMARY
+          
+          # Process lighthouse results
+          for result_file in lighthouse-reports/lighthouse-results-*.json; do
+            if [ -f "$result_file" ]; then
+              PAGE=$(jq -r '.page' "$result_file")
+              PERF=$(jq -r '.performance' "$result_file")
+              A11Y=$(jq -r '.accessibility' "$result_file")
+              BP=$(jq -r '.bestPractices' "$result_file")
+              SEO=$(jq -r '.seo' "$result_file")
+              FCP=$(jq -r '.metrics.fcp' "$result_file")
+              LCP=$(jq -r '.metrics.lcp' "$result_file")
+              
+              echo "| $PAGE | $PERF | $A11Y | $BP | $SEO | $FCP | $LCP |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          # Bundle size information
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Bundle Size Analysis" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f bundle-reports/bundle-report.json ]; then
+            BUNDLE_SIZE=$(jq -r '.totalSizeHuman' bundle-reports/bundle-report.json)
+            BUNDLE_STATUS=$(jq -r '.status' bundle-reports/bundle-report.json)
+            
+            echo "- **Total Build Size**: $BUNDLE_SIZE" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status**: $BUNDLE_STATUS" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Bundle comparison (for PRs)
+          if [ -f bundle-reports/bundle-comparison.json ]; then
+            BASE_SIZE=$(jq -r '.baseSizeKB' bundle-reports/bundle-comparison.json)
+            PR_SIZE=$(jq -r '.prSizeKB' bundle-reports/bundle-comparison.json)
+            DIFF_KB=$(jq -r '.differenceKB' bundle-reports/bundle-comparison.json)
+            DIFF_PERCENT=$(jq -r '.differencePercent' bundle-reports/bundle-comparison.json)
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 Bundle Size Comparison" >> $GITHUB_STEP_SUMMARY
+            echo "- **Base Branch**: ${BASE_SIZE}KB" >> $GITHUB_STEP_SUMMARY
+            echo "- **Current Branch**: ${PR_SIZE}KB" >> $GITHUB_STEP_SUMMARY
+            echo "- **Difference**: ${DIFF_KB}KB (${DIFF_PERCENT}%)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Overall status
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.lighthouse-analysis.result }}" == "success" ] && [ "${{ needs.bundle-analysis.result }}" == "success" ]; then
+            echo "### ✅ Performance Checks Passed" >> $GITHUB_STEP_SUMMARY
+            echo "All performance benchmarks met requirements." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ Performance Issues Detected" >> $GITHUB_STEP_SUMMARY
+            echo "Some performance checks failed. Please review the detailed reports." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Comment Performance Results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = `## 🚀 Performance Analysis Results
+            
+            `;
+            
+            // Add Lighthouse results if available
+            const lightHouseFiles = fs.readdirSync('lighthouse-reports/').filter(f => f.startsWith('lighthouse-results-'));
+            
+            if (lightHouseFiles.length > 0) {
+              comment += `### 🔍 Lighthouse Scores
+              
+              | Page | Performance | Accessibility | Best Practices | SEO |
+              |------|-------------|---------------|----------------|-----|`;
+              
+              lightHouseFiles.forEach(file => {
+                try {
+                  const data = JSON.parse(fs.readFileSync(`lighthouse-reports/${file}`, 'utf8'));
+                  const perfEmoji = data.performance >= 75 ? '✅' : '⚠️';
+                  const a11yEmoji = data.accessibility >= 90 ? '✅' : '⚠️';
+                  
+                  comment += `\n| ${data.page} | ${perfEmoji} ${data.performance} | ${a11yEmoji} ${data.accessibility} | ${data.bestPractices} | ${data.seo} |`;
+                } catch (error) {
+                  console.log('Error reading lighthouse file:', error.message);
+                }
+              });
+            }
+            
+            // Add bundle size comparison
+            if (fs.existsSync('bundle-reports/bundle-comparison.json')) {
+              try {
+                const bundleData = JSON.parse(fs.readFileSync('bundle-reports/bundle-comparison.json', 'utf8'));
+                
+                comment += `
+                
+            ### 📦 Bundle Size Impact
+            
+            - **Size Change**: ${bundleData.differenceKB}KB (${bundleData.differencePercent}%)
+            - **Previous**: ${bundleData.baseSizeKB}KB
+            - **Current**: ${bundleData.prSizeKB}KB`;
+                
+                if (bundleData.differenceKB > 1024) {
+                  comment += `
+                  
+            ⚠️ **Warning**: Bundle size increased by more than 1MB. Please review if this increase is necessary.`;
+                }
+              } catch (error) {
+                console.log('Error reading bundle comparison:', error.message);
+              }
+            }
+            
+            comment += `
+            
+            ---
+            *Performance analysis completed for PR #${{ github.event.pull_request.number }}*`;
+            
+            // Post or update comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('Performance Analysis Results')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }

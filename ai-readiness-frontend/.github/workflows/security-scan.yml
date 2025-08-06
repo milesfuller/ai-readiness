@@ -1,0 +1,321 @@
+name: Security Scan
+
+on:
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'package*.json'
+      - '.github/workflows/security-scan.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: security-scan
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔍 NPM Security Audit
+        id: npm-audit
+        run: |
+          echo "Running comprehensive NPM security audit..."
+          
+          # Generate detailed audit report
+          npm audit --json > npm-audit-report.json || true
+          npm audit > npm-audit-readable.txt || true
+          
+          # Parse results
+          HIGH_COUNT=$(cat npm-audit-report.json | jq -r '.metadata.vulnerabilities.high // 0')
+          CRITICAL_COUNT=$(cat npm-audit-report.json | jq -r '.metadata.vulnerabilities.critical // 0')
+          MODERATE_COUNT=$(cat npm-audit-report.json | jq -r '.metadata.vulnerabilities.moderate // 0')
+          LOW_COUNT=$(cat npm-audit-report.json | jq -r '.metadata.vulnerabilities.low // 0')
+          
+          echo "Security audit results:"
+          echo "- Critical: $CRITICAL_COUNT"
+          echo "- High: $HIGH_COUNT" 
+          echo "- Moderate: $MODERATE_COUNT"
+          echo "- Low: $LOW_COUNT"
+          
+          # Set outputs for reporting
+          echo "critical-count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          echo "high-count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+          echo "moderate-count=$MODERATE_COUNT" >> $GITHUB_OUTPUT
+          echo "low-count=$LOW_COUNT" >> $GITHUB_OUTPUT
+          
+          # Fail on critical/high vulnerabilities
+          if [ "$CRITICAL_COUNT" -gt 0 ] || [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "❌ Critical or high severity vulnerabilities found!"
+            cat npm-audit-readable.txt
+            echo "audit-passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ No critical or high severity vulnerabilities found"
+            echo "audit-passed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🛡️ Security Test Suite
+        run: |
+          echo "Running custom security tests..."
+          npm run test:security-full
+          
+          echo "✅ Security tests completed successfully"
+
+      - name: 🔐 Secret Scanning
+        run: |
+          echo "Scanning codebase for potential secrets..."
+          
+          # Define patterns for common secrets
+          PATTERNS=(
+            "sk-[a-zA-Z0-9]{32,}"           # OpenAI API keys
+            "pk_[a-zA-Z0-9]{32,}"           # Stripe publishable keys
+            "AKIA[0-9A-Z]{16}"              # AWS access keys
+            "ya29\.[0-9A-Za-z_-]{68}"       # Google OAuth tokens
+            "ghp_[a-zA-Z0-9]{36}"           # GitHub personal access tokens
+            "-----BEGIN [A-Z]+ PRIVATE KEY-----"  # Private keys
+          )
+          
+          SECRETS_FOUND=false
+          
+          for pattern in "${PATTERNS[@]}"; do
+            echo "Checking for pattern: $pattern"
+            
+            if grep -r -n --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.json" \
+               --exclude-dir="node_modules" --exclude-dir=".git" --exclude-dir="coverage" \
+               -E "$pattern" . > /dev/null; then
+              
+              echo "❌ Potential secret found matching pattern: $pattern"
+              echo "Files containing potential secrets:"
+              grep -r -l --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.json" \
+                   --exclude-dir="node_modules" --exclude-dir=".git" --exclude-dir="coverage" \
+                   -E "$pattern" .
+              
+              SECRETS_FOUND=true
+            fi
+          done
+          
+          if [ "$SECRETS_FOUND" = true ]; then
+            echo "❌ Potential secrets detected in codebase!"
+            echo "Please remove any hardcoded secrets and use environment variables instead."
+            exit 1
+          fi
+          
+          echo "✅ No secrets detected in codebase"
+
+      - name: 📊 Generate Security Report
+        if: always()
+        run: |
+          echo "Generating comprehensive security report..."
+          
+          # Create security report
+          cat > security-report.md << 'EOF'
+          # Security Scan Report
+          
+          **Scan Date**: $(date)
+          **Repository**: ${{ github.repository }}
+          **Branch**: ${{ github.ref_name }}
+          **Commit**: ${{ github.sha }}
+          
+          ## 📊 Vulnerability Summary
+          
+          | Severity | Count |
+          |----------|-------|
+          | Critical | ${{ steps.npm-audit.outputs.critical-count }} |
+          | High | ${{ steps.npm-audit.outputs.high-count }} |
+          | Moderate | ${{ steps.npm-audit.outputs.moderate-count }} |
+          | Low | ${{ steps.npm-audit.outputs.low-count }} |
+          
+          ## 🔍 Audit Status
+          
+          **NPM Audit**: ${{ steps.npm-audit.outputs.audit-passed == 'true' && '✅ Passed' || '❌ Failed' }}
+          
+          ## 📋 Detailed Results
+          
+          EOF
+          
+          # Append detailed audit results if available
+          if [ -f npm-audit-readable.txt ]; then
+            echo "### NPM Audit Details" >> security-report.md
+            echo '```' >> security-report.md
+            cat npm-audit-readable.txt >> security-report.md
+            echo '```' >> security-report.md
+          fi
+          
+          echo "Security report generated: security-report.md"
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report-${{ github.run_number }}
+          path: |
+            security-report.md
+            npm-audit-report.json
+            npm-audit-readable.txt
+          retention-days: 30
+
+      - name: 📧 Security Alert (if failures)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Security Alert: Vulnerabilities Detected';
+            const body = `
+            ## Security Scan Failed
+            
+            **Repository**: ${{ github.repository }}
+            **Branch**: ${{ github.ref_name }}
+            **Workflow**: ${{ github.workflow }}
+            **Run**: [${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ### Vulnerability Summary
+            - **Critical**: ${{ steps.npm-audit.outputs.critical-count }}
+            - **High**: ${{ steps.npm-audit.outputs.high-count }}
+            - **Moderate**: ${{ steps.npm-audit.outputs.moderate-count }}
+            - **Low**: ${{ steps.npm-audit.outputs.low-count }}
+            
+            ### Action Required
+            Please review the security scan results and address any critical or high severity vulnerabilities immediately.
+            
+            **Scan Details**: [View full report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            // Create security issue if critical/high vulnerabilities found
+            if (${{ steps.npm-audit.outputs.critical-count }} > 0 || ${{ steps.npm-audit.outputs.high-count }} > 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['security', 'high-priority', 'automated']
+              });
+            }
+
+  dependency-review:
+    name: 📦 Dependency Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          allow-ghsas: ''
+          deny-licenses: 'GPL-3.0, AGPL-3.0'
+          comment-summary-in-pr: false
+
+      - name: 🔍 License Compliance Check
+        run: |
+          echo "Checking license compliance..."
+          
+          # Check for problematic licenses
+          PROBLEMATIC_LICENSES=("GPL-3.0" "AGPL-3.0" "SSPL-1.0")
+          
+          # Generate license report
+          npx license-checker --json > license-report.json
+          
+          # Check for problematic licenses
+          for license in "${PROBLEMATIC_LICENSES[@]}"; do
+            if grep -q "$license" license-report.json; then
+              echo "❌ Problematic license found: $license"
+              echo "Dependencies with this license:"
+              jq -r "to_entries[] | select(.value.licenses | contains(\"$license\")) | .key" license-report.json
+              exit 1
+            fi
+          done
+          
+          echo "✅ All dependency licenses are compliant"
+
+  codeql-analysis:
+    name: 🔬 CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: +security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  security-summary:
+    name: 📋 Security Summary
+    runs-on: ubuntu-latest
+    needs: [security-audit, dependency-review, codeql-analysis]
+    if: always()
+
+    steps:
+      - name: Generate Security Summary
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Job status table
+          echo "| Security Check | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| NPM Audit | ${{ needs.security-audit.result == 'success' && '✅ Passed' || '❌ Failed' }} | Vulnerability scan |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Review | ${{ needs.dependency-review.result == 'success' && '✅ Passed' || '❌ Failed' }} | License compliance |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result == 'success' && '✅ Passed' || '❌ Failed' }} | Code security analysis |" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scan Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall status
+          if [ "${{ needs.security-audit.result }}" == "success" ] && \
+             [ "${{ needs.dependency-review.result }}" == "success" ] && \
+             [ "${{ needs.codeql-analysis.result }}" == "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ✅ All Security Checks Passed" >> $GITHUB_STEP_SUMMARY
+            echo "No security issues detected in this scan." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ⚠️ Security Issues Detected" >> $GITHUB_STEP_SUMMARY
+            echo "Please review the failed security checks and address any issues." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

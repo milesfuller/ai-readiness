@@ -1,0 +1,591 @@
+name: Comprehensive Test Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  schedule:
+    # Run nightly at 2 AM UTC for health monitoring
+    - cron: '0 2 * * *'
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: 'v1'
+  
+jobs:
+  # Phase 1: Fast feedback - Static analysis and unit tests
+  fast-feedback:
+    name: 'Fast Feedback (Static Analysis + Unit Tests)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    outputs:
+      should-continue: ${{ steps.changes.outputs.should-continue }}
+      has-test-changes: ${{ steps.changes.outputs.tests }}
+      coverage-threshold-met: ${{ steps.coverage.outputs.threshold-met }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # For change detection
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'ai-readiness-frontend/package-lock.json'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ai-readiness-frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
+      
+      - name: Install dependencies
+        run: |
+          cd ai-readiness-frontend
+          npm ci --prefer-offline --no-audit
+      
+      - name: Detect relevant changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          base: ${{ github.event.repository.default_branch }}
+          filters: |
+            should-continue:
+              - 'ai-readiness-frontend/**'
+              - '.github/workflows/**'
+            tests:
+              - 'ai-readiness-frontend/__tests__/**'
+              - 'ai-readiness-frontend/e2e/**'
+              - 'ai-readiness-frontend/jest.config.js'
+              - 'ai-readiness-frontend/playwright.config.ts'
+            components:
+              - 'ai-readiness-frontend/app/**'
+              - 'ai-readiness-frontend/components/**'
+              - 'ai-readiness-frontend/lib/**'
+      
+      - name: Component Boundary Validation
+        if: steps.changes.outputs.should-continue == 'true'
+        run: |
+          cd ai-readiness-frontend
+          npm run validate:components:ci:json > component-validation-results.json
+          
+          # Check if validation passed
+          if ! npm run validate:components:ci; then
+            echo "❌ Component boundary validation failed"
+            cat component-validation-results.json
+            exit 1
+          fi
+          
+          echo "✅ Component boundary validation passed"
+      
+      - name: TypeScript Type Checking
+        if: steps.changes.outputs.should-continue == 'true'
+        run: |
+          cd ai-readiness-frontend
+          npm run type-check
+      
+      - name: ESLint Analysis
+        if: steps.changes.outputs.should-continue == 'true'
+        run: |
+          cd ai-readiness-frontend
+          npm run lint -- --format=json --output-file=eslint-results.json || true
+          npm run lint
+      
+      - name: Security Scanning
+        if: steps.changes.outputs.should-continue == 'true'
+        run: |
+          cd ai-readiness-frontend
+          # Run security tests
+          npm run test:security
+          
+          # Audit dependencies
+          npm audit --audit-level=moderate
+      
+      - name: Unit Tests with Coverage
+        if: steps.changes.outputs.should-continue == 'true'
+        id: coverage
+        run: |
+          cd ai-readiness-frontend
+          npm run test:coverage -- --passWithNoTests --ci --watchAll=false
+          
+          # Check coverage thresholds
+          coverage_report=$(cat coverage/coverage-summary.json)
+          echo "Coverage report: $coverage_report"
+          
+          # Extract coverage percentages
+          lines_pct=$(echo $coverage_report | jq '.total.lines.pct')
+          functions_pct=$(echo $coverage_report | jq '.total.functions.pct')
+          branches_pct=$(echo $coverage_report | jq '.total.branches.pct')
+          statements_pct=$(echo $coverage_report | jq '.total.statements.pct')
+          
+          echo "Coverage: Lines $lines_pct%, Functions $functions_pct%, Branches $branches_pct%, Statements $statements_pct%"
+          
+          # Check if thresholds are met (80% for lines, functions, statements; 75% for branches)
+          if (( $(echo "$lines_pct >= 80" | bc -l) )) && \
+             (( $(echo "$functions_pct >= 80" | bc -l) )) && \
+             (( $(echo "$branches_pct >= 75" | bc -l) )) && \
+             (( $(echo "$statements_pct >= 80" | bc -l) )); then
+            echo "threshold-met=true" >> $GITHUB_OUTPUT
+            echo "✅ Coverage thresholds met"
+          else
+            echo "threshold-met=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Coverage thresholds not met"
+          fi
+      
+      - name: Upload Coverage to Codecov
+        if: steps.changes.outputs.should-continue == 'true'
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ai-readiness-frontend/coverage
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        if: always() && steps.changes.outputs.should-continue == 'true'
+        with:
+          name: fast-feedback-results
+          path: |
+            ai-readiness-frontend/coverage/
+            ai-readiness-frontend/component-validation-results.json
+            ai-readiness-frontend/eslint-results.json
+          retention-days: 30
+
+  # Phase 2: Build validation
+  build-validation:
+    name: 'Build Validation'
+    runs-on: ubuntu-latest
+    needs: fast-feedback
+    if: needs.fast-feedback.outputs.should-continue == 'true'
+    timeout-minutes: 20
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+        build-type: [development, production]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'ai-readiness-frontend/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd ai-readiness-frontend
+          npm ci --prefer-offline --no-audit
+      
+      - name: Build application (${{ matrix.build-type }})
+        run: |
+          cd ai-readiness-frontend
+          if [ "${{ matrix.build-type }}" = "production" ]; then
+            NODE_ENV=production npm run build
+          else
+            NODE_ENV=development npm run build
+          fi
+      
+      - name: Analyze bundle size
+        if: matrix.build-type == 'production' && matrix.node-version == '18'
+        run: |
+          cd ai-readiness-frontend
+          # Create bundle analysis
+          du -sh .next/static/* || true
+          
+          # Check for large bundles (warn if > 10MB total)
+          total_size=$(du -sm .next/static 2>/dev/null | cut -f1 || echo "0")
+          echo "Total bundle size: ${total_size}MB"
+          
+          if [ "$total_size" -gt 10 ]; then
+            echo "⚠️ Warning: Large bundle size (${total_size}MB)"
+            echo "Consider code splitting or bundle optimization"
+          fi
+      
+      - name: Test production build startup
+        if: matrix.build-type == 'production'
+        run: |
+          cd ai-readiness-frontend
+          # Start production server in background
+          npm run start &
+          SERVER_PID=$!
+          
+          # Wait for server to start
+          for i in {1..30}; do
+            if curl -f http://localhost:3000 >/dev/null 2>&1; then
+              echo "✅ Production server started successfully"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Production server failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
+          
+          # Clean shutdown
+          kill $SERVER_PID || true
+
+  # Phase 3: Integration tests
+  integration-tests:
+    name: 'Integration Tests'
+    runs-on: ubuntu-latest
+    needs: [fast-feedback, build-validation]
+    if: needs.fast-feedback.outputs.should-continue == 'true'
+    timeout-minutes: 30
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ai_readiness_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'ai-readiness-frontend/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd ai-readiness-frontend
+          npm ci --prefer-offline --no-audit
+      
+      - name: Setup test database
+        run: |
+          cd ai-readiness-frontend
+          # Setup test database schema and seed data
+          npm run supabase:start || true
+          sleep 10
+          npm run test:setup:db || echo "Database setup skipped (may not exist yet)"
+      
+      - name: Run integration tests
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/ai_readiness_test
+          REDIS_URL: redis://localhost:6379
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+        run: |
+          cd ai-readiness-frontend
+          npm run test:integration
+      
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            ai-readiness-frontend/test-results/
+            ai-readiness-frontend/coverage/
+          retention-days: 30
+
+  # Phase 4: End-to-End tests
+  e2e-tests:
+    name: 'E2E Tests'
+    runs-on: ubuntu-latest
+    needs: [fast-feedback, build-validation]
+    if: needs.fast-feedback.outputs.should-continue == 'true'
+    timeout-minutes: 45
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox]
+        test-suite: [critical-paths, auth-flows, api-integration]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'ai-readiness-frontend/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd ai-readiness-frontend
+          npm ci --prefer-offline --no-audit
+      
+      - name: Install Playwright browsers
+        run: |
+          cd ai-readiness-frontend
+          npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Setup test environment
+        run: |
+          cd ai-readiness-frontend
+          # Start test infrastructure
+          npm run test:e2e:setup || true
+          
+          # Wait for services to be ready
+          sleep 30
+      
+      - name: Run E2E tests (${{ matrix.browser }} - ${{ matrix.test-suite }})
+        env:
+          PLAYWRIGHT_BROWSER: ${{ matrix.browser }}
+          NODE_ENV: test
+        run: |
+          cd ai-readiness-frontend
+          case "${{ matrix.test-suite }}" in
+            "critical-paths")
+              npx playwright test critical-user-journey.spec.ts deployment-validation.spec.ts --project=${{ matrix.browser }}
+              ;;
+            "auth-flows") 
+              npx playwright test auth-*.spec.ts --project=${{ matrix.browser }}
+              ;;
+            "api-integration")
+              npx playwright test api-*.spec.ts --project=${{ matrix.browser }}
+              ;;
+          esac
+      
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-results-${{ matrix.browser }}-${{ matrix.test-suite }}
+          path: |
+            ai-readiness-frontend/playwright-report/
+            ai-readiness-frontend/test-results/
+          retention-days: 30
+      
+      - name: Cleanup test environment
+        if: always()
+        run: |
+          cd ai-readiness-frontend
+          npm run test:e2e:teardown || true
+
+  # Phase 5: Deployment validation
+  deployment-validation:
+    name: 'Deployment Validation'
+    runs-on: ubuntu-latest
+    needs: [fast-feedback, build-validation, integration-tests, e2e-tests]
+    if: |
+      always() && 
+      needs.fast-feedback.outputs.should-continue == 'true' && 
+      needs.fast-feedback.result == 'success' &&
+      needs.build-validation.result == 'success'
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'ai-readiness-frontend/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd ai-readiness-frontend
+          npm ci --prefer-offline --no-audit
+      
+      - name: Run comprehensive deployment validation
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          cd ai-readiness-frontend
+          node scripts/test-deployment-validator.js
+      
+      - name: Upload deployment validation report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: deployment-validation-report
+          path: |
+            ai-readiness-frontend/reports/deployment-validation-report.json
+          retention-days: 90
+
+  # Phase 6: Performance benchmarking
+  performance-benchmarking:
+    name: 'Performance Benchmarking'
+    runs-on: ubuntu-latest
+    needs: [deployment-validation]
+    if: |
+      always() &&
+      needs.deployment-validation.result == 'success' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'ai-readiness-frontend/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd ai-readiness-frontend
+          npm ci --prefer-offline --no-audit
+      
+      - name: Build production app
+        run: |
+          cd ai-readiness-frontend
+          npm run build
+      
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+      
+      - name: Run Lighthouse CI
+        run: |
+          cd ai-readiness-frontend
+          # Start production server
+          npm run start &
+          SERVER_PID=$!
+          
+          # Wait for server
+          sleep 10
+          
+          # Run Lighthouse
+          lhci autorun --config=.lighthouserc.json || echo "Lighthouse failed, continuing..."
+          
+          # Cleanup
+          kill $SERVER_PID || true
+      
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: lighthouse-results
+          path: |
+            ai-readiness-frontend/.lighthouseci/
+          retention-days: 30
+
+  # Summary and notification
+  test-summary:
+    name: 'Test Summary & Notification'
+    runs-on: ubuntu-latest
+    needs: [fast-feedback, build-validation, integration-tests, e2e-tests, deployment-validation]
+    if: always()
+    
+    steps:
+      - name: Generate test summary
+        run: |
+          echo "## Test Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Phase | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Fast Feedback | ${{ needs.fast-feedback.result }} | Static analysis, unit tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Validation | ${{ needs.build-validation.result }} | Multi-node build testing |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration Tests | ${{ needs.integration-tests.result }} | API and database integration |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests | ${{ needs.e2e-tests.result }} | Cross-browser user journeys |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployment Validation | ${{ needs.deployment-validation.result }} | Pre-deployment checks |" >> $GITHUB_STEP_SUMMARY
+          
+          # Determine overall status
+          if [[ "${{ needs.fast-feedback.result }}" == "success" && \
+                "${{ needs.build-validation.result }}" == "success" && \
+                "${{ needs.integration-tests.result }}" == "success" && \
+                "${{ needs.e2e-tests.result }}" == "success" && \
+                "${{ needs.deployment-validation.result }}" == "success" ]]; then
+            echo "## ✅ All Tests Passed - Ready for Deployment!" >> $GITHUB_STEP_SUMMARY
+            echo "overall-status=success" >> $GITHUB_OUTPUT
+          else
+            echo "## ❌ Test Failures Detected - Deployment Blocked" >> $GITHUB_STEP_SUMMARY
+            echo "overall-status=failure" >> $GITHUB_OUTPUT
+            
+            # List failed phases
+            echo "### Failed Phases:" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.fast-feedback.result }}" != "success" ]] && echo "- 🔴 Fast Feedback" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.build-validation.result }}" != "success" ]] && echo "- 🔴 Build Validation" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.integration-tests.result }}" != "success" ]] && echo "- 🔴 Integration Tests" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.e2e-tests.result }}" != "success" ]] && echo "- 🔴 E2E Tests" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.deployment-validation.result }}" != "success" ]] && echo "- 🔴 Deployment Validation" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('Test Pipeline Summary')
+            );
+            
+            const summary = `## 🧪 Test Pipeline Summary
+            
+            | Phase | Status | Details |
+            |-------|--------|---------|
+            | Fast Feedback | ${{ needs.fast-feedback.result }} | Static analysis, unit tests |
+            | Build Validation | ${{ needs.build-validation.result }} | Multi-node build testing |
+            | Integration Tests | ${{ needs.integration-tests.result }} | API and database integration |
+            | E2E Tests | ${{ needs.e2e-tests.result }} | Cross-browser user journeys |
+            | Deployment Validation | ${{ needs.deployment-validation.result }} | Pre-deployment checks |
+            
+            **Coverage Threshold Met**: ${{ needs.fast-feedback.outputs.coverage-threshold-met }}
+            
+            ${needs.deployment-validation.result === 'success' ? 
+              '✅ **All validations passed - Ready for deployment!**' : 
+              '❌ **Validations failed - Deployment blocked until issues are resolved**'
+            }`;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: summary
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: summary
+              });
+            }

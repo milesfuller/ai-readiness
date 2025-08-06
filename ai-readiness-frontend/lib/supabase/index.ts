@@ -1,8 +1,8 @@
 /**
- * Supabase Client Unified Export
+ * Simplified Supabase Client Exports
  * 
- * This module provides a unified way to get the appropriate Supabase client
- * for the current environment while ensuring singleton behavior.
+ * This module provides a clean interface to the consolidated Supabase clients.
+ * No more complex singleton pattern - just two simple clients: server and browser.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -11,24 +11,18 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * Get the appropriate Supabase client for the current environment
  * - Browser: Returns SSR-compatible browser client with cookie management
  * - Server: Returns server client with cookie handling
- * - General: Falls back to standard client
  */
 export async function getSupabaseClient(): Promise<SupabaseClient> {
   // Detect environment
   const isBrowser = typeof window !== 'undefined'
-  const isServer = typeof window === 'undefined' && typeof process !== 'undefined'
   
   if (isBrowser) {
-    // Browser environment - use browser client with cookie management
-    const { createBrowserClient } = await import('./client-browser')
-    return createBrowserClient()
-  } else if (isServer) {
-    // Server environment - use server client with cookie handling
-    const { createClient } = await import('./server')
+    // Browser environment - use consolidated browser client
+    const { createClient } = await import('./client')
     return createClient()
   } else {
-    // Fallback to general client
-    const { createClient } = await import('./client')
+    // Server environment - use consolidated server client
+    const { createClient } = await import('./server')
     return createClient()
   }
 }
@@ -42,34 +36,32 @@ export function getSupabaseClientSync(): SupabaseClient {
     throw new Error('getSupabaseClientSync can only be used in browser environments')
   }
   
-  // Use dynamic import to avoid SSR issues
-  try {
-    const { createBrowserClient } = require('./client-browser')
-    return createBrowserClient()
-  } catch (error) {
-    // Fallback to general client if browser client fails
-    const { createClient } = require('./client')
-    return createClient()
-  }
+  // Use require to avoid SSR issues with synchronous access
+  const { createClient } = require('./client')
+  return createClient()
 }
 
 /**
- * Export individual clients for specific use cases
+ * Export consolidated clients
  */
 export { createClient } from './client'
-export { createBrowserClient } from './client-browser'
+export { createBrowserClient } from './client' // Alias for compatibility
 // Server client should be imported directly from './server' to avoid next/headers in client components
 
 /**
- * Export singleton utilities
+ * Export server client helper function (for convenience)
  */
-export { 
-  getRegistryStatus, 
-  clearClients,
-  cleanup 
-} from './singleton'
+export async function getServerClient() {
+  const { createClient } = await import('./server')
+  return createClient()
+}
 
 /**
  * Legacy export for backward compatibility
  */
 export { supabase } from './client'
+
+/**
+ * Export utility functions from consolidated client
+ */
+export { clearClient, hasClientInstance } from './client'
