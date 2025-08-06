@@ -11,16 +11,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "gradient-bg-teal text-white hover:scale-105 hover:glow-teal hover:shadow-xl shadow-lg active:scale-[0.98] hover:brightness-110",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105 active:scale-[0.98] hover:shadow-lg hover:shadow-destructive/25",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-teal-500/50 hover:scale-105 active:scale-[0.98] hover:shadow-md",
-        secondary: "gradient-bg-purple text-white hover:scale-105 hover:glow-purple hover:shadow-xl shadow-lg active:scale-[0.98] hover:brightness-110",
-        ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-105 active:scale-[0.98] hover:shadow-sm",
+        default: "gradient-bg-teal text-white hover:glow-teal hover:shadow-xl shadow-lg active:scale-[0.98] hover:brightness-110",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98] hover:shadow-lg hover:shadow-destructive/25",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-teal-500/50 active:scale-[0.98] hover:shadow-md",
+        secondary: "gradient-bg-purple text-white hover:glow-purple hover:shadow-xl shadow-lg active:scale-[0.98] hover:brightness-110",
+        ghost: "hover:bg-accent hover:text-accent-foreground active:scale-[0.98] hover:shadow-sm",
         link: "text-teal-400 underline-offset-4 hover:underline hover:text-teal-300 hover:scale-[1.02] active:scale-[0.98]",
-        glass: "glass-card text-white hover:bg-white/15 hover:scale-105 hover:glow-teal active:scale-[0.98] hover:shadow-xl backdrop-blur-lg",
-        success: "bg-green-500 text-white hover:bg-green-600 hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 active:scale-[0.98]",
-        warning: "bg-yellow-500 text-white hover:bg-yellow-600 hover:scale-105 hover:shadow-lg hover:shadow-yellow-500/25 active:scale-[0.98]",
-        shimmer: "gradient-bg-teal text-white hover:scale-105 hover:glow-teal shadow-lg relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] hover:before:animate-shimmer",
+        glass: "glass-card text-white hover:bg-white/15 hover:glow-teal active:scale-[0.98] hover:shadow-xl backdrop-blur-lg",
+        success: "bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/25 active:scale-[0.98]",
+        warning: "bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow-lg hover:shadow-yellow-500/25 active:scale-[0.98]",
+        shimmer: "gradient-bg-teal text-white hover:glow-teal shadow-lg relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] hover:before:animate-shimmer",
       },
       size: {
         default: "h-11 px-4 py-2", // Changed from h-10 to h-11 to meet 44px touch target requirement
@@ -78,7 +78,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(
           buttonVariants({ variant, size, className }),
-          pulse && "animate-pulse-glow",
+          pulse && "animate-pulse",
           gradient && "bg-gradient-to-r from-teal-500 to-purple-500",
           isPressed && "scale-95",
           loading && "cursor-wait"
@@ -111,7 +111,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {LeftIcon && (
               <LeftIcon className={cn(
                 size === "sm" ? "h-3 w-3" : size === "lg" ? "h-5 w-5" : "h-4 w-4",
-                "mr-2 transition-transform duration-200 group-hover:scale-110"
+                "mr-2 transition-transform duration-200"
               )} />
             )}
             
@@ -120,18 +120,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {RightIcon && (
               <RightIcon className={cn(
                 size === "sm" ? "h-3 w-3" : size === "lg" ? "h-5 w-5" : "h-4 w-4",
-                "ml-2 transition-transform duration-200 group-hover:scale-110"
+                "ml-2 transition-transform duration-200"
               )} />
             )}
           </>
         )}
         
-        {/* Ripple Effect */}
-        {!asChild && (
-          <span className="absolute inset-0 overflow-hidden rounded-lg">
-            <span className="absolute inset-0 bg-white/20 transform scale-0 rounded-full transition-transform duration-300 ease-out group-active:scale-100 opacity-0 group-active:opacity-100" />
-          </span>
-        )}
+        {/* Ripple Effect - Removed to prevent button content splitting */}
       </Comp>
     )
   }

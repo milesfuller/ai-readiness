@@ -13,7 +13,7 @@ const cardVariants = cva(
         glass: "glass-card hover:glass-card-strong hover:scale-[1.02] hover:shadow-2xl",
         interactive: "interactive-card hover:lift-hover cursor-pointer",
         gradient: "gradient-bg-teal/10 border-teal-500/20 hover:border-teal-500/40 hover:shadow-xl hover:shadow-teal-500/10",
-        floating: "glass-card hover:glass-card-strong hover:scale-105 hover:shadow-2xl animate-float",
+        floating: "glass-card hover:glass-card-strong hover:shadow-2xl animate-float",
         bordered: "bg-card border-2 border-teal-500/20 hover:border-teal-500/40 hover:glow-teal",
         spotlight: "bg-card border-border hover:bg-gradient-to-br hover:from-teal-50/50 hover:to-purple-50/50 dark:hover:from-teal-950/20 dark:hover:to-purple-950/20",
       },
@@ -47,7 +47,7 @@ const Card = React.forwardRef<
       className={cn(
         cardVariants({ variant, size, className }),
         shimmer && "shimmer",
-        glow && "hover:animate-pulse-glow",
+        glow && "hover:shadow-xl hover:shadow-teal-500/20",
         spotlight && "group"
       )}
       onMouseEnter={() => setIsHovered(true)}
@@ -229,8 +229,7 @@ const StatsCard = React.forwardRef<
     <Card 
       ref={ref} 
       variant="glass" 
-      className={cn("p-6 group", animated && "hover:scale-105", className)} 
-      shimmer
+      className={cn("p-6 group", className)}
       {...props}
     >
       <div className="flex items-center justify-between">
@@ -238,7 +237,7 @@ const StatsCard = React.forwardRef<
           <p className="text-sm font-medium text-muted-foreground transition-colors duration-200 group-hover:text-teal-400">
             {title}
           </p>
-          <p className="text-3xl font-bold gradient-text animate-scale-in">
+          <p className="text-3xl font-bold gradient-text">
             {value}
           </p>
           {description && (
@@ -250,8 +249,8 @@ const StatsCard = React.forwardRef<
         {Icon && (
           <div className={cn(
             "p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 transition-all duration-300",
-            "group-hover:bg-teal-500/20 group-hover:border-teal-500/40 group-hover:scale-110",
-            animated && "animate-bounce-in"
+            "group-hover:bg-teal-500/20 group-hover:border-teal-500/40",
+            // Removed bounce animation
           )}>
             <Icon className="h-6 w-6 text-teal-400 transition-colors duration-200 group-hover:text-teal-300" />
           </div>
@@ -269,7 +268,7 @@ const StatsCard = React.forwardRef<
             trend.direction === 'down' && "text-red-400 group-hover:text-red-300",
             trend.direction === 'neutral' && "text-muted-foreground"
           )}>
-            <span className="animate-bounce">
+            <span>
               {trend.direction === 'up' ? '↗' : trend.direction === 'down' ? '↘' : '→'}
             </span>
             <span className="ml-1">{Math.abs(trend.value)}%</span>

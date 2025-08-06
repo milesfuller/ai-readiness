@@ -316,7 +316,7 @@ export const WhimsicalButton: React.FC<WhimsicalButtonProps> = ({
   return (
     <button
       {...props}
-      className={`${className} ${isSuccess ? 'button-success' : ''} wobble-on-hover`}
+      className={`${className} ${isSuccess ? 'button-success' : ''}`}
     >
       {isSuccess ? (
         <div className="flex items-center space-x-2">

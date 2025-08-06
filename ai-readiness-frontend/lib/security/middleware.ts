@@ -92,12 +92,26 @@ function getRateLimitConfig(pathname: string): { name: string; config: RateLimit
     return { name: 'api', config: rateLimitConfigs.api }
   }
   
+  // Very lenient rate limiting for dashboard and general navigation
+  if (pathname.includes('/dashboard') || pathname === '/') {
+    return {
+      name: 'dashboard',
+      config: {
+        windowMs: 60 * 1000, // 1 minute
+        maxRequests: 500, // Very high limit for dashboard
+        message: 'Rate limit exceeded',
+        headers: true,
+        standardHeaders: true
+      }
+    }
+  }
+  
   // Lenient rate limiting for static content
   return { 
     name: 'general', 
     config: {
       windowMs: 60 * 1000, // 1 minute
-      maxRequests: 200,
+      maxRequests: 300, // Increased from 200
       message: 'Too many requests, please try again later.',
       headers: true
     }

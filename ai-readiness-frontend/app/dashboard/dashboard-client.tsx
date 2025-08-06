@@ -19,7 +19,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <h1 className="text-4xl font-bold gradient-text">
               AI Readiness Dashboard
             </h1>
-            <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
+            <Sparkles className="h-8 w-8 text-yellow-400" />
           </div>
           <p className="text-muted-foreground text-lg">
             Welcome back, {user.profile?.firstName}! Here&apos;s your organization&apos;s AI readiness overview.
@@ -34,7 +34,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
               value={<AnimatedCounter value={247} duration={2000} />}
               description="Active assessments"
               icon={Brain}
-              className="stats-card-hover"
               trend={{
                 value: 12,
                 label: "vs last month",
@@ -48,7 +47,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
               value={<AnimatedCounter value={89} suffix="%" duration={2000} />}
               description="Survey completions"
               icon={CheckCircle2}
-              className="stats-card-hover"
               trend={{
                 value: 5,
                 label: "improvement",
@@ -62,7 +60,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
               value={<AnimatedCounter value={156} duration={2000} />}
               description="Organization members"
               icon={Users}
-              className="stats-card-hover"
               trend={{
                 value: 8,
                 label: "new this week",
@@ -76,7 +73,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
               value={<AnimatedCounter value={18} suffix=" min" duration={2000} />}
               description="Per assessment"
               icon={Clock}
-              className="stats-card-hover"
               trend={{
                 value: 2,
                 label: "faster",
@@ -89,10 +85,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AI Readiness Score */}
-          <Card variant="glass" className="lg:col-span-1 animate-fade-in animation-delay-500 whimsy-hover">
+          <Card variant="glass" className="lg:col-span-1 animate-fade-in animation-delay-500">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-teal-400 animate-pulse" />
+                <TrendingUp className="h-5 w-5 text-teal-400" />
                 <span>Overall AI Readiness</span>
                 <Trophy className="h-4 w-4 text-yellow-400" />
               </CardTitle>
@@ -107,9 +103,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
               </div>
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Your organization shows <span className="text-teal-400 font-medium animate-pulse">strong readiness</span> for AI adoption
+                  Your organization shows <span className="text-teal-400 font-medium">strong readiness</span> for AI adoption
                 </p>
-                <Button variant="outline" size="sm" className="wobble-on-hover">
+                <Button variant="outline" size="sm">
                   View Detailed Analysis
                 </Button>
               </div>
@@ -120,7 +116,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           <Card variant="glass" className="lg:col-span-2 animate-fade-in animation-delay-300">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5 text-purple-400 animate-pulse" />
+                <BarChart3 className="h-5 w-5 text-purple-400" />
                 <span>JTBD Forces Analysis</span>
                 <Zap className="h-4 w-4 text-yellow-400" />
               </CardTitle>
@@ -173,10 +169,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="animate-fade-in animation-delay-100">
-            <Card variant="interactive" className="cursor-pointer whimsy-hover">
+            <Card variant="interactive" className="cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 transition-all duration-300 hover:scale-110">
+                  <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 transition-all duration-300">
                     <Brain className="h-6 w-6 text-teal-400" />
                   </div>
                   <div>
@@ -191,10 +187,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </div>
 
           <div className="animate-fade-in animation-delay-200">
-            <Card variant="interactive" className="cursor-pointer whimsy-hover">
+            <Card variant="interactive" className="cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 transition-all duration-300 hover:scale-110">
+                  <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 transition-all duration-300">
                     <Users className="h-6 w-6 text-purple-400" />
                   </div>
                   <div>
@@ -209,10 +205,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </div>
 
           <div className="animate-fade-in animation-delay-300">
-            <Card variant="interactive" className="cursor-pointer whimsy-hover">
+            <Card variant="interactive" className="cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-lg bg-pink-500/10 border border-pink-500/20 transition-all duration-300 hover:scale-110">
+                  <div className="p-3 rounded-lg bg-pink-500/10 border border-pink-500/20 transition-all duration-300">
                     <BarChart3 className="h-6 w-6 text-pink-400" />
                   </div>
                   <div>

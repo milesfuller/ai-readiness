@@ -263,7 +263,7 @@ const CircularProgress = React.forwardRef<
         
         {/* Glow effect for certain variants */}
         {(variant === "gradient" || variant === "default") && (
-          <div className="absolute inset-0 rounded-full opacity-20 animate-pulse-glow" 
+          <div className="absolute inset-0 rounded-full opacity-20" 
                style={{ 
                  boxShadow: `0 0 ${size / 4}px ${getStrokeColor()}30` 
                }} />
@@ -309,7 +309,7 @@ const StepProgress = React.forwardRef<
             step.completed 
               ? "bg-teal-500 border-teal-500 text-white"
               : step.current 
-                ? "border-teal-500 bg-teal-50 text-teal-500 animate-pulse-glow"
+                ? "border-teal-500 bg-teal-50 text-teal-500"
                 : "border-muted bg-background text-muted-foreground"
           )}>
             {step.completed ? (

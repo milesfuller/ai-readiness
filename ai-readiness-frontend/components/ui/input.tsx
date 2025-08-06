@@ -146,7 +146,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {isPassword && (
             <button
               type="button"
-              className="text-muted-foreground hover:text-foreground transition-all duration-200 p-1 rounded-full hover:bg-muted hover:scale-110"
+              className="text-muted-foreground hover:text-foreground transition-all duration-200 p-1 rounded-full hover:bg-muted"
               onClick={(e) => {
                 e.preventDefault()
                 setShowPassword(!showPassword)
@@ -174,10 +174,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         
-        {/* Focus Ring Animation */}
-        {isFocused && (
-          <div className="absolute inset-0 rounded-lg border-2 border-teal-500/30 animate-pulse-glow pointer-events-none" />
-        )}
+        {/* Focus Ring Animation - removed pulse-glow */}
       </div>
     )
 
@@ -317,10 +314,7 @@ const Textarea = React.forwardRef<
         {...props}
       />
       
-      {/* Focus Ring Animation */}
-      {isFocused && (
-        <div className="absolute inset-0 rounded-lg border-2 border-teal-500/30 animate-pulse-glow pointer-events-none" />
-      )}
+      {/* Focus Ring Animation - removed pulse-glow */}
     </div>
   )
 
