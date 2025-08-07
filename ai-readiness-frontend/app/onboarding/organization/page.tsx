@@ -26,7 +26,8 @@ import {
 const createOrgSchema = z.object({
   name: z.string().min(2, 'Organization name must be at least 2 characters').max(100),
   domain: z.string().min(2, 'Domain must be at least 2 characters').max(50)
-    .regex(/^[a-zA-Z0-9-]+$/, 'Domain can only contain letters, numbers, and hyphens')
+    .regex(/^[a-zA-Z0-9.-]+$/, 'Domain can only contain letters, numbers, dots, and hyphens')
+    .refine((val) => !val.startsWith('.') && !val.endsWith('.'), 'Domain cannot start or end with a dot')
 })
 
 type CreateOrgFormData = z.infer<typeof createOrgSchema>
@@ -89,12 +90,15 @@ export default function OrganizationPage() {
   // Auto-fill domain from organization name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value
-    const domain = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 20)
-    setValue('domain', domain)
+    // Only auto-generate domain if it looks like a company name (not already a domain)
+    if (!name.includes('.')) {
+      const domain = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 20)
+      setValue('domain', domain)
+    }
   }
 
   const filteredOrganizations = organizations.filter(org =>

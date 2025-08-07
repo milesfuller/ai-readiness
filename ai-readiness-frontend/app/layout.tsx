@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
 import { TutorialProvider } from '@/components/onboarding/tutorial-provider'
+import MigrationRunner from './migration-runner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,6 +26,7 @@ export default function RootLayout({
         <meta name="permissions-policy" content="microphone=*" />
       </head>
       <body className={inter.className}>
+        <MigrationRunner />
         <AuthProvider>
           <TutorialProvider>
             {children}
