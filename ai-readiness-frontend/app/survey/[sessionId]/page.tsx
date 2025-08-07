@@ -120,23 +120,37 @@ export default function SurveyPage({ params }: Props) {
 
   // Auto-save progress (debounced)
   const saveProgress = useCallback(async () => {
-    if (!session || saveStatus === 'saving') return
+    if (!session) {
+      console.log('No session, skipping save')
+      return
+    }
+    
+    // Prevent multiple saves at once
+    if (saveStatus === 'saving') {
+      console.log('Already saving, skipping')
+      return
+    }
 
+    console.log('Starting save...', { sessionId: session.sessionId, answersCount: Object.keys(answers).length })
     setSaveStatus('saving')
     
     try {
-      // Mock save to Supabase
-      await new Promise(resolve => setTimeout(resolve, 500))
-      console.log('Progress saved:', { sessionId: session.sessionId, answers })
+      // Mock save to Supabase - shorter delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 300))
+      console.log('Progress saved successfully:', { sessionId: session.sessionId, answers: Object.keys(answers) })
       setSaveStatus('saved')
       
-      setTimeout(() => setSaveStatus('idle'), 2000)
+      // Return to idle after showing success
+      setTimeout(() => {
+        console.log('Setting save status back to idle')
+        setSaveStatus('idle')
+      }, 1500)
     } catch (error) {
       console.error('Save failed:', error)
       setSaveStatus('error')
-      setTimeout(() => setSaveStatus('idle'), 3000)
+      setTimeout(() => setSaveStatus('idle'), 2000)
     }
-  }, [answers, session, saveStatus])
+  }, [answers, session]) // Removed saveStatus from dependencies to prevent infinite loop
 
   // Resolve params and initialize session
   useEffect(() => {
@@ -178,9 +192,10 @@ export default function SurveyPage({ params }: Props) {
       clearTimeout(saveTimeoutRef.current)
     }
 
-    if (Object.keys(answers).length > 0) {
-      setSaveStatus('saving')
+    if (Object.keys(answers).length > 0 && saveStatus !== 'saving') {
+      console.log('Setting up auto-save timer')
       saveTimeoutRef.current = setTimeout(() => {
+        console.log('Auto-save timer triggered')
         saveProgress()
       }, 30000) // Auto-save every 30 seconds
     }
@@ -190,20 +205,25 @@ export default function SurveyPage({ params }: Props) {
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [answers, saveProgress])
+  }, [answers, saveProgress, saveStatus]) // Added saveStatus to prevent setting timer while saving
 
   // Save on answer change (debounced)
   useEffect(() => {
-    if (currentAnswer?.answer.trim()) {
+    if (currentAnswer?.answer.trim() && saveStatus !== 'saving') {
+      console.log('Setting up debounced save for answer change')
       const debounceTimeout = setTimeout(() => {
+        console.log('Debounced save triggered for answer change')
         saveProgress()
-      }, 3000) // Save 3 seconds after stopping typing
+      }, 2000) // Save 2 seconds after stopping typing (reduced from 3s)
 
-      return () => clearTimeout(debounceTimeout)
+      return () => {
+        console.log('Clearing debounced save timeout')
+        clearTimeout(debounceTimeout)
+      }
     }
-    // Return undefined when {"there's"} no answer
+    // Return undefined when there's no answer
     return undefined
-  }, [currentAnswer?.answer, saveProgress])
+  }, [currentAnswer?.answer, saveProgress, saveStatus]) // Added saveStatus to prevent saving while already saving
 
   // Progress celebration effect  
   useEffect(() => {

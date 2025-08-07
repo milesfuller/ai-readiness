@@ -1,15 +1,66 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress } from '@/components/ui'
-import { BarChart3, TrendingUp, Award, Download, Calendar } from 'lucide-react'
+import { BarChart3, TrendingUp, Award, Download, Calendar, FileText, Users } from 'lucide-react'
 
-export default async function ResultsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+// Mock user for demonstration
+const mockUser = {
+  id: '1',
+  email: 'john.doe@company.com',
+  role: 'user' as const,
+  organizationId: 'org-1',
+  profile: {
+    id: 'profile-1',
+    userId: '1',
+    firstName: 'John',
+    lastName: 'Doe',
+    avatar: undefined,
+    department: 'Product Management',
+    jobTitle: 'Senior Product Manager',
+    preferences: {
+      theme: 'dark' as const,
+      notifications: true,
+      voiceInput: true,
+      language: 'en'
+    }
+  },
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-08-01T00:00:00Z',
+  lastLogin: '2024-08-02T19:00:00Z'
+}
+
+export default function ResultsPage() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   
-  if (!user) {
-    redirect('/auth/login')
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+      
+      setUser(user)
+      setLoading(false)
+    }
+    
+    checkAuth()
+  }, [router])
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+      </div>
+    )
   }
 
   // Mock results data
@@ -43,7 +94,7 @@ export default async function ResultsPage() {
   ]
 
   return (
-    <MainLayout user={user} currentPath="/results">
+    <MainLayout user={mockUser} currentPath="/results">
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Assessment Results</h1>
@@ -112,11 +163,29 @@ export default async function ResultsPage() {
             </div>
             
             <div className="flex space-x-4 mt-6 pt-6 border-t">
-              <Button className="flex-1">
+              <Button 
+                className="flex-1"
+                onClick={() => {
+                  console.log('Viewing detailed analysis...')
+                  // Navigate to detailed analysis page
+                  router.push('/dashboard/analytics')
+                }}
+              >
                 <BarChart3 className="h-4 w-4 mr-2" />
                 View Detailed Analysis
               </Button>
-              <Button variant="outline" className="flex-1">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  console.log('Downloading report...')
+                  // Mock download functionality
+                  const link = document.createElement('a')
+                  link.href = 'data:text/plain;charset=utf-8,Mock AI Readiness Report - Score: 73%\nDate: March 15, 2024\n\nDetailed results would be here...'
+                  link.download = 'ai-readiness-report.txt'
+                  link.click()
+                }}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Download Report
               </Button>
@@ -147,8 +216,30 @@ export default async function ResultsPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex space-x-2">
-                    <Button size="sm" variant="outline">View Details</Button>
-                    <Button size="sm" variant="outline">Compare</Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        console.log(`Viewing details for assessment #${result.id}...`)
+                        // Navigate to detailed view
+                        router.push(`/results/${result.id}`)
+                      }}
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
+                      View Details
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        console.log(`Comparing assessment #${result.id}...`)
+                        // Navigate to comparison view
+                        router.push(`/results/compare?ids=${result.id},1`)
+                      }}
+                    >
+                      <Users className="h-3 w-3 mr-1" />
+                      Compare
+                    </Button>
                   </div>
                 </div>
               ))}

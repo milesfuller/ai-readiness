@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/input'
@@ -32,6 +32,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const [transcription, setTranscription] = useState(initialValue)
   const [recordingDuration, setRecordingDuration] = useState(0)
   const [audioVolume, setAudioVolume] = useState<number[]>([])
+  const [permissionState, setPermissionState] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown')
+  const [showManualButton, setShowManualButton] = useState(false)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -40,6 +42,27 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const volumeIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+
+  // Check permission status on component mount
+  useEffect(() => {
+    const checkPermissionStatus = async () => {
+      if ('permissions' in navigator) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName })
+          setPermissionState(permissionStatus.state as any)
+          
+          if (permissionStatus.state === 'denied') {
+            setShowManualButton(true)
+          }
+        } catch (error) {
+          console.log('Permission query not supported:', error)
+          setPermissionState('unknown')
+        }
+      }
+    }
+    
+    checkPermissionStatus()
+  }, [])
 
   // Define startVolumeVisualization before startRecording to avoid scope issues
   const startVolumeVisualization = useCallback(() => {
@@ -75,7 +98,20 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         throw new Error('Microphone access not supported by this browser')
       }
 
-      // Request microphone permission
+      // Check if we're on HTTPS or localhost
+      const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+      if (!isSecure) {
+        throw new Error('Microphone access requires HTTPS. Please access this site over HTTPS.')
+      }
+
+      // Check current permission status
+      if (permissionState === 'denied') {
+        setShowManualButton(true)
+        throw new Error('Microphone access was denied. Please click the "Allow Microphone" button below to grant permission.')
+      }
+
+      console.log('Requesting microphone access...')
+      // Request microphone permission with explicit user gesture
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -83,6 +119,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           autoGainControl: true
         }
       })
+      
+      console.log('Microphone access granted, stream:', stream)
       
       streamRef.current = stream
       
@@ -138,7 +176,9 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       // Provide user-friendly error messages
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          alert('Microphone access denied. Please allow microphone permissions in your browser settings and try again.')
+          setPermissionState('denied')
+          setShowManualButton(true)
+          alert('Microphone access denied. Please click the "Allow Microphone" button below or check your browser settings.')
         } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
           alert('No microphone found. Please connect a microphone and try again.')
         } else if (error.name === 'NotSupportedError') {
@@ -148,7 +188,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         }
       }
     }
-  }, [recordingDuration, onTranscriptionUpdate, startVolumeVisualization])
+  }, [recordingDuration, onTranscriptionUpdate, startVolumeVisualization, permissionState])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
@@ -290,9 +330,46 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
               <p className="text-xs sm:text-sm text-muted-foreground px-4">
                 {isRecording 
                   ? '✋ Tap the microphone again to stop' 
+                  : permissionState === 'denied'
+                  ? '🔒 Microphone access denied - use button below'
                   : '💡 Speak clearly for best results'
                 }
               </p>
+              
+              {/* Manual Permission Button */}
+              {showManualButton && !isRecording && (
+                <div className="mt-4 p-4 bg-amber-950/20 border border-amber-500/30 rounded-lg">
+                  <div className="text-center space-y-3">
+                    <p className="text-sm text-amber-400">
+                      🎤 Microphone permission is required for voice recording
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          console.log('Requesting microphone permission...')
+                          const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                          stream.getTracks().forEach(track => track.stop())
+                          setPermissionState('granted')
+                          setShowManualButton(false)
+                          alert('Permission granted! You can now start recording.')
+                        } catch (error: any) {
+                          console.error('Permission request failed:', error)
+                          if (error.name === 'NotAllowedError') {
+                            alert('Please allow microphone access in your browser settings.')
+                          }
+                        }
+                      }}
+                      variant="outline"
+                      className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                    >
+                      🔓 Allow Microphone Access
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Click to request microphone permissions from your browser
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ) : (
