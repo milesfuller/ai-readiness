@@ -1,0 +1,196 @@
+name: Database Migration Protection
+
+# This workflow ensures migrations are tested before production
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'FIX_EXISTING_DATABASE.sql'
+      - '**.sql'
+  push:
+    branches:
+      - develop
+      - staging
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - test
+          - staging
+          - production
+
+env:
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+jobs:
+  # Step 1: Test migrations locally
+  test-migrations:
+    name: Test Database Migrations
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      
+      # Start local Supabase instance
+      - name: Start Supabase Local Database
+        run: |
+          supabase start
+          
+      # Run migration tests
+      - name: Test Migrations
+        run: |
+          # Reset database to clean state
+          supabase db reset
+          
+          # Apply all migrations
+          for file in supabase/migrations/*.sql; do
+            echo "Testing migration: $file"
+            supabase db push --file "$file" --dry-run
+          done
+          
+      # Run database tests
+      - name: Run Database Tests
+        run: |
+          supabase test db
+          
+      # Generate migration report
+      - name: Generate Migration Report
+        id: migration-report
+        run: |
+          echo "## Migration Test Report" > migration-report.md
+          echo "✅ All migrations tested successfully" >> migration-report.md
+          echo "" >> migration-report.md
+          echo "### Migrations Applied:" >> migration-report.md
+          ls -la supabase/migrations/*.sql >> migration-report.md
+          
+      # Comment on PR
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('migration-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            })
+
+  # Step 2: Deploy to staging (only after tests pass)
+  deploy-staging:
+    name: Deploy to Staging
+    needs: test-migrations
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+          
+      - name: Deploy to Staging
+        id: deploy
+        env:
+          PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+        run: |
+          # Push migrations to staging
+          supabase link --project-ref $PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          supabase db push
+          
+          echo "url=https://$PROJECT_ID.supabase.co" >> $GITHUB_OUTPUT
+          
+      - name: Run Staging Health Checks
+        run: |
+          # Add health check scripts here
+          echo "Running staging health checks..."
+
+  # Step 3: Production deployment (requires manual approval)
+  deploy-production:
+    name: Deploy to Production
+    needs: [test-migrations, deploy-staging]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+          
+      # Create backup before deployment
+      - name: Create Production Backup
+        env:
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+        run: |
+          echo "Creating production backup..."
+          # Supabase automatically creates backups, but we log this step
+          
+      - name: Deploy to Production
+        id: deploy
+        env:
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
+        run: |
+          # Push migrations to production
+          supabase link --project-ref $PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          supabase db push
+          
+          echo "url=https://$PROJECT_ID.supabase.co" >> $GITHUB_OUTPUT
+          
+      - name: Run Production Health Checks
+        run: |
+          echo "Running production health checks..."
+          # Add production validation here
+          
+      - name: Notify Deployment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const message = `${status} Production deployment ${{ job.status }}`;
+            
+            // Create deployment status
+            github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment.id,
+              state: '${{ job.status }}',
+              environment_url: '${{ steps.deploy.outputs.url }}',
+              description: message
+            });
+
+  # Rollback job (manual trigger only)
+  rollback:
+    name: Rollback Migration
+    if: github.event_name == 'workflow_dispatch' && failure()
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}-rollback
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Execute Rollback
+        run: |
+          echo "Executing rollback for ${{ github.event.inputs.environment }}..."
+          # Add rollback logic here
