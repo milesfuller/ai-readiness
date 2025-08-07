@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { surveyCategories, surveyQuestions } from '@/lib/data/survey-questions'
 
+// Mark this route as dynamic since it uses request.url
+export const dynamic = 'force-dynamic'
+
 /**
  * Get survey results and analysis for a specific session
  */

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { TemplateCategory } from '@/lib/types'
 
+// Mark this route as dynamic since it uses request.url
+export const dynamic = 'force-dynamic'
+
 const TEMPLATE_CATEGORIES = [
   {
     value: 'ai_readiness' as TemplateCategory,
