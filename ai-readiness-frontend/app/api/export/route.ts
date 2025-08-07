@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { exportService } from '@/lib/services/export-service'
-import { ExportOptions } from '@/lib/types'
+import { ExportOptions, UserRole } from '@/lib/types'
+import { hasPermission, PERMISSIONS, canAccessOrganization } from '@/lib/auth/rbac'
+import { addAPISecurityHeaders } from '@/lib/security/middleware'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,23 +26,29 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
       )
     }
 
-    // Get user profile and role
-    const { data: userProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+    // Get user role from metadata
+    const userRole = (user.user_metadata?.role as UserRole) || 'user'
+    const userOrgId = user.user_metadata?.organization_id
 
-    if (profileError || !userProfile) {
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 403 }
+    // Check export permission
+    if (!hasPermission(userRole, PERMISSIONS.API_EXPORT_ACCESS)) {
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { 
+            error: 'Access denied. Export privileges required.',
+            userRole,
+            requiredPermission: PERMISSIONS.API_EXPORT_ACCESS
+          },
+          { status: 403 }
+        )
       )
     }
 
@@ -60,50 +68,73 @@ export async function POST(request: NextRequest) {
 
     // Validate export options
     if (!options || !options.format) {
-      return NextResponse.json(
-        { error: 'Invalid export options' },
-        { status: 400 }
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { error: 'Invalid export options' },
+          { status: 400 }
+        )
       )
     }
 
     // Check permissions for personal data export
-    if (options.includePersonalData && !['admin', 'org_admin'].includes(userProfile.role)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions to export personal data' },
-        { status: 403 }
+    if (options.includePersonalData && !hasPermission(userRole, PERMISSIONS.ADMIN_EXPORT_ALL)) {
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { 
+            error: 'Insufficient permissions to export personal data',
+            userRole,
+            requiredPermission: PERMISSIONS.ADMIN_EXPORT_ALL
+          },
+          { status: 403 }
+        )
       )
     }
 
-    // Check organization access for org_admin
-    if (userProfile.role === 'org_admin') {
-      if (organizationId && organizationId !== userProfile.organization_id) {
-        return NextResponse.json(
-          { error: 'Access denied: Cannot access other organization data' },
+    // Check organization access
+    if (organizationId && !canAccessOrganization(userRole, userOrgId, organizationId)) {
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { 
+            error: 'Access denied: Cannot access organization data',
+            userRole,
+            userOrgId,
+            requestedOrgId: organizationId
+          },
           { status: 403 }
         )
-      }
-      
-      // If surveyId provided, check if it belongs to the user's organization
-      if (surveyId) {
-        const { data: survey, error: surveyError } = await supabase
-          .from('surveys')
-          .select('organization_id')
-          .eq('id', surveyId)
-          .single()
+      )
+    }
 
-        if (surveyError || !survey) {
-          return NextResponse.json(
+    // If surveyId provided, check if it belongs to user's accessible organization
+    if (surveyId && userRole !== 'system_admin') {
+      const { data: survey, error: surveyError } = await supabase
+        .from('surveys')
+        .select('organization_id')
+        .eq('id', surveyId)
+        .single()
+
+      if (surveyError || !survey) {
+        return addAPISecurityHeaders(
+          NextResponse.json(
             { error: 'Survey not found' },
             { status: 404 }
           )
-        }
+        )
+      }
 
-        if (survey.organization_id !== userProfile.organization_id) {
-          return NextResponse.json(
-            { error: 'Access denied: Survey not in your organization' },
+      // Check if user can access the survey's organization
+      if (!canAccessOrganization(userRole, userOrgId, survey.organization_id)) {
+        return addAPISecurityHeaders(
+          NextResponse.json(
+            { 
+              error: 'Access denied: Survey not accessible',
+              userRole,
+              userOrgId,
+              surveyOrgId: survey.organization_id
+            },
             { status: 403 }
           )
-        }
+        )
       }
     }
 
@@ -134,12 +165,33 @@ export async function POST(request: NextRequest) {
     const timestamp = new Date().toISOString().split('T')[0]
 
     try {
+      // Initialize export service with current user context
+      await exportService.initializeUser()
+      
+      // Set organization filter for org_admin users
+      if (userRole === 'org_admin' && userOrgId) {
+        options.filters = {
+          ...options.filters,
+          organizationId: userOrgId
+        }
+      }
+      
+      // Add survey filter if surveyId provided
+      if (surveyId) {
+        options.filters = {
+          ...options.filters,
+          surveyId: surveyId
+        }
+      }
+
       switch (type) {
         case 'survey_report':
           if (!surveyId) {
-            return NextResponse.json(
-              { error: 'Survey ID required for survey report' },
-              { status: 400 }
+            return addAPISecurityHeaders(
+              NextResponse.json(
+                { error: 'Survey ID required for survey report' },
+                { status: 400 }
+              )
             )
           }
           result = await exportService.generateSurveyPDF(surveyId, options)
@@ -149,9 +201,11 @@ export async function POST(request: NextRequest) {
 
         case 'organization_report':
           if (!organizationId) {
-            return NextResponse.json(
-              { error: 'Organization ID required for organization report' },
-              { status: 400 }
+            return addAPISecurityHeaders(
+              NextResponse.json(
+                { error: 'Organization ID required for organization report' },
+                { status: 400 }
+              )
             )
           }
           result = await exportService.generateOrganizationReport(organizationId, options)
@@ -170,9 +224,11 @@ export async function POST(request: NextRequest) {
             filename = `survey-data-${timestamp}.json`
             mimeType = 'application/json'
           } else {
-            return NextResponse.json(
-              { error: 'Unsupported format for data export' },
-              { status: 400 }
+            return addAPISecurityHeaders(
+              NextResponse.json(
+                { error: 'Unsupported format for data export' },
+                { status: 400 }
+              )
             )
           }
           break
@@ -186,8 +242,8 @@ export async function POST(request: NextRequest) {
         buffer = Buffer.from(result, 'utf-8')
       }
 
-      // Return file as download
-      return new NextResponse(buffer, {
+      // Return file as download with security headers
+      const response = new NextResponse(buffer, {
         status: 200,
         headers: {
           'Content-Type': mimeType,
@@ -198,6 +254,8 @@ export async function POST(request: NextRequest) {
           'Expires': '0'
         }
       })
+      
+      return addAPISecurityHeaders(response)
 
     } catch (exportError) {
       // eslint-disable-next-line no-console
@@ -218,18 +276,22 @@ export async function POST(request: NextRequest) {
           }
         })
 
-      return NextResponse.json(
-        { error: 'Export generation failed', details: exportError instanceof Error ? exportError.message : 'Unknown error' },
-        { status: 500 }
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { error: 'Export generation failed', details: exportError instanceof Error ? exportError.message : 'Unknown error' },
+          { status: 500 }
+        )
       )
     }
 
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Export API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return addAPISecurityHeaders(
+      NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      )
     )
   }
 }
@@ -252,23 +314,28 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
       )
     }
 
-    // Get user profile
-    const { data: userProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    // Get user role from metadata
+    const userRole = (user.user_metadata?.role as UserRole) || 'user'
 
-    if (profileError || !userProfile) {
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 403 }
+    // Check export permission
+    if (!hasPermission(userRole, PERMISSIONS.API_EXPORT_ACCESS)) {
+      return addAPISecurityHeaders(
+        NextResponse.json(
+          { 
+            error: 'Access denied. Export privileges required.',
+            userRole,
+            requiredPermission: PERMISSIONS.API_EXPORT_ACCESS
+          },
+          { status: 403 }
+        )
       )
     }
 
@@ -291,19 +358,29 @@ export async function GET(request: NextRequest) {
       console.error('Failed to fetch export stats:', statsError)
     }
 
-    return NextResponse.json({
-      formats,
-      canExportPersonalData: ['admin', 'org_admin'].includes(userProfile.role),
-      recentExports: exportStats?.slice(0, 10) || [],
-      exportCount: exportStats?.length || 0
-    })
+    return addAPISecurityHeaders(
+      NextResponse.json({
+        formats,
+        canExportPersonalData: hasPermission(userRole, PERMISSIONS.ADMIN_EXPORT_ALL),
+        recentExports: exportStats?.slice(0, 10) || [],
+        exportCount: exportStats?.length || 0,
+        userRole,
+        permissions: {
+          canExportData: hasPermission(userRole, PERMISSIONS.API_EXPORT_ACCESS),
+          canExportPersonalData: hasPermission(userRole, PERMISSIONS.ADMIN_EXPORT_ALL),
+          canExportAllOrgs: hasPermission(userRole, PERMISSIONS.ORG_VIEW_ALL)
+        }
+      })
+    )
 
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Export info API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return addAPISecurityHeaders(
+      NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      )
     )
   }
 }

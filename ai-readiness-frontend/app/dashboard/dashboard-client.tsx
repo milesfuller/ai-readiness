@@ -14,9 +14,10 @@ interface DashboardClientProps {
 export function DashboardClient({ user }: DashboardClientProps) {
   const router = useRouter()
   const [isExporting, setIsExporting] = useState(false)
+  
   return (
     <MainLayout user={user} currentPath="/dashboard">
-      <div className="space-y-8">
+      <div className="space-y-8" data-tutorial="dashboard-overview">
         {/* Page Header */}
         <div className="space-y-2 animate-fade-in">
           <div className="flex items-center space-x-3">
@@ -31,7 +32,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tutorial="stats-cards">
           <div className="animate-fade-in animation-delay-100">
             <StatsCard
               title="Total Surveys"
@@ -89,7 +90,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AI Readiness Score */}
-          <Card variant="glass" className="lg:col-span-1 animate-fade-in animation-delay-500">
+          <Card variant="glass" className="lg:col-span-1 animate-fade-in animation-delay-500" data-tutorial="readiness-score">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <TrendingUp className="h-5 w-5 text-teal-400" />
@@ -122,7 +123,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </Card>
 
           {/* Recent Activity */}
-          <Card variant="glass" className="lg:col-span-2 animate-fade-in animation-delay-300">
+          <Card variant="glass" className="lg:col-span-2 animate-fade-in animation-delay-300" data-tutorial="jtbd-analysis">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="h-5 w-5 text-purple-400" />
@@ -138,7 +139,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                     <span className="font-medium">Pull of New Solutions</span>
                     <span className="text-teal-400">8.2/10</span>
                   </div>
-                  <Progress value={82} variant="gradient" />
+                  <Progress value={82} />
                 </div>
                 
                 <div className="space-y-2">
@@ -200,7 +201,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-tutorial="action-cards">
           <div className="animate-fade-in animation-delay-100">
             <Card 
               variant="interactive" 

@@ -435,7 +435,6 @@ export function ProgressStoryteller({
               
               <Progress 
                 value={chapter.overallProgress} 
-                variant="gradient"
                 className="h-4"
               />
             </div>

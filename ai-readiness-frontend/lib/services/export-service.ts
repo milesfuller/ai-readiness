@@ -41,16 +41,20 @@ export class ExportService {
   private userRole: string | null = null
 
   constructor() {
-    this.initializeUser()
+    // Don't initialize user in constructor - do it explicitly when needed
   }
 
-  private async initializeUser() {
+  async initializeUser() {
     try {
+      // Use the existing supabase client
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: profile } = await supabase
-          .from('users')
-          .select('*')
+          .from('profiles')
+          .select(`
+            *,
+            organization:organizations(*)
+          `)
           .eq('id', user.id)
           .single()
         
@@ -317,13 +321,25 @@ export class ExportService {
   async generateSurveyPDF(surveyId: string, options: ExportOptions): Promise<Blob> {
     this.checkExportPermission(options.includePersonalData)
     
-    // Fetch survey-specific data
+    // Use the existing supabase client
+    // Fetch survey-specific data with real responses and analysis
     const { data: survey, error: surveyError } = await supabase
       .from('surveys')
       .select(`
         *,
-        responses:survey_responses(*),
-        organization:organizations(*)
+        responses:survey_responses(
+          *,
+          user:profiles(
+            *,
+            organization:organizations(*)
+          ),
+          llm_analysis:llm_analysis_results(
+            *,
+            analysis_result
+          )
+        ),
+        organization:organizations(*),
+        questions:survey_questions(*)
       `)
       .eq('id', surveyId)
       .single()
@@ -332,6 +348,8 @@ export class ExportService {
 
     const responses = survey.responses || []
     const analytics = this.generateAnalytics([survey], responses)
+    
+    // JTBD analysis is already included in the analytics object
 
     // Create PDF using jsPDF
     const pdf = new jsPDF()
@@ -411,10 +429,16 @@ export class ExportService {
     
     pdf.setFontSize(12)
     pdf.setFont('helvetica', 'normal')
-    yPosition = addText(`Push Forces: ${analytics.jtbdAnalysis.push.toFixed(1)}/5`, 30, yPosition + 5)
-    yPosition = addText(`Pull Forces: ${analytics.jtbdAnalysis.pull.toFixed(1)}/5`, 30, yPosition)
-    yPosition = addText(`Habits: ${analytics.jtbdAnalysis.habit.toFixed(1)}/5`, 30, yPosition)
+    yPosition = addText(`Push Forces (Pain of Old): ${analytics.jtbdAnalysis.push.toFixed(1)}/5`, 30, yPosition + 5)
+    yPosition = addText(`Pull Forces (Pull of New): ${analytics.jtbdAnalysis.pull.toFixed(1)}/5`, 30, yPosition)
+    yPosition = addText(`Anchors (Habits): ${analytics.jtbdAnalysis.habit.toFixed(1)}/5`, 30, yPosition)
     yPosition = addText(`Anxieties: ${analytics.jtbdAnalysis.anxiety.toFixed(1)}/5`, 30, yPosition)
+    
+    // Add force analysis explanation
+    yPosition += 10
+    const forceExplanation = this.generateJTBDExplanation(analytics.jtbdAnalysis)
+    yPosition = addText('Analysis:', 30, yPosition)
+    yPosition = addText(forceExplanation, 30, yPosition + 5, pageWidth - 60)
 
     // Top Issues
     if (analytics.topIssues.length > 0) {
@@ -584,6 +608,34 @@ export class ExportService {
     }
 
     return formats
+  }
+
+  private generateJTBDExplanation(forces: JTBDForces): string {
+    const dominant = Object.entries(forces)
+      .sort(([,a], [,b]) => b - a)
+      .map(([key, value]) => ({ force: key, strength: value }))
+    
+    const strongestForce = dominant[0]
+    let explanation = ''
+    
+    switch (strongestForce.force) {
+      case 'push':
+        explanation = 'The strongest force is frustration with current processes, indicating significant pain points that drive the need for AI adoption.'
+        break
+      case 'pull':
+        explanation = 'The strongest force is attraction to AI benefits, showing enthusiasm and clear vision for improvement opportunities.'
+        break
+      case 'habit':
+        explanation = 'The strongest force is resistance to change, suggesting organizational inertia and attachment to existing processes.'
+        break
+      case 'anxiety':
+        explanation = 'The strongest force is concern about change, indicating fears and uncertainties that may hinder AI adoption.'
+        break
+      default:
+        explanation = 'Forces are relatively balanced, suggesting a mixed readiness state requiring targeted interventions.'
+    }
+    
+    return `${explanation} Overall readiness score: ${Object.values(forces).reduce((a, b) => a + b, 0) / 4}/5`
   }
 }
 

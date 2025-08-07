@@ -3,6 +3,7 @@
 import React from 'react'
 import { RoleGuard } from '@/components/admin/role-guard'
 import { AdminSidebar } from '@/components/admin/sidebar'
+import { PERMISSIONS } from '@/lib/auth/rbac'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -10,7 +11,12 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <RoleGuard allowedRoles={['system_admin', 'org_admin']}>
+    <RoleGuard 
+      allowedRoles={['system_admin', 'org_admin']}
+      requiredPermission={PERMISSIONS.ADMIN_DASHBOARD}
+      requiredRoute="/admin"
+      redirectTo="/dashboard"
+    >
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-teal-900">
         <div className="flex">
           <AdminSidebar />

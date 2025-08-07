@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createComprehensiveSecurityMiddleware } from './lib/security/middleware'
+import { rbacMiddleware } from './lib/auth/middleware'
 
 // Initialize comprehensive security middleware
 const securityMiddleware = createComprehensiveSecurityMiddleware({
@@ -87,6 +88,16 @@ export async function middleware(request: NextRequest) {
     return securityResponse
   }
 
+  // Apply RBAC middleware for route protection
+  const rbacResponse = await rbacMiddleware(request)
+  if (rbacResponse) {
+    // Copy security headers to RBAC response
+    securityResponse.headers.forEach((value, key) => {
+      rbacResponse.headers.set(key, value)
+    })
+    return rbacResponse
+  }
+
   // Continue with authentication logic
   let response = NextResponse.next({
     request: {
@@ -157,18 +168,73 @@ export async function middleware(request: NextRequest) {
   // Public routes that don't require authentication
   const publicRoutes = ['/', '/auth/verify-email', '/auth/verify-email-success', '/terms', '/privacy', '/support']
 
-  // Redirect authenticated users away from auth pages
-  if (user && authRoutes.includes(pathname)) {
-    const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url))
-    // Copy security headers to redirect response
-    securityResponse.headers.forEach((value, key) => {
-      redirectResponse.headers.set(key, value)
-    })
-    return redirectResponse
+  // Onboarding routes
+  const onboardingRoutes = [
+    '/onboarding/welcome',
+    '/onboarding/profile',
+    '/onboarding/organization', 
+    '/onboarding/permissions',
+    '/onboarding/tutorial',
+    '/onboarding/complete'
+  ]
+
+  // Check onboarding status for authenticated users
+  if (user) {
+    const hasCompletedOnboarding = user.user_metadata?.onboarding_completed === true
+    const isOnboardingRoute = onboardingRoutes.includes(pathname)
+    const isAuthRoute = authRoutes.includes(pathname)
+    
+    // If user hasn't completed onboarding and not on onboarding route
+    if (!hasCompletedOnboarding && !isOnboardingRoute && !publicRoutes.includes(pathname) && !isAuthRoute) {
+      // Determine the appropriate onboarding step
+      let onboardingStep = '/onboarding/welcome'
+      
+      // Check if user has profile data
+      if (user.user_metadata?.profile || (user.user_metadata?.firstName && user.user_metadata?.lastName)) {
+        onboardingStep = '/onboarding/organization'
+      }
+      
+      // Check if user has organization
+      if (user.user_metadata?.organization_id) {
+        onboardingStep = '/onboarding/permissions'
+      }
+      
+      // Check if user has role assigned
+      if (user.user_metadata?.role) {
+        onboardingStep = '/onboarding/tutorial'
+      }
+      
+      const redirectResponse = NextResponse.redirect(new URL(onboardingStep, request.url))
+      securityResponse.headers.forEach((value, key) => {
+        redirectResponse.headers.set(key, value)
+      })
+      return redirectResponse
+    }
+    
+    // If user has completed onboarding and is on onboarding route, redirect to dashboard
+    if (hasCompletedOnboarding && isOnboardingRoute) {
+      const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url))
+      securityResponse.headers.forEach((value, key) => {
+        redirectResponse.headers.set(key, value)
+      })
+      return redirectResponse
+    }
+    
+    // Redirect authenticated users away from auth pages
+    if (isAuthRoute) {
+      const redirectTo = request.nextUrl.searchParams.get('redirectTo')
+      const destination = redirectTo && !authRoutes.includes(redirectTo) ? redirectTo : '/dashboard'
+      const redirectResponse = NextResponse.redirect(new URL(destination, request.url))
+      securityResponse.headers.forEach((value, key) => {
+        redirectResponse.headers.set(key, value)
+      })
+      return redirectResponse
+    }
   }
 
-  // Redirect unauthenticated users to login from protected routes
-  if (!user && protectedRoutes.some(route => pathname.startsWith(route))) {
+  // Redirect unauthenticated users to login from protected routes (including onboarding)
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route)) || onboardingRoutes.includes(pathname)
+  if (!user && isProtectedRoute) {
     const redirectUrl = new URL('/auth/login', request.url)
     redirectUrl.searchParams.set('redirectTo', pathname)
     const redirectResponse = NextResponse.redirect(redirectUrl)

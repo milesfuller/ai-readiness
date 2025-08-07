@@ -13,7 +13,8 @@ import {
   BarChart3, 
   Download,
   Settings,
-  LogOut
+  LogOut,
+  Layout
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -28,6 +29,12 @@ const adminNavItems = [
     title: 'Surveys',
     href: '/admin/surveys',
     icon: FileText,
+    roles: ['system_admin', 'org_admin']
+  },
+  {
+    title: 'Templates',
+    href: '/admin/templates',
+    icon: Layout,
     roles: ['system_admin', 'org_admin']
   },
   {
@@ -59,6 +66,12 @@ const adminNavItems = [
     href: '/admin/settings',
     icon: Settings,
     roles: ['system_admin']
+  },
+  {
+    title: 'Organization',
+    href: '/organization/settings',
+    icon: Building2,
+    roles: ['org_admin']
   }
 ]
 

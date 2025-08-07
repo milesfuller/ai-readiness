@@ -18,6 +18,8 @@ import {
   ChevronRight
 } from "lucide-react"
 import type { UserRole } from "@/lib/types"
+import { usePermissions } from "@/lib/hooks/use-permissions"
+import { PERMISSIONS } from "@/lib/auth/rbac"
 
 interface NavItem {
   label: string
@@ -25,6 +27,8 @@ interface NavItem {
   icon?: any
   children?: NavItem[]
   badge?: string | number
+  permission?: string
+  roles?: UserRole[]
 }
 
 interface SidebarProps {
@@ -39,6 +43,7 @@ interface SidebarProps {
 const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
   ({ userRole, currentPath, isCollapsed = false, onItemClick, className, 'data-testid-prefix': testIdPrefix = '' }, ref) => {
     const [expandedItems, setExpandedItems] = React.useState<string[]>(['dashboard'])
+    const { checkPermission, user } = usePermissions()
 
     const toggleExpanded = (itemLabel: string) => {
       setExpandedItems(prev => 
@@ -74,21 +79,26 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           label: 'Organization',
           href: '/organization',
           icon: Users,
+          permission: PERMISSIONS.ORG_VIEW_OWN,
+          roles: ['org_admin', 'system_admin'],
           children: [
             {
               label: 'Team Surveys',
               href: '/organization/surveys',
               icon: ClipboardList,
+              permission: PERMISSIONS.SURVEY_VIEW_ORG,
             },
             {
               label: 'Analytics',
               href: '/organization/analytics',
               icon: BarChart3,
+              permission: PERMISSIONS.SURVEY_VIEW_ORG,
             },
             {
               label: 'Reports',
               href: '/organization/reports',
               icon: FileText,
+              permission: PERMISSIONS.SURVEY_VIEW_ORG,
             }
           ]
         }
@@ -100,36 +110,45 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           label: 'Administration',
           href: '/admin',
           icon: Shield,
+          permission: PERMISSIONS.ADMIN_DASHBOARD,
+          roles: ['org_admin', 'system_admin'],
           children: [
             {
               label: 'All Surveys',
               href: '/admin/surveys',
               icon: ClipboardList,
+              permission: PERMISSIONS.SURVEY_VIEW_ALL,
             },
             {
               label: 'Users',
               href: '/admin/users',
               icon: Users,
+              permission: PERMISSIONS.USER_VIEW_ALL,
             },
             {
               label: 'Organizations',
               href: '/admin/organizations',
               icon: Database,
+              permission: PERMISSIONS.ORG_VIEW_ALL,
+              roles: ['system_admin'],
             },
             {
               label: 'System Analytics',
               href: '/admin/analytics',
               icon: BarChart3,
+              permission: PERMISSIONS.ADMIN_ANALYTICS_ALL,
             },
             {
               label: 'Reports',
               href: '/admin/reports',
               icon: FileText,
+              permission: PERMISSIONS.ADMIN_ANALYTICS_ALL,
             },
             {
               label: 'Export Data',
               href: '/admin/export',
               icon: Download,
+              permission: PERMISSIONS.ADMIN_EXPORT_ALL,
             }
           ]
         },
@@ -137,16 +156,20 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           label: 'System',
           href: '/system',
           icon: Settings,
+          permission: PERMISSIONS.ADMIN_SYSTEM_CONFIG,
+          roles: ['system_admin'],
           children: [
             {
               label: 'Configuration',
               href: '/system/config',
               icon: Settings,
+              permission: PERMISSIONS.ADMIN_SYSTEM_CONFIG,
             },
             {
               label: 'AI Models',
               href: '/system/ai',
               icon: Brain,
+              permission: PERMISSIONS.ADMIN_SYSTEM_CONFIG,
             }
           ]
         }
@@ -163,6 +186,34 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     }
 
     const navItems = getNavItems()
+
+    // Filter navigation items based on user permissions
+    const filterNavItems = (items: NavItem[]): NavItem[] => {
+      return items.filter(item => {
+        // Check role-based access
+        if (item.roles && !item.roles.includes(userRole)) {
+          return false
+        }
+
+        // Check permission-based access
+        if (item.permission && user && !checkPermission(item.permission)) {
+          return false
+        }
+
+        // Filter children recursively
+        if (item.children) {
+          item.children = filterNavItems(item.children)
+          // Hide parent if all children are filtered out
+          if (item.children.length === 0) {
+            return false
+          }
+        }
+
+        return true
+      })
+    }
+
+    const filteredNavItems = filterNavItems(navItems)
 
     const renderNavItem = (item: NavItem, level: number = 0) => {
       const isActive = currentPath === item.href
@@ -234,7 +285,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       >
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-4" role="navigation">
-          {navItems.map(item => renderNavItem(item))}
+          {filteredNavItems.map(item => renderNavItem(item))}
         </nav>
 
         {/* Bottom section */}

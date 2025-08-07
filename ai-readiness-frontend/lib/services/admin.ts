@@ -488,7 +488,11 @@ export async function fetchOrganizations(filters: AdminFilters = {}): Promise<Or
       settings: {
         allowSelfRegistration: true,
         defaultRole: 'user' as const,
-        requireEmailVerification: true
+        requireEmailVerification: true,
+        dataRetentionDays: 365,
+        enableAuditLogs: false,
+        enable2FA: false,
+        enableSSO: false
       },
       createdAt: org.created_at,
       updatedAt: org.updated_at

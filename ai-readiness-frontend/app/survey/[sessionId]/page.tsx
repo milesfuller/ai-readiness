@@ -401,45 +401,37 @@ export default function SurveyPage({ params }: Props) {
       console.log('Progress saved')
       
       // Convert local answers to service format for submission
-      const serviceAnswers: Record<string, import('@/lib/services/survey-service').SurveyAnswer> = {}
-      Object.entries(answers).forEach(([key, localAnswer]) => {
-        serviceAnswers[key] = {
-          questionId: localAnswer.questionId,
-          answer: localAnswer.answer,
-          inputMethod: localAnswer.inputMethod,
-          timeSpent: 0, // Could track this if needed
-          audioUrl: localAnswer.audioUrl
-        }
-      })
+      const submissionAnswers = Object.entries(answers).map(([questionId, localAnswer]) => ({
+        questionId: localAnswer.questionId,
+        answer: localAnswer.answer,
+        inputMethod: localAnswer.inputMethod,
+        timeSpent: 0, // Could track this if needed
+        audioUrl: localAnswer.audioUrl
+      }))
       
       // Submit the complete survey
-      const submission = formatSurveyAnswersForSubmission(
-        session.sessionId,
-        serviceAnswers,
-        {
+      const submission = {
+        sessionId: session.sessionId,
+        answers: submissionAnswers,
+        metadata: {
           completionTime: timeSpent,
           userAgent: navigator.userAgent,
           device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
           voiceInputUsed: Object.values(answers).some(a => a.inputMethod === 'voice')
         }
-      )
+      }
       
       console.log('Submitting survey...', { answersCount: submission.answers.length })
-      const result = await surveyService.submitSurvey(submission)
+      const response = await fetch('/api/survey/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submission)
+      })
       
-      if (result.success) {
+      const result = await response.json()
+      
+      if (response.ok && result.success) {
         console.log('Survey submitted successfully:', result)
-        
-        // Update session status on server
-        await fetch('/api/survey/session', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: session.sessionId,
-            status: 'completed',
-            timeSpent
-          })
-        })
         
         // Update local session
         const completedSession = {
@@ -459,7 +451,6 @@ export default function SurveyPage({ params }: Props) {
     } catch (error) {
       console.error('Failed to complete survey:', error)
       // Show error to user but still allow navigation to completion page
-      // In production, you might want to show a proper error modal
       setSaveStatus('error')
       setTimeout(() => {
         router.push(`/survey/${resolvedParams.sessionId}/complete`)
@@ -560,7 +551,6 @@ export default function SurveyPage({ params }: Props) {
             <div className="relative">
               <Progress 
                 value={progress} 
-                variant="gradient" 
                 className={`h-3 rounded-full transition-all duration-500 ${
                   progress >= 75 ? 'progress-milestone' : ''
                 }`}
@@ -704,8 +694,7 @@ export default function SurveyPage({ params }: Props) {
                     value={categoryProgress} 
                     className={`h-2 transition-all duration-500 ${
                       isComplete ? 'success-pulse' : ''
-                    }`} 
-                    variant={isComplete ? 'gradient' : 'default'}
+                    }`}
                   />
                 </div>
               )

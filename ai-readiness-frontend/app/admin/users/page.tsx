@@ -170,12 +170,20 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold text-white">Users</h1>
           <p className="text-gray-400">Manage user accounts and permissions</p>
         </div>
-        {currentUser?.role === 'system_admin' && (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
-        )}
+        <div className="flex space-x-2">
+          {(currentUser?.role === 'system_admin' || currentUser?.role === 'org_admin') && (
+            <Button onClick={() => window.location.href = '/admin/invitations'}>
+              <Mail className="h-4 w-4 mr-2" />
+              Send Invitations
+            </Button>
+          )}
+          {currentUser?.role === 'system_admin' && (
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -22,10 +22,12 @@ import {
   Menu,
   Brain,
   Shield,
-  BarChart3
+  BarChart3,
+  HelpCircle
 } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { User as UserType, UserRole } from "@/lib/types"
+import { HelpMenu } from './help-menu'
 
 interface HeaderProps {
   user?: SupabaseUser | UserType
@@ -123,8 +125,11 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
               </div>
             </div>
 
-            {/* Right side - User menu */}
+            {/* Right side - Help, Notifications & User menu */}
             <div className="flex items-center space-x-4">
+              {/* Help Menu */}
+              <HelpMenu className="min-h-[44px] min-w-[44px]" />
+              
               {/* Notifications */}
               <Button 
                 variant="ghost" 

@@ -156,7 +156,6 @@ export function OnboardingFlow({ onComplete, className }: OnboardingFlowProps) {
         </div>
         <Progress 
           value={progress} 
-          variant="gradient"
           className="h-2 bg-gray-200 dark:bg-gray-700"
         />
       </div>

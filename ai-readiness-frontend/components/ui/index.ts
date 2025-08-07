@@ -13,7 +13,7 @@ export {
   cardVariants 
 } from "./card"
 export { Input, Textarea, inputVariants, type InputProps } from "./input"
-export { Progress, CircularProgress } from "./progress"
+export { Progress, CircularProgress, StepProgress } from "./progress"
 export { Avatar, AvatarImage, AvatarFallback } from "./avatar"
 export {
   DropdownMenu,
@@ -70,6 +70,7 @@ export {
 export { Checkbox } from "./checkbox"
 export { Label } from "./label"
 export { Skeleton } from "./skeleton"
+export { Separator } from "./separator"
 export {
   Dialog,
   DialogPortal,

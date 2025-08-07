@@ -24,6 +24,31 @@ dist-ssr
 .next/
 out/
 
+# Testing artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+*.webm
+*.png
+*.jpeg
+*.jpg
+*.zip
+*.trace
+*.network
+.playwright-artifacts*/
+api-test-results.json
+test-report*.html
+test-report*.json
+
+# Claude/Development artifacts
+.claude/validation-report.json
+.claude/config.json
+.claude/settings.local.json
+*.tmp
+*.bak
+*~
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

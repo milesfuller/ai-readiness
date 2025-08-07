@@ -198,6 +198,9 @@ export function Pagination({
   )
 }
 
+// Admin pagination alias for backward compatibility
+export const AdminPagination = Pagination
+
 // Simple pagination component for basic use cases
 interface SimplePaginationProps {
   currentPage: number

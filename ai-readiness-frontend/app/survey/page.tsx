@@ -189,10 +189,40 @@ export default function SurveyPage() {
 
               <Button 
                 className="w-full bg-teal-600 hover:bg-teal-700"
-                onClick={() => {
-                  // Generate unique session ID
-                  const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-                  router.push(`/survey/${sessionId}`)
+                onClick={async () => {
+                  try {
+                    // Generate unique session ID
+                    const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+                    
+                    // Create session on server
+                    const response = await fetch('/api/survey/session', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        sessionId,
+                        metadata: {
+                          userAgent: navigator.userAgent,
+                          device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                          startedAt: new Date().toISOString()
+                        }
+                      })
+                    })
+                    
+                    if (response.ok) {
+                      const sessionData = await response.json()
+                      console.log('Survey session created:', sessionData)
+                      router.push(`/survey/${sessionId}`)
+                    } else {
+                      console.error('Failed to create session')
+                      // Fallback to client-only session
+                      router.push(`/survey/${sessionId}`)
+                    }
+                  } catch (error) {
+                    console.error('Error creating session:', error)
+                    // Fallback to client-only session
+                    const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+                    router.push(`/survey/${sessionId}`)
+                  }
                 }}
               >
                 Start Assessment

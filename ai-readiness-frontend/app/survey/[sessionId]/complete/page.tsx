@@ -326,7 +326,7 @@ export default function SurveyCompletePage({ params }: Props) {
                               </div>
                             </div>
                           </div>
-                          <Progress value={data.score} variant="gradient" className="h-2" />
+                          <Progress value={data.score} className="h-2" />
                           <p className="text-sm text-muted-foreground">
                             {category.description}
                           </p>
