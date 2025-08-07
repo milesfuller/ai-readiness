@@ -93,22 +93,26 @@ class DatabaseMigrator {
         return { version, status: 'skipped' }
       }
 
-      // Read migration file
-      const filepath = path.join(MIGRATIONS_DIR, filename)
-      
-      // In production, migrations should be embedded in the build
-      // For development, read from filesystem
+      // Get migration SQL content
       let sql: string
       
-      if (process.env.NODE_ENV === 'production') {
-        // In production, import migrations as modules
-        sql = await this.getProductionMigration(filename)
-      } else {
-        // In development, read from filesystem
-        if (!fs.existsSync(filepath)) {
-          throw new Error(`Migration file not found: ${filepath}`)
+      // Import migrations from embedded content (works in both dev and prod)
+      const { MIGRATION_CONTENT } = await import('./migrations-content')
+      sql = MIGRATION_CONTENT[filename]
+      
+      if (!sql) {
+        // Fallback to filesystem in development only
+        if (process.env.NODE_ENV !== 'production') {
+          const filepath = path.join(MIGRATIONS_DIR, filename)
+          if (fs.existsSync(filepath)) {
+            sql = fs.readFileSync(filepath, 'utf8')
+          }
         }
-        sql = fs.readFileSync(filepath, 'utf8')
+        
+        if (!sql) {
+          console.warn(`⚠️ Migration ${filename} not found, skipping...`)
+          return { version, status: 'skipped' }
+        }
       }
 
       // Execute migration
@@ -141,22 +145,6 @@ class DatabaseMigrator {
     }
   }
 
-  /**
-   * Get migration SQL for production (embedded in build)
-   */
-  private async getProductionMigration(filename: string): Promise<string> {
-    // In production, migrations are imported as modules
-    const migrations: Record<string, string> = {
-      '000_migration_tracking.sql': require('../../supabase/migrations/000_migration_tracking.sql').default,
-      '001_invitations_schema.sql': require('../../supabase/migrations/001_invitations_schema.sql').default,
-      '20240101000005_onboarding_tables.sql': require('../../supabase/migrations/20240101000005_onboarding_tables.sql').default,
-      '20240807_survey_system.sql': require('../../supabase/migrations/20240807_survey_system.sql').default,
-      '20241207_organization_settings.sql': require('../../supabase/migrations/20241207_organization_settings.sql').default,
-      '20250107_survey_templates.sql': require('../../supabase/migrations/20250107_survey_templates.sql').default,
-    }
-    
-    return migrations[filename] || ''
-  }
 
   /**
    * Run all pending migrations
