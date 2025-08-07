@@ -189,4 +189,4 @@ For support, email support@aireadiness.com or open an issue in this repository.
 
 ---
 
-Built with ❤️ using Next.js, TypeScript, Tailwind CSS, ShadCN, and Supabase
+Built with ❤️ using Next.js, TypeScript, Tailwind CSS, ShadCN, and Supabase# Test
