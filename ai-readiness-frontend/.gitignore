@@ -45,9 +45,25 @@ test-report*.json
 .claude/validation-report.json
 .claude/config.json
 .claude/settings.local.json
+.claude/hooks/*.js
 *.tmp
 *.bak
 *~
+
+# Development documentation
+*_PROOF.md
+*_SUMMARY.md
+*_TEST_*.md
+*_IMPLEMENTATION.md
+*_ASSESSMENT.md
+*_BLOCKERS.md
+COORDINATION_PROTOCOL.md
+PARALLEL_DEVELOPMENT_SOLUTION.md
+VALIDATION_SYSTEM.md
+
+# Test scripts
+api-*.sh
+test-*.sh
 
 # Editor directories and files
 .vscode/*
