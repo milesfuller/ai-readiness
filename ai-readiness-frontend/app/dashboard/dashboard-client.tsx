@@ -4,12 +4,16 @@ import { MainLayout } from '@/components/layout/main-layout'
 import { Button, Card, CardHeader, CardTitle, CardContent, StatsCard, CircularProgress, Progress } from '@/components/ui'
 // Removed AnimatedCounter whimsy component
 import { Brain, Users, TrendingUp, Clock, CheckCircle2, BarChart3, Sparkles, Trophy, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 interface DashboardClientProps {
   user: any
 }
 
 export function DashboardClient({ user }: DashboardClientProps) {
+  const router = useRouter()
+  const [isExporting, setIsExporting] = useState(false)
   return (
     <MainLayout user={user} currentPath="/dashboard">
       <div className="space-y-8">
@@ -105,7 +109,12 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 <p className="text-sm text-muted-foreground">
                   Your organization shows <span className="text-teal-400 font-medium">strong readiness</span> for AI adoption
                 </p>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => router.push('/analytics')}
+                  className="whitespace-nowrap"
+                >
                   View Detailed Analysis
                 </Button>
               </div>
@@ -158,8 +167,32 @@ export function DashboardClient({ user }: DashboardClientProps) {
               </div>
 
               <div className="pt-4 border-t border-border/40">
-                <Button variant="secondary" className="w-full">
-                  Generate Detailed Report
+                <Button 
+                  variant="secondary" 
+                  className="w-full whitespace-nowrap"
+                  onClick={async () => {
+                    setIsExporting(true)
+                    try {
+                      const response = await fetch('/api/export?format=pdf&type=jtbd')
+                      if (response.ok) {
+                        const blob = await response.blob()
+                        const url = window.URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = 'jtbd-analysis.pdf'
+                        a.click()
+                      } else {
+                        alert('Export failed. Please try again.')
+                      }
+                    } catch (error) {
+                      alert('Export failed. Please try again.')
+                    } finally {
+                      setIsExporting(false)
+                    }
+                  }}
+                  disabled={isExporting}
+                >
+                  {isExporting ? 'Generating...' : 'Generate Detailed Report'}
                 </Button>
               </div>
             </CardContent>
@@ -169,7 +202,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="animate-fade-in animation-delay-100">
-            <Card variant="interactive" className="cursor-pointer">
+            <Card 
+              variant="interactive" 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={() => router.push('/survey')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 transition-all duration-300">
@@ -187,7 +224,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </div>
 
           <div className="animate-fade-in animation-delay-200">
-            <Card variant="interactive" className="cursor-pointer">
+            <Card 
+              variant="interactive" 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={() => router.push('/organization/analytics')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 transition-all duration-300">
@@ -205,7 +246,30 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </div>
 
           <div className="animate-fade-in animation-delay-300">
-            <Card variant="interactive" className="cursor-pointer">
+            <Card 
+              variant="interactive" 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={async () => {
+                setIsExporting(true)
+                try {
+                  const response = await fetch('/api/export?format=csv')
+                  if (response.ok) {
+                    const blob = await response.blob()
+                    const url = window.URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = 'ai-readiness-data.csv'
+                    a.click()
+                  } else {
+                    alert('Export failed. Please try again.')
+                  }
+                } catch (error) {
+                  alert('Export failed. Please try again.')
+                } finally {
+                  setIsExporting(false)
+                }
+              }}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 rounded-lg bg-pink-500/10 border border-pink-500/20 transition-all duration-300">

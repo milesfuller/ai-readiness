@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { MainLayout } from '@/components/layout/main-layout'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
-import { User, Mail, Building, Shield } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui'
+import { User, Mail, Building, Shield, Edit } from 'lucide-react'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -22,9 +23,17 @@ export default async function ProfilePage() {
   return (
     <MainLayout user={user} currentPath="/profile">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <p className="text-muted-foreground">Manage your account information</p>
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Profile</h1>
+            <p className="text-muted-foreground">Manage your account information</p>
+          </div>
+          <Link href="/profile/edit">
+            <Button className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Edit Profile
+            </Button>
+          </Link>
         </div>
 
         <Card>
