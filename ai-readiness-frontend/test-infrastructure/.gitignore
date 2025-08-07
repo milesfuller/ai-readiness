@@ -1,0 +1,10 @@
+# Test data
+test-data/
+*.log
+
+# Docker volumes
+postgres-data/
+
+# Test outputs
+test-results/
+*.test.sql

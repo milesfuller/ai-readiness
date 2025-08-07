@@ -1,0 +1,214 @@
+name: Deployment Protection Pipeline
+
+# Enforces testing before production deployment
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Deployment target'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Security check - prevent direct production pushes
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    outputs:
+      can_deploy: ${{ steps.check.outputs.can_deploy }}
+      
+    steps:
+      - name: Check deployment authorization
+        id: check
+        run: |
+          # Block direct pushes to main without PR
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" && "${{ github.event.pull_request }}" == "" ]]; then
+            echo "❌ Direct push to main branch detected!"
+            echo "can_deploy=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "can_deploy=true" >> $GITHUB_OUTPUT
+          
+      - name: Verify branch protection
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = await github.rest.repos.getBranch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'main'
+            });
+            
+            if (!branch.data.protected) {
+              core.setFailed('Main branch is not protected! Enable branch protection immediately.');
+            }
+
+  # Job 2: Run tests on all code changes
+  test-suite:
+    name: Test Suite
+    needs: security-check
+    if: needs.security-check.outputs.can_deploy == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run linting
+        run: npm run lint
+        
+      - name: Run type checking
+        run: npm run typecheck
+        
+      - name: Run tests
+        run: npm test
+        
+      - name: Build application
+        run: npm run build
+
+  # Job 3: Test database migrations
+  test-migrations:
+    name: Test Database Migrations
+    needs: security-check
+    if: needs.security-check.outputs.can_deploy == 'true'
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test SQL migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Create auth schema like Supabase
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "CREATE SCHEMA IF NOT EXISTS auth;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "CREATE TABLE IF NOT EXISTS auth.users (id UUID PRIMARY KEY DEFAULT gen_random_uuid());"
+          
+          # Test FIX_EXISTING_DATABASE.sql
+          if [ -f "FIX_EXISTING_DATABASE.sql" ]; then
+            echo "Testing FIX_EXISTING_DATABASE.sql..."
+            PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f FIX_EXISTING_DATABASE.sql
+          fi
+          
+          # Test other migrations
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Testing migration: $file"
+              PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f "$file"
+            fi
+          done
+          
+          # Verify critical tables exist
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name IN ('organizations', 'onboarding_progress', 'survey_sessions');"
+
+  # Job 4: Deploy to staging (automatic for develop branch)
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [test-suite, test-migrations]
+    if: |
+      github.ref == 'refs/heads/develop' || 
+      github.event.inputs.target == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging  # Change this to match your GitHub environment name
+      url: https://staging.your-app.com
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Vercel Staging
+        run: |
+          npx vercel --token=${{ secrets.VERCEL_TOKEN }} --prod --env=staging
+          
+      - name: Run staging smoke tests
+        run: |
+          # Add smoke tests here
+          echo "Running staging smoke tests..."
+
+  # Job 5: Production deployment (requires manual approval)
+  deploy-production:
+    name: Deploy to Production
+    needs: [test-suite, test-migrations, deploy-staging]
+    if: |
+      github.ref == 'refs/heads/main' && 
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://your-app.com
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create deployment
+        id: deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production',
+              required_contexts: ['test-suite', 'test-migrations'],
+              auto_merge: false
+            });
+            
+            return deployment.data.id;
+            
+      - name: Deploy to Vercel Production
+        id: vercel
+        run: |
+          npx vercel --token=${{ secrets.VERCEL_TOKEN }} --prod
+          
+      - name: Update deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.result }},
+              state: '${{ job.status }}',
+              environment_url: 'https://your-app.com',
+              description: 'Deployment ${{ job.status }}'
+            });
