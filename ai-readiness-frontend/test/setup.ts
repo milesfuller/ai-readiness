@@ -31,9 +31,9 @@ vi.mock('next/image', () => ({
   ),
 }))
 
-// Mock Supabase client
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: vi.fn(() => ({
+// Mock Supabase client with correct export structure
+vi.mock('@/lib/supabase/client', () => {
+  const mockClient = {
     auth: {
       getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
       getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
@@ -50,8 +50,49 @@ vi.mock('@/lib/supabase/client', () => ({
       eq: vi.fn().mockReturnThis(),
       single: vi.fn(() => Promise.resolve({ data: null, error: null })),
     })),
-  })),
-}))
+  };
+
+  return {
+    createClient: vi.fn(() => mockClient),
+    createBrowserClient: vi.fn(() => mockClient),
+    supabase: mockClient,
+    default: mockClient,
+  };
+})
+
+// Mock Supabase index module as well
+vi.mock('@/lib/supabase', () => {
+  const mockClient = {
+    auth: {
+      getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+      getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      signUp: vi.fn(() => Promise.resolve({ data: { user: null, session: null }, error: null })),
+      signInWithPassword: vi.fn(() => Promise.resolve({ data: { user: null, session: null }, error: null })),
+      signOut: vi.fn(() => Promise.resolve({ error: null })),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    })),
+  };
+
+  return {
+    getSupabaseClient: vi.fn(() => Promise.resolve(mockClient)),
+    getSupabaseClientSync: vi.fn(() => mockClient),
+    createClient: vi.fn(() => mockClient),
+    createBrowserClient: vi.fn(() => mockClient),
+    getServerClient: vi.fn(() => Promise.resolve(mockClient)),
+    supabase: mockClient,
+    clearClient: vi.fn(),
+    hasClientInstance: vi.fn(() => true),
+    default: mockClient,
+  };
+})
 
 // Mock environment variables
 vi.mock('process', () => ({
@@ -68,8 +109,9 @@ beforeAll(() => {
   // Start MSW server
   server.listen()
   
-  // Mock window.matchMedia
-  Object.defineProperty(window, 'matchMedia', {
+  // Mock window.matchMedia (check if window exists first)
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation(query => ({
       matches: false,
@@ -81,7 +123,20 @@ beforeAll(() => {
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })),
-  })
+    })
+  } else {
+    // For non-browser environments, create a global mock
+    global.matchMedia = vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }))
+  }
 
   // Mock IntersectionObserver
   global.IntersectionObserver = vi.fn().mockImplementation(() => ({

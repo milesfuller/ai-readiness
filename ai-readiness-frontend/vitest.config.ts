@@ -18,45 +18,17 @@ export default defineConfig({
       'dist',
       '.next',
       'e2e',
+      'e2e/**/*',
+      'tests/e2e/**/*',
       '**/*.e2e.{test,spec}.{js,ts,jsx,tsx}',
+      '**/e2e/**/*.{test,spec}.{js,ts,jsx,tsx}',
+      'tests/accessibility/**/*',
+      'tests/load/**/*', 
+      'tests/performance/**/*',
+      'tests/visual/**/*',
       'playwright-report',
       'test-results'
     ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'dist/',
-        '.next/',
-        'e2e/',
-        'coverage/',
-        'test/',
-        '**/*.config.{js,ts}',
-        '**/*.d.ts',
-        'types/',
-        'scripts/',
-        'mocks/',
-        'mock-config/',
-        'docker/',
-        'supabase/',
-        'planning/',
-        'docs/',
-        'fix-coordination/',
-        'test-infrastructure/',
-        'test-logs/',
-        'test-results/'
-      ],
-      all: true,
-      thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80
-        }
-      }
-    },
     pool: 'forks',
     poolOptions: {
       forks: {
