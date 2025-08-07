@@ -26,27 +26,27 @@ export function createMockSession(overrides: Partial<MockSession> = {}): MockSes
 export function createMockSupabaseClient(overrides: Partial<MockSupabaseClient> = {}): MockSupabaseClient {
   return {
     auth: {
-      getUser: jest.fn(),
-      getSession: jest.fn(),
-      signInWithOAuth: jest.fn(),
-      signOut: jest.fn(),
+      getUser: vi.fn(),
+      getSession: vi.fn(),
+      signInWithOAuth: vi.fn(),
+      signOut: vi.fn(),
     },
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          single: jest.fn()
+          single: vi.fn()
         }))
       })),
       insert: jest.fn(() => ({
-        select: jest.fn()
+        select: vi.fn()
       })),
       update: jest.fn(() => ({
         eq: jest.fn(() => ({
-          select: jest.fn()
+          select: vi.fn()
         }))
       })),
       delete: jest.fn(() => ({
-        eq: jest.fn()
+        eq: vi.fn()
       }))
     })),
     ...overrides
@@ -68,8 +68,8 @@ export function createMockResponse(overrides: Partial<{ status: number; headers:
   return {
     status: overrides.status || 200,
     headers: overrides.headers || {},
-    json: jest.fn().mockResolvedValue(data),
-    text: jest.fn().mockResolvedValue(JSON.stringify(data))
+    json: vi.fn().mockResolvedValue(data),
+    text: vi.fn().mockResolvedValue(JSON.stringify(data))
   };
 }
 
@@ -83,8 +83,8 @@ export function createMockNextRequest(overrides: Partial<{ method: string; url: 
     method: overrides.method || 'GET',
     url: overrides.url || 'http://localhost:3000',
     headers,
-    json: jest.fn().mockResolvedValue(overrides.body || {}),
-    text: jest.fn().mockResolvedValue(JSON.stringify(overrides.body || {}))
+    json: vi.fn().mockResolvedValue(overrides.body || {}),
+    text: vi.fn().mockResolvedValue(JSON.stringify(overrides.body || {}))
   };
 }
 
@@ -93,7 +93,7 @@ export function createMockNextResponse(overrides: Partial<{ status: number; head
   return {
     status: overrides.status || 200,
     headers: overrides.headers || {},
-    json: jest.fn().mockResolvedValue(data),
-    text: jest.fn().mockResolvedValue(JSON.stringify(data))
+    json: vi.fn().mockResolvedValue(data),
+    text: vi.fn().mockResolvedValue(JSON.stringify(data))
   };
 }

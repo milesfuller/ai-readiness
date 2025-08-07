@@ -3,6 +3,8 @@
  * Tests core database functionality with the test instance
  */
 
+import { vi } from 'vitest'
+
 import { testHelper, TestUser, TestOrganization } from '../../supabase/test-utils.mock'
 
 describe('Supabase Database Integration', () => {
@@ -30,7 +32,7 @@ describe('Supabase Database Integration', () => {
       size: 'Small'
     })
 
-    await testHelper.addUserToOrganization(testUser.id, testOrg.id, 'admin')
+    await testHelper.addUserToOrganization(testUser.id, testOrg.id, 'system_admin')
   })
 
   describe('User Profile Management', () => {
@@ -116,7 +118,7 @@ describe('Supabase Database Integration', () => {
         .single()
 
       expect(error).toBeNull()
-      expect(membership.role).toBe('admin')
+      expect(membership.role).toBe('system_admin')
       expect(membership.user_id).toBe(testUser.id)
       expect(membership.organization_id).toBe(testOrg.id)
     })
@@ -148,7 +150,7 @@ describe('Supabase Database Integration', () => {
       expect(error).toBeNull()
       expect(members).toHaveLength(3)
       
-      const adminMember = members.find((m: any) => m.role === 'admin')
+      const adminMember = members.find((m: any) => m.role === 'system_admin')
       const regularMembers = members.filter((m: any) => m.role === 'member')
       
       expect(adminMember).toBeTruthy()

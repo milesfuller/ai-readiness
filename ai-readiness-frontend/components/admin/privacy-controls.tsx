@@ -38,7 +38,7 @@ import {
   Database
 } from 'lucide-react'
 import { ExportOptions, UserRole } from '@/lib/types'
-import { useAuth } from '@/lib/hooks/use-auth'
+import { useAuth } from '@/lib/auth/context'
 
 interface PrivacyControlsProps {
   exportOptions: ExportOptions
@@ -56,7 +56,7 @@ export const PrivacyControls: React.FC<PrivacyControlsProps> = ({
   const [showDataPreview, setShowDataPreview] = useState(false)
   const [gdprConfirmed, setGdprConfirmed] = useState(false)
 
-  const canAccessPersonalData = ['admin', 'org_admin'].includes(userRole)
+  const canAccessPersonalData = ['system_admin', 'org_admin'].includes(userRole)
   
   const privacyLevels = [
     {

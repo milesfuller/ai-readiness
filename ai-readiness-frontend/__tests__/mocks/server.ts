@@ -1,60 +1,42 @@
 import { setupServer } from 'msw/node'
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
-// Mock API handlers for testing
+// Mock API handlers for testing (MSW v2 syntax)
 export const handlers = [
   // Mock Supabase auth endpoints
-  rest.post('*/auth/v1/signup', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        user: { id: '1', email: 'test@example.com' },
-        session: { access_token: 'mock-token' }
-      })
-    )
+  http.post('*/auth/v1/signup', () => {
+    return HttpResponse.json({
+      user: { id: '1', email: 'test@example.com' },
+      session: { access_token: 'mock-token' }
+    })
   }),
 
-  rest.post('*/auth/v1/token', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        access_token: 'mock-token',
-        user: { id: '1', email: 'test@example.com' }
-      })
-    )
+  http.post('*/auth/v1/token', () => {
+    return HttpResponse.json({
+      access_token: 'mock-token',
+      user: { id: '1', email: 'test@example.com' }
+    })
   }),
 
   // Mock API endpoints
-  rest.get('/api/test', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ message: 'Test API' }))
+  http.get('/api/test', () => {
+    return HttpResponse.json({ message: 'Test API' })
   }),
 
-  rest.post('/api/auth/signup', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({ user: { id: '1', email: 'test@example.com' } })
-    )
+  http.post('/api/auth/signup', () => {
+    return HttpResponse.json({ user: { id: '1', email: 'test@example.com' } })
   }),
 
-  rest.get('/api/export', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({ data: 'mock export data' })
-    )
+  http.get('/api/export', () => {
+    return HttpResponse.json({ data: 'mock export data' })
   }),
 
-  rest.post('/api/llm/analyze', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({ analysis: 'mock analysis' })
-    )
+  http.post('/api/llm/analyze', () => {
+    return HttpResponse.json({ analysis: 'mock analysis' })
   }),
 
-  rest.post('/api/llm/batch', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({ results: ['mock batch result'] })
-    )
+  http.post('/api/llm/batch', () => {
+    return HttpResponse.json({ results: ['mock batch result'] })
   })
 ]
 

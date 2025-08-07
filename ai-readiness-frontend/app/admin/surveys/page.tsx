@@ -18,10 +18,20 @@ import {
   Calendar,
   Users,
   BarChart3,
-  FileText
+  FileText,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react'
 import Link from 'next/link'
 import { Survey, AdminFilters } from '@/lib/types'
+import { fetchSurveys, type PaginationOptions, type PaginatedResult } from '@/lib/services/admin'
+import { Pagination, type PaginationState } from '@/components/admin/pagination'
+import { 
+  SurveyCreateDialog, 
+  SurveyEditDialog, 
+  SurveyDeleteDialog,
+  SurveyQuickActions 
+} from '@/components/admin/survey-crud'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,108 +49,122 @@ import {
 export default function SurveysPage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
-  const [surveys, setSurveys] = useState<Survey[]>([])
+  const [surveysResult, setSurveysResult] = useState<PaginatedResult<Survey>>({
+    data: [],
+    total: 0,
+    page: 1,
+    pageSize: 12,
+    totalPages: 0
+  })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<AdminFilters>({
     search: searchParams.get('search') || '',
     status: searchParams.get('status') || '',
   })
+  const [pagination, setPagination] = useState<PaginationState>({
+    page: 1,
+    pageSize: 12,
+    total: 0
+  })
+  
+  // CRUD dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
+
+  const loadSurveys = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      const userRole = user.role as string
+      const organizationId = user.organizationId
+
+      const paginationOptions: PaginationOptions = {
+        page: pagination.page,
+        pageSize: pagination.pageSize
+      }
+      
+      const surveysData = await fetchSurveys(userRole, organizationId, filters, paginationOptions)
+      setSurveysResult(surveysData)
+      setPagination(prev => ({
+        ...prev,
+        total: surveysData.total
+      }))
+    } catch (error) {
+      console.error('Failed to fetch surveys:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load surveys')
+      setSurveysResult({
+        data: [],
+        total: 0,
+        page: 1,
+        pageSize: 12,
+        totalPages: 0
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchSurveys = async () => {
-      try {
-        // Mock data for demonstration
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const mockSurveys: Survey[] = [
-          {
-            id: '1',
-            title: 'AI Readiness Assessment',
-            description: 'Comprehensive assessment of AI readiness across departments',
-            status: 'active',
-            createdBy: 'admin@company.com',
-            organizationId: 'org1',
-            questions: [],
-            metadata: {
-              estimatedDuration: 15,
-              totalQuestions: 25,
-              completionRate: 78.5,
-              averageScore: 7.2
-            },
-            createdAt: '2024-01-15T10:00:00Z',
-            updatedAt: '2024-01-20T14:30:00Z',
-            responses: []
-          },
-          {
-            id: '2',
-            title: 'Digital Transformation Survey',
-            description: 'Understanding current digital capabilities and future needs',
-            status: 'completed',
-            createdBy: 'manager@company.com',
-            organizationId: 'org1',
-            questions: [],
-            metadata: {
-              estimatedDuration: 20,
-              totalQuestions: 30,
-              completionRate: 92.1,
-              averageScore: 8.1
-            },
-            createdAt: '2024-01-10T08:00:00Z',
-            updatedAt: '2024-01-25T16:00:00Z',
-            responses: []
-          },
-          {
-            id: '3',
-            title: 'Automation Readiness Check',
-            description: 'Assessing readiness for process automation initiatives',
-            status: 'draft',
-            createdBy: 'admin@company.com',
-            organizationId: 'org1',
-            questions: [],
-            metadata: {
-              estimatedDuration: 12,
-              totalQuestions: 20,
-              completionRate: 0,
-              averageScore: 0
-            },
-            createdAt: '2024-01-28T12:00:00Z',
-            updatedAt: '2024-01-28T12:00:00Z',
-            responses: []
-          }
-        ]
+    loadSurveys()
+  }, [user, filters, pagination.page, pagination.pageSize])
 
-        // Filter based on user role
-        let filteredSurveys = mockSurveys
-        if (user?.role === 'org_admin') {
-          filteredSurveys = mockSurveys.filter(survey => 
-            survey.organizationId === user.organizationId
-          )
-        }
+  // CRUD handlers
+  const handleCreateSuccess = (survey: Survey) => {
+    // Reload to get accurate pagination
+    loadSurveys()
+  }
 
-        // Apply search and status filters
-        if (filters.search) {
-          filteredSurveys = filteredSurveys.filter(survey =>
-            survey.title.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            survey.description.toLowerCase().includes(filters.search!.toLowerCase())
-          )
-        }
+  const handleEditSuccess = (updatedSurvey: Survey) => {
+    setSurveysResult(prev => ({
+      ...prev,
+      data: prev.data.map(s => 
+        s.id === updatedSurvey.id ? updatedSurvey : s
+      )
+    }))
+  }
 
-        if (filters.status) {
-          filteredSurveys = filteredSurveys.filter(survey =>
-            survey.status === filters.status
-          )
-        }
+  const handleDeleteSuccess = () => {
+    // Reload to get accurate pagination
+    loadSurveys()
+  }
 
-        setSurveys(filteredSurveys)
-      } catch (error) {
-        console.error('Failed to fetch surveys:', error)
-      } finally {
-        setLoading(false)
-      }
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, page }))
+  }
+
+  const handlePageSizeChange = (pageSize: number) => {
+    setPagination(prev => ({ ...prev, pageSize, page: 1 }))
+  }
+
+  const handleEdit = (survey: Survey) => {
+    setSelectedSurvey(survey)
+    setEditDialogOpen(true)
+  }
+
+  const handleDelete = (survey: Survey) => {
+    setSelectedSurvey(survey)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleStatusChange = async (survey: Survey, status: Survey['status']) => {
+    try {
+      // You could implement updateSurvey call here
+      console.log(`Changing status of ${survey.title} to ${status}`)
+      // For now, just reload the surveys
+      loadSurveys()
+    } catch (error) {
+      console.error('Failed to update survey status:', error)
     }
-
-    fetchSurveys()
-  }, [user, filters])
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -168,6 +192,37 @@ export default function SurveysPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Surveys</h1>
+            <p className="text-gray-400">Manage and monitor survey campaigns</p>
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Survey
+          </Button>
+        </div>
+
+        {/* Error State */}
+        <Card className="glass-card">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">Failed to Load Surveys</h3>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <Button onClick={loadSurveys} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -176,11 +231,9 @@ export default function SurveysPage() {
           <h1 className="text-3xl font-bold text-white">Surveys</h1>
           <p className="text-gray-400">Manage and monitor survey campaigns</p>
         </div>
-        <Button asChild>
-          <Link href="/admin/surveys/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Survey
-          </Link>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Survey
         </Button>
       </div>
 
@@ -227,7 +280,7 @@ export default function SurveysPage() {
 
       {/* Surveys Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {surveys.map((survey) => (
+        {surveysResult.data.map((survey) => (
           <Card key={survey.id} className="glass-card hover:bg-white/5 transition-all duration-200">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -300,18 +353,13 @@ export default function SurveysPage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex space-x-2 pt-2">
-                  <Button asChild variant="outline" size="sm" className="flex-1">
-                    <Link href={`/admin/surveys/${survey.id}`}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Link>
-                  </Button>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/admin/surveys/${survey.id}/analytics`}>
-                      <BarChart3 className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                <div className="pt-2">
+                  <SurveyQuickActions
+                    survey={survey}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onStatusChange={handleStatusChange}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -319,7 +367,7 @@ export default function SurveysPage() {
         ))}
       </div>
 
-      {surveys.length === 0 && (
+      {surveysResult.data.length === 0 && !loading && (
         <Card className="glass-card">
           <CardContent className="p-8 text-center">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -331,16 +379,49 @@ export default function SurveysPage() {
               }
             </p>
             {!filters.search && !filters.status && (
-              <Button asChild>
-                <Link href="/admin/surveys/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Survey
-                </Link>
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Survey
               </Button>
             )}
           </CardContent>
         </Card>
       )}
+
+      {/* Pagination */}
+      {surveysResult.data.length > 0 && (
+        <div className="mt-6">
+          <Pagination
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            className="border-t border-gray-700 pt-4"
+          />
+        </div>
+      )}
+
+      {/* CRUD Dialogs */}
+      <SurveyCreateDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleCreateSuccess}
+        organizationId={user?.organizationId}
+        createdBy={user?.id || ''}
+      />
+
+      <SurveyEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={handleEditSuccess}
+        survey={selectedSurvey}
+      />
+
+      <SurveyDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onSuccess={handleDeleteSuccess}
+        survey={selectedSurvey}
+      />
     </div>
   )
 }

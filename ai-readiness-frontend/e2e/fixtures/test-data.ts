@@ -49,7 +49,7 @@ export const TEST_USERS = [
     id: 'user-admin-001',
     email: 'admin@test-aireadiness.com',
     password: 'TestPassword123!',
-    role: 'admin' as const,
+    role: 'system_admin' as const,
     organizationId: 'org-test-001',
     profile: {
       id: 'profile-admin-001',
@@ -550,7 +550,7 @@ export function getTestData(type: 'users' | 'organizations' | 'surveys' | 'respo
 }
 
 // Helper function to get credentials for different user types
-export function getTestCredentials(role: 'admin' | 'org_admin' | 'user' = 'admin') {
+export function getTestCredentials(role: 'system_admin' | 'org_admin' | 'user' = 'system_admin') {
   const user = TEST_USERS.find(u => u.role === role)
   if (!user) throw new Error(`No test user found for role: ${role}`)
   
@@ -564,7 +564,7 @@ export function getTestCredentials(role: 'admin' | 'org_admin' | 'user' = 'admin
 
 // Export test credentials for common usage
 export const TEST_CREDENTIALS = {
-  ADMIN_USER: getTestCredentials('admin'),
+  ADMIN_USER: getTestCredentials('system_admin'),
   ORG_ADMIN_USER: getTestCredentials('org_admin'),
   VALID_USER: getTestCredentials('user'),
 } as const;

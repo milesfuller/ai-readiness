@@ -44,7 +44,7 @@ export interface AuthRequirement {
   sessionType: 'persistent' | 'temporary';
 }
 
-export type UserRole = 'admin' | 'user' | 'org_admin' | 'anonymous';
+export type UserRole = 'system_admin' | 'user' | 'org_admin' | 'anonymous';
 
 export interface AuthConfiguration {
   supabaseUrl: string;
@@ -70,11 +70,11 @@ export class AuthenticationFlowCoordinator extends EventEmitter {
       sessionTimeout: 3600000, // 1 hour
       persistentStoragePath: './playwright/.auth',
       testUsers: {
-        admin: {
+        system_admin: {
           id: 'test-admin-001',
           email: process.env.TEST_ADMIN_EMAIL || 'testadmin@example.com',
           password: process.env.TEST_ADMIN_PASSWORD || 'AdminPassword123!',
-          role: 'admin',
+          role: 'system_admin',
           firstName: 'Test',
           lastName: 'Admin',
           permissions: ['*'],

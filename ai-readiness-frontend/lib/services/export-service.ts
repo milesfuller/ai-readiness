@@ -68,8 +68,8 @@ export class ExportService {
   private checkExportPermission(includePersonalData: boolean): boolean {
     if (!this.userRole) return false
     
-    // Only admin and org_admin can export personal data
-    if (includePersonalData && !['admin', 'org_admin'].includes(this.userRole)) {
+    // Only system_admin and org_admin can export personal data
+    if (includePersonalData && !['system_admin', 'org_admin'].includes(this.userRole)) {
       throw new Error('Insufficient permissions to export personal data')
     }
     
@@ -575,7 +575,7 @@ export class ExportService {
     ]
 
     // PDF generation requires additional permissions
-    if (['admin', 'org_admin'].includes(this.userRole || '')) {
+    if (['system_admin', 'org_admin'].includes(this.userRole || '')) {
       formats.push({ 
         value: 'pdf', 
         label: 'PDF', 

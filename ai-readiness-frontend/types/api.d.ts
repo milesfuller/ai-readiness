@@ -12,7 +12,7 @@ export interface TestUser {
   firstName: string;
   lastName: string;
   organizationName: string;
-  role?: 'user' | 'org_admin' | 'admin';
+  role?: 'user' | 'org_admin' | 'system_admin';
   userId?: string;
   organizationId?: string;
 }

@@ -17,9 +17,12 @@ import {
   Calendar,
   Mail,
   Building2,
-  Shield
+  Shield,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react'
 import { User, AdminFilters } from '@/lib/types'
+import { fetchUsers } from '@/lib/services/admin'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,157 +50,43 @@ export default function UsersPage() {
   const { user: currentUser } = useAuth()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<AdminFilters>({
     search: '',
     role: '',
     department: ''
   })
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // Mock data for demonstration
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const mockUsers: User[] = [
-          {
-            id: '1',
-            email: 'john.doe@company.com',
-            role: 'org_admin',
-            organizationId: 'org1',
-            profile: {
-              id: 'p1',
-              userId: '1',
-              firstName: 'John',
-              lastName: 'Doe',
-              department: 'Engineering',
-              jobTitle: 'Engineering Manager',
-              preferences: {
-                theme: 'dark',
-                notifications: true,
-                voiceInput: false,
-                language: 'en'
-              }
-            },
-            createdAt: '2024-01-10T08:00:00Z',
-            updatedAt: '2024-01-20T14:30:00Z',
-            lastLogin: '2024-01-25T10:15:00Z'
-          },
-          {
-            id: '2',
-            email: 'jane.smith@company.com',
-            role: 'user',
-            organizationId: 'org1',
-            profile: {
-              id: 'p2',
-              userId: '2',
-              firstName: 'Jane',
-              lastName: 'Smith',
-              department: 'Marketing',
-              jobTitle: 'Marketing Specialist',
-              preferences: {
-                theme: 'dark',
-                notifications: true,
-                voiceInput: true,
-                language: 'en'
-              }
-            },
-            createdAt: '2024-01-15T10:00:00Z',
-            updatedAt: '2024-01-22T16:45:00Z',
-            lastLogin: '2024-01-24T14:20:00Z'
-          },
-          {
-            id: '3',
-            email: 'admin@company.com',
-            role: 'admin',
-            organizationId: 'org1',
-            profile: {
-              id: 'p3',
-              userId: '3',
-              firstName: 'Admin',
-              lastName: 'User',
-              department: 'IT',
-              jobTitle: 'System Administrator',
-              preferences: {
-                theme: 'dark',
-                notifications: true,
-                voiceInput: false,
-                language: 'en'
-              }
-            },
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: '2024-01-25T12:00:00Z',
-            lastLogin: '2024-01-26T09:30:00Z'
-          },
-          {
-            id: '4',
-            email: 'sarah.wilson@company.com',
-            role: 'user',
-            organizationId: 'org1',
-            profile: {
-              id: 'p4',
-              userId: '4',
-              firstName: 'Sarah',
-              lastName: 'Wilson',
-              department: 'Sales',
-              jobTitle: 'Sales Representative',
-              preferences: {
-                theme: 'dark',
-                notifications: true,
-                voiceInput: false,
-                language: 'en'
-              }
-            },
-            createdAt: '2024-01-18T12:00:00Z',
-            updatedAt: '2024-01-23T09:15:00Z',
-            lastLogin: '2024-01-25T16:45:00Z'
-          }
-        ]
-
-        // Filter based on current user role
-        let filteredUsers = mockUsers
-        if (currentUser?.role === 'org_admin') {
-          filteredUsers = mockUsers.filter(user => 
-            user.organizationId === currentUser.organizationId
-          )
-        }
-
-        // Apply search filter
-        if (filters.search) {
-          filteredUsers = filteredUsers.filter(user =>
-            user.email.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            user.profile?.firstName?.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            user.profile?.lastName?.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            user.profile?.department?.toLowerCase().includes(filters.search!.toLowerCase())
-          )
-        }
-
-        // Apply role filter
-        if (filters.role) {
-          filteredUsers = filteredUsers.filter(user => user.role === filters.role)
-        }
-
-        // Apply department filter
-        if (filters.department) {
-          filteredUsers = filteredUsers.filter(user => 
-            user.profile?.department === filters.department
-          )
-        }
-
-        setUsers(filteredUsers)
-      } catch (error) {
-        console.error('Failed to fetch users:', error)
-      } finally {
-        setLoading(false)
+  const loadUsers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      if (!currentUser) {
+        throw new Error('User not authenticated')
       }
-    }
 
-    fetchUsers()
+      const userRole = currentUser.role as string
+      const organizationId = currentUser.organizationId
+
+      const usersData = await fetchUsers(userRole, organizationId, filters)
+      setUsers(usersData.data || [])
+    } catch (error) {
+      console.error('Failed to fetch users:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load users')
+      setUsers([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadUsers()
   }, [currentUser, filters])
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-500/20 text-red-400 border-red-500/30'
+      case 'system_admin': return 'bg-red-500/20 text-red-400 border-red-500/30'
       case 'org_admin': return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
       case 'user': return 'bg-green-500/20 text-green-400 border-green-500/30'
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
@@ -206,7 +95,7 @@ export default function UsersPage() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin': return <Shield className="h-4 w-4" />
+      case 'system_admin': return <Shield className="h-4 w-4" />
       case 'org_admin': return <Building2 className="h-4 w-4" />
       case 'user': return <Mail className="h-4 w-4" />
       default: return <Mail className="h-4 w-4" />
@@ -240,6 +129,39 @@ export default function UsersPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Users</h1>
+            <p className="text-gray-400">Manage user accounts and permissions</p>
+          </div>
+          {currentUser?.role === 'system_admin' && (
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          )}
+        </div>
+
+        {/* Error State */}
+        <Card className="glass-card">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">Failed to Load Users</h3>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <Button onClick={loadUsers} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -248,7 +170,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold text-white">Users</h1>
           <p className="text-gray-400">Manage user accounts and permissions</p>
         </div>
-        {currentUser?.role === 'admin' && (
+        {currentUser?.role === 'system_admin' && (
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             Add User
@@ -264,7 +186,7 @@ export default function UsersPage() {
               <Shield className="h-5 w-5 text-red-400" />
               <div>
                 <p className="text-2xl font-bold text-white">
-                  {users.filter(u => u.role === 'admin').length}
+                  {users.filter(u => u.role === 'system_admin').length}
                 </p>
                 <p className="text-sm text-gray-400">Admins</p>
               </div>
@@ -434,7 +356,7 @@ export default function UsersPage() {
                           <Edit className="h-4 w-4 mr-2" />
                           Edit User
                         </DropdownMenuItem>
-                        {currentUser?.role === 'admin' && user.id !== currentUser.id && (
+                        {currentUser?.role === 'system_admin' && user.id !== currentUser.id && (
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-400">

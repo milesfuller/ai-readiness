@@ -304,7 +304,7 @@ export default defineConfig({
 -- File: supabase/seeds/test-data.sql
 INSERT INTO organizations (name, domain) VALUES ('Test Org Inc', 'test-aireadiness.com');
 INSERT INTO users (email, role, organization_id) VALUES 
-  ('admin@test-aireadiness.com', 'admin', (SELECT id FROM organizations WHERE domain = 'test-aireadiness.com')),
+  ('admin@test-aireadiness.com', 'system_admin', (SELECT id FROM organizations WHERE domain = 'test-aireadiness.com')),
   ('user@test-aireadiness.com', 'user', (SELECT id FROM organizations WHERE domain = 'test-aireadiness.com'));
 ```
 

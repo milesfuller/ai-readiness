@@ -30,12 +30,12 @@ export interface MockResponse {
 
 export interface MockSupabaseClient {
   auth: {
-    getUser: jest.MockedFunction<any>;
-    getSession: jest.MockedFunction<any>;
-    signInWithOAuth: jest.MockedFunction<any>;
-    signOut: jest.MockedFunction<any>;
+    getUser: any;
+    getSession: any;
+    signInWithOAuth: any;
+    signOut: any;
   };
-  from: jest.MockedFunction<any>;
+  from: any;
 }
 
 export interface MockUser {

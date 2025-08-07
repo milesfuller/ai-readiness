@@ -7,20 +7,58 @@ import { AuthProvider, useAuth } from '@/lib/auth/context'
 import { createClient } from '@/lib/supabase/client'
 import type { Session, User as SupabaseUser, AuthError } from '@supabase/supabase-js'
 import type { User as AppUser } from '@/lib/types'
+import { vi } from 'vitest'
+// Test security payloads
+const xssPayloads = [
+  '<script>alert("XSS")</script>',
+  '<img src="x" onerror="alert(\'XSS\')">',
+  '"><script>alert("XSS")</script>'
+]
 
-// Mock the supabase client
-jest.mock('@/lib/supabase/client', () => ({
-  createClient: jest.fn(() => ({
+const sqlInjectionPayloads = [
+  "' OR '1'='1",
+  "' OR 1=1--",
+  "'; DROP TABLE users; --"
+]
+
+const simulateRateLimit = (threshold: number = 5) => {
+  let callCount = 0
+  return () => {
+    callCount++
+    if (callCount > threshold) {
+      throw new Error('Rate limit exceeded')
+    }
+    return true
+  }
+}
+
+// Mock the supabase client to align with Vitest setup
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: vi.fn(() => ({
     auth: {
-      getSession: jest.fn(),
-      signInWithPassword: jest.fn(),
-      signUp: jest.fn(),
-      signOut: jest.fn(),
-      resetPasswordForEmail: jest.fn(),
-      updateUser: jest.fn(),
-      refreshSession: jest.fn(),
-      onAuthStateChange: jest.fn(() => ({
-        data: { subscription: { unsubscribe: jest.fn() } }
+      getSession: vi.fn(),
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
+      refreshSession: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } }
+      }))
+    }
+  })),
+  createBrowserClient: vi.fn(() => ({
+    auth: {
+      getSession: vi.fn(),
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
+      refreshSession: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } }
       }))
     }
   }))
@@ -137,19 +175,19 @@ const createMockAuthError = (message: string): AuthError => ({
 
 describe('useAuth Hook', () => {
   let mockClient: any
-  let mockGetSession: jest.Mock
-  let mockSignInWithPassword: jest.Mock
-  let mockSignUp: jest.Mock
-  let mockSignOut: jest.Mock
-  let mockResetPasswordForEmail: jest.Mock
-  let mockUpdateUser: jest.Mock
-  let mockRefreshSession: jest.Mock
-  let mockOnAuthStateChange: jest.Mock
-  let mockUnsubscribe: jest.Mock
+  let mockGetSession: any
+  let mockSignInWithPassword: any
+  let mockSignUp: any
+  let mockSignOut: any
+  let mockResetPasswordForEmail: any
+  let mockUpdateUser: any
+  let mockRefreshSession: any
+  let mockOnAuthStateChange: any
+  let mockUnsubscribe: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset all mocks
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     
     // Clear any stored session data from previous tests
     if (typeof window !== 'undefined') {
@@ -157,15 +195,15 @@ describe('useAuth Hook', () => {
     }
     
     // Setup mocks
-    mockUnsubscribe = jest.fn()
-    mockGetSession = jest.fn()
-    mockSignInWithPassword = jest.fn()
-    mockSignUp = jest.fn()
-    mockSignOut = jest.fn()
-    mockResetPasswordForEmail = jest.fn()
-    mockUpdateUser = jest.fn()
-    mockRefreshSession = jest.fn()
-    mockOnAuthStateChange = jest.fn(() => ({
+    mockUnsubscribe = vi.fn()
+    mockGetSession = vi.fn()
+    mockSignInWithPassword = vi.fn()
+    mockSignUp = vi.fn()
+    mockSignOut = vi.fn()
+    mockResetPasswordForEmail = vi.fn()
+    mockUpdateUser = vi.fn()
+    mockRefreshSession = vi.fn()
+    mockOnAuthStateChange = vi.fn(() => ({
       data: { subscription: { unsubscribe: mockUnsubscribe } }
     }))
 
@@ -182,7 +220,12 @@ describe('useAuth Hook', () => {
       }
     }
     
-    ;(createBrowserClient as jest.Mock).mockReturnValue(mockClient)
+    // Mock both createClient and createBrowserClient
+    const mockModule = await import('@/lib/supabase/client')
+    ;(mockModule.createClient as any).mockReturnValue(mockClient)
+    if (mockModule.createBrowserClient) {
+      ;(mockModule.createBrowserClient as any).mockReturnValue(mockClient)
+    }
   })
 
   describe('Initial State and Loading', () => {
@@ -376,7 +419,7 @@ describe('useAuth Hook', () => {
     it('should handle user with null/undefined profile', async () => {
       const mockSupabaseUser = createMockSupabaseUser({
         user_metadata: {
-          role: 'admin',
+          role: 'system_admin',
           organization_id: 'org-456',
           profile: null
         }
@@ -389,7 +432,7 @@ describe('useAuth Hook', () => {
       
       await waitFor(() => {
         expect(screen.getByTestId('user-email')).toHaveTextContent('test@example.com')
-        expect(screen.getByTestId('user-role')).toHaveTextContent('admin')
+        expect(screen.getByTestId('user-role')).toHaveTextContent('system_admin')
       })
     })
 
@@ -659,7 +702,7 @@ describe('useAuth Hook', () => {
     it('should store session in test environment sessionStorage', async () => {
       // Mock test environment
       const originalNodeEnv = process.env.NODE_ENV
-      (process.env as any).NODE_ENV = 'test'
+      process.env.NODE_ENV = 'test'
       
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       const mockUser = createMockSupabaseUser()
@@ -677,10 +720,10 @@ describe('useAuth Hook', () => {
       
       // Mock sessionStorage
       const mockSessionStorage = {
-        setItem: jest.fn(),
-        getItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn()
+        setItem: vi.fn(),
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn()
       }
       Object.defineProperty(window, 'sessionStorage', {
         value: mockSessionStorage,
@@ -706,13 +749,16 @@ describe('useAuth Hook', () => {
       })
       
       // Restore original NODE_ENV
-      process.env.NODE_ENV = originalNodeEnv
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalNodeEnv,
+        writable: true
+      })
     })
 
     it('should handle sessionStorage errors gracefully', async () => {
       // Mock test environment
       const originalNodeEnv = process.env.NODE_ENV
-      (process.env as any).NODE_ENV = 'test'
+      process.env.NODE_ENV = 'test'
       
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       const mockUser = createMockSupabaseUser()
@@ -730,19 +776,19 @@ describe('useAuth Hook', () => {
       
       // Mock sessionStorage that throws error
       const mockSessionStorage = {
-        setItem: jest.fn().mockImplementation(() => {
+        setItem: vi.fn().mockImplementation(() => {
           throw new Error('Storage quota exceeded')
         }),
-        getItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn()
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn()
       }
       Object.defineProperty(window, 'sessionStorage', {
         value: mockSessionStorage,
         writable: true
       })
       
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation()
       
       renderWithAuthProvider(<TestComponent />)
       
@@ -765,14 +811,17 @@ describe('useAuth Hook', () => {
       })
       
       consoleSpy.mockRestore()
-      process.env.NODE_ENV = originalNodeEnv
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalNodeEnv,
+        writable: true
+      })
     })
 
     it('should update user state immediately after sign in', async () => {
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       const mockUser = createMockSupabaseUser({
         user_metadata: {
-          role: 'admin',
+          role: 'system_admin',
           organization_id: 'org-123',
           profile: {
             firstName: 'Admin',
@@ -805,7 +854,7 @@ describe('useAuth Hook', () => {
       
       await waitFor(() => {
         expect(screen.getByTestId('user-email')).toHaveTextContent('test@example.com')
-        expect(screen.getByTestId('user-role')).toHaveTextContent('admin')
+        expect(screen.getByTestId('user-role')).toHaveTextContent('system_admin')
       })
     })
 
@@ -1117,7 +1166,7 @@ describe('useAuth Hook', () => {
   describe('Context Provider', () => {
     it('should throw error when useAuth is used outside AuthProvider', () => {
       // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation()
       
       const TestComponentOutsideProvider: React.FC = () => {
         const auth = useAuth()
@@ -1164,8 +1213,8 @@ describe('useAuth Hook', () => {
         const [result, setResult] = React.useState<string>('')
         
         const handleXSSTest = async () => {
-          // Test with XSS payload from global test helpers
-          const xssEmail = global.testHelpers.xssPayloads[0]
+          // Test with XSS payload from imported test helpers
+          const xssEmail = xssPayloads[0]
           const result = await signIn(xssEmail, 'password')
           setResult('XSS test completed')
         }
@@ -1205,8 +1254,8 @@ describe('useAuth Hook', () => {
         const [result, setResult] = React.useState<string>('')
         
         const handleSQLInjectionTest = async () => {
-          // Test with SQL injection payload from global test helpers
-          const sqlInjectionEmail = global.testHelpers.sqlInjectionPayloads[0]
+          // Test with SQL injection payload from imported test helpers
+          const sqlInjectionEmail = sqlInjectionPayloads[0]
           const result = await signIn(sqlInjectionEmail, 'password')
           setResult('SQL injection test completed')
         }
@@ -1241,7 +1290,7 @@ describe('useAuth Hook', () => {
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
       mockSignInWithPassword.mockResolvedValue({ data: { user: null, session: null }, error: null })
       
-      const rateLimitChecker = global.testHelpers.simulateRateLimit(3)
+      const rateLimitChecker = simulateRateLimit(3)
       
       const TestComponentWithRateLimit: React.FC = () => {
         const { signIn } = useAuth()
@@ -1361,10 +1410,10 @@ describe('useAuth Hook', () => {
       })
       
       const mockSessionStorage = {
-        setItem: jest.fn(),
-        getItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn()
+        setItem: vi.fn(),
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn()
       }
       Object.defineProperty(window, 'sessionStorage', {
         value: mockSessionStorage,
@@ -1389,7 +1438,10 @@ describe('useAuth Hook', () => {
         )
       })
       
-      process.env.NODE_ENV = originalNodeEnv
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalNodeEnv,
+        writable: true
+      })
     })
 
     it('should detect test environment by ENVIRONMENT variable', async () => {
@@ -1411,10 +1463,10 @@ describe('useAuth Hook', () => {
       })
       
       const mockSessionStorage = {
-        setItem: jest.fn(),
-        getItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn()
+        setItem: vi.fn(),
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn()
       }
       Object.defineProperty(window, 'sessionStorage', {
         value: mockSessionStorage,
@@ -1464,10 +1516,10 @@ describe('useAuth Hook', () => {
       })
       
       const mockSessionStorage = {
-        setItem: jest.fn(),
-        getItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn()
+        setItem: vi.fn(),
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn()
       }
       Object.defineProperty(window, 'sessionStorage', {
         value: mockSessionStorage,
@@ -1496,7 +1548,10 @@ describe('useAuth Hook', () => {
     it('should not store session in non-test environment', async () => {
       // Mock production environment
       const originalNodeEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true
+      })
       
       Object.defineProperty(window, 'location', {
         value: { hostname: 'myapp.com' },
@@ -1518,10 +1573,10 @@ describe('useAuth Hook', () => {
       })
       
       const mockSessionStorage = {
-        setItem: jest.fn(),
-        getItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn()
+        setItem: vi.fn(),
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn()
       }
       Object.defineProperty(window, 'sessionStorage', {
         value: mockSessionStorage,
@@ -1545,7 +1600,10 @@ describe('useAuth Hook', () => {
         expect(mockSessionStorage.setItem).not.toHaveBeenCalled()
       })
       
-      process.env.NODE_ENV = originalNodeEnv
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalNodeEnv,
+        writable: true
+      })
     })
   })
 
@@ -1563,7 +1621,7 @@ describe('useAuth Hook', () => {
       // Mock network error
       mockRefreshSession.mockRejectedValue(new Error('Network error'))
       
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
       
       renderWithAuthProvider(<TestComponent />)
       

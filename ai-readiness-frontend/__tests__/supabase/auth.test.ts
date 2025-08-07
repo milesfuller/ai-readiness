@@ -3,6 +3,8 @@
  * Tests auth functionality with the test instance
  */
 
+import { vi } from 'vitest'
+
 import { testHelper } from '../../supabase/test-utils.mock'
 
 describe('Supabase Authentication Integration', () => {
@@ -283,7 +285,7 @@ describe('Supabase Authentication Integration', () => {
       })
 
       // Add only user1 to organization
-      await testHelper.addUserToOrganization(user1.id, org.id, 'admin')
+      await testHelper.addUserToOrganization(user1.id, org.id, 'system_admin')
     })
 
     it('should enforce profile access policies in test environment', async () => {

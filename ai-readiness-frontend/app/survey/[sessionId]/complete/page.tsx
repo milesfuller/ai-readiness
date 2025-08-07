@@ -98,51 +98,77 @@ const mockAnalysisResults = {
 export default function SurveyCompletePage({ params }: Props) {
   const router = useRouter()
   const [resolvedParams, setResolvedParams] = useState<{ sessionId: string } | null>(null)
-
-  useEffect(() => {
-    Promise.resolve(params).then(setResolvedParams)
-  }, [params])
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [analysisResults, setAnalysisResults] = useState(mockAnalysisResults)
+  const [loadingResults, setLoadingResults] = useState(true)
+  
+  // Whimsy state variables
   const [showConfetti, setShowConfetti] = useState(true)
-  const [showHearts, setShowHearts] = useState(true)
-  const [showTypewriter, setShowTypewriter] = useState(false)
+  const [showTypewriter, setShowTypewriter] = useState(true)
 
   useEffect(() => {
-    // Resolve params first
+    // Resolve params and load results
     const resolveParams = async () => {
       const resolved = await params
       setResolvedParams(resolved)
+      
+      // Try to load real survey results
+      try {
+        console.log('Loading survey results for session:', resolved.sessionId)
+        const response = await fetch(`/api/survey/results?sessionId=${resolved.sessionId}`)
+        const data = await response.json()
+        
+        if (response.ok && data.status === 'completed') {
+          console.log('Loaded real survey results:', data)
+          // Convert API response to match expected format
+          setAnalysisResults({
+            overallScore: data.analysis.overallScore,
+            completionTime: formatCompletionTime(data.response.completionTime),
+            categoriesAnalyzed: Object.keys(data.analysis.categoryScores).length,
+            totalQuestions: Object.keys(data.response.metadata?.answers || {}).length || 12,
+            completionDate: data.response.completedAt,
+            categoryScores: data.analysis.categoryScores,
+            keyInsights: data.analysis.insights,
+            recommendations: data.analysis.recommendations,
+            readinessLevel: data.analysis.readinessLevel,
+            confidenceLevel: data.analysis.confidenceLevel
+          })
+          setLoadingResults(false)
+        } else {
+          console.log('No completed survey found, using mock data')
+          setLoadingResults(false)
+        }
+      } catch (error) {
+        console.error('Error loading survey results:', error)
+        console.log('Falling back to mock data')
+        setLoadingResults(false)
+      }
     }
     
     resolveParams()
   }, [params])
 
   useEffect(() => {
-    // Initial celebration
-    setShowConfetti(true)
-    setShowHearts(true)
-    
-    // Stop initial celebration
-    setTimeout(() => {
-      setShowConfetti(false)
-      setShowHearts(false)
-    }, 4000)
-    
-    // Simulate AI analysis processing
+    // Simulate AI analysis processing if we're still loading
     const timer = setTimeout(() => {
       setAnalysisComplete(true)
-      setShowTypewriter(true)
       setTimeout(() => {
         setShowResults(true)
-        // Celebration for results reveal
-        setShowConfetti(true)
-        setTimeout(() => setShowConfetti(false), 3000)
       }, 1000)
-    }, 3000)
+    }, loadingResults ? 5000 : 3000) // Longer if loading real data
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [loadingResults])
+  
+  // Helper function to format completion time
+  const formatCompletionTime = (seconds: number): string => {
+    if (seconds < 60) return `${seconds} seconds`
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    if (remainingSeconds === 0) return `${minutes} minutes`
+    return `${minutes} minutes, ${remainingSeconds} seconds`
+  }
 
   const getCategoryColor = (categoryId: string) => {
     const category = surveyCategories.find(c => c.id === categoryId)
@@ -181,29 +207,15 @@ export default function SurveyCompletePage({ params }: Props) {
   return (
     <MainLayout user={mockUser} currentPath={`/survey/${resolvedParams.sessionId}/complete`}>
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Celebration Effects */}
-        <Confetti 
-          active={showConfetti} 
-          intensity="high" 
-          duration={4000}
-          colors={['#14b8a6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6']}
-        />
-        <FloatingHearts active={showHearts} count={12} />
+        {/* Removed celebration effects */}
         
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center celebrate-bounce">
-            <SuccessCheckmark show={true} size={40} />
+          <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
+            <CheckCircle2 className="h-10 w-10 text-green-400" />
           </div>
           <h1 className="text-4xl font-bold gradient-text animate-in slide-in-from-bottom-4 duration-1000">
-            {showTypewriter ? (
-              <Typewriter 
-                text="Assessment Complete!" 
-                speed={100}
-              />
-            ) : (
-              "Assessment Complete!"
-            )}
+            Assessment Complete!
           </h1>
           <div className="flex items-center justify-center space-x-2 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
             <Sparkles className="h-5 w-5 text-yellow-400 animate-pulse" />
@@ -226,7 +238,11 @@ export default function SurveyCompletePage({ params }: Props) {
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold">Analyzing Your Responses</h3>
-                <WhimsicalLoading />
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
               </div>
               <div className="bg-teal-950/20 border border-teal-500/20 rounded-lg p-4 shimmer">
                 <div className="flex items-center justify-center space-x-2">
@@ -254,7 +270,7 @@ export default function SurveyCompletePage({ params }: Props) {
                     <div className="text-center">
                       <div className="celebrate-bounce">
                         <CircularProgress 
-                          value={mockAnalysisResults.overallScore}
+                          value={analysisResults.overallScore}
                           size={120}
                         />
                       </div>
@@ -263,16 +279,16 @@ export default function SurveyCompletePage({ params }: Props) {
                     <div className="text-left space-y-2">
                       <div className="flex items-center space-x-2 animate-in slide-in-from-right duration-700 delay-200">
                         <Clock className="h-4 w-4 text-teal-400" />
-                        <span className="text-sm">Completed in {mockAnalysisResults.completionTime}</span>
+                        <span className="text-sm">Completed in {analysisResults.completionTime}</span>
                       </div>
                       <div className="flex items-center space-x-2 animate-in slide-in-from-right duration-700 delay-400">
                         <Award className="h-4 w-4 text-teal-400" />
-                        <span className="text-sm">{mockAnalysisResults.readinessLevel}</span>
+                        <span className="text-sm">{analysisResults.readinessLevel}</span>
                       </div>
                       <div className="flex items-center space-x-2 animate-in slide-in-from-right duration-700 delay-600">
                         <TrendingUp className="h-4 w-4 text-teal-400" />
                         <span className="text-sm">
-                          <AnimatedCounter value={mockAnalysisResults.confidenceLevel} suffix="% Confidence" />
+                          {analysisResults.confidenceLevel}% Confidence
                         </span>
                       </div>
                     </div>
@@ -290,7 +306,7 @@ export default function SurveyCompletePage({ params }: Props) {
                 </CardHeader>
                 <CardContent className="px-0 pb-0">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {Object.entries(mockAnalysisResults.categoryScores).map(([categoryId, data]) => {
+                    {Object.entries(analysisResults.categoryScores).map(([categoryId, data]) => {
                       const category = surveyCategories.find(c => c.id === categoryId)
                       if (!category) return null
 
@@ -329,7 +345,7 @@ export default function SurveyCompletePage({ params }: Props) {
                   </CardHeader>
                   <CardContent className="px-0 pb-0">
                     <ul className="space-y-3">
-                      {mockAnalysisResults.keyInsights.map((insight, index) => (
+                      {analysisResults.keyInsights.map((insight, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <CheckCircle2 className="h-4 w-4 text-teal-400 mt-0.5 flex-shrink-0" />
                           <span className="text-sm">{insight}</span>
@@ -345,7 +361,7 @@ export default function SurveyCompletePage({ params }: Props) {
                   </CardHeader>
                   <CardContent className="px-0 pb-0">
                     <ul className="space-y-3">
-                      {mockAnalysisResults.recommendations.map((recommendation, index) => (
+                      {analysisResults.recommendations.map((recommendation, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <TrendingUp className="h-4 w-4 text-purple-400 mt-0.5 flex-shrink-0" />
                           <span className="text-sm">{recommendation}</span>
@@ -418,25 +434,25 @@ export default function SurveyCompletePage({ params }: Props) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="animate-in fade-in duration-500 delay-100">
                         <div className="font-bold text-teal-400">
-                          <AnimatedCounter value={12} duration={1500} />
+                          12
                         </div>
                         <div>Questions Analyzed</div>
                       </div>
                       <div className="animate-in fade-in duration-500 delay-200">
                         <div className="font-bold text-purple-400">
-                          <AnimatedCounter value={4} duration={1500} />
+                          4
                         </div>
                         <div>JTBD Categories</div>
                       </div>
                       <div className="animate-in fade-in duration-500 delay-300">
                         <div className="font-bold text-pink-400">
-                          <AnimatedCounter value={15} suffix="+" duration={1500} />
+                          15+
                         </div>
                         <div>Key Insights</div>
                       </div>
                       <div className="animate-in fade-in duration-500 delay-400">
                         <div className="font-bold text-green-400">
-                          <AnimatedCounter value={8} duration={1500} />
+                          8
                         </div>
                         <div>Recommendations</div>
                       </div>

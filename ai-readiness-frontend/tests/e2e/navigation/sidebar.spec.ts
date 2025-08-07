@@ -288,7 +288,7 @@ test.describe('Sidebar Navigation', () => {
   test.describe('Nested Menu Functionality', () => {
     test('should expand and collapse nested menu items for admin users', async ({ page }) => {
       // Setup admin user
-      const adminUser = await createTestUser('admin');
+      const adminUser = await createTestUser('system_admin');
       await page.goto('/dashboard');
       
       // Look for Administration parent item
@@ -314,7 +314,7 @@ test.describe('Sidebar Navigation', () => {
     });
 
     test('should show correct chevron icons for expandable items', async ({ page }) => {
-      const adminUser = await createTestUser('admin');
+      const adminUser = await createTestUser('system_admin');
       await page.goto('/dashboard');
       
       const adminParentItem = page.locator('[data-testid="nav-item-administration"]');
@@ -333,7 +333,7 @@ test.describe('Sidebar Navigation', () => {
     });
 
     test('should not show nested items when sidebar is collapsed', async ({ page }) => {
-      const adminUser = await createTestUser('admin');
+      const adminUser = await createTestUser('system_admin');
       await page.goto('/dashboard');
       
       const toggleButton = page.locator('[data-testid="sidebar-toggle"]');

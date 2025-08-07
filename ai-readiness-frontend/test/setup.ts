@@ -31,7 +31,7 @@ vi.mock('next/image', () => ({
   ),
 }))
 
-// Mock Supabase client with correct export structure
+// Mock Supabase client with correct export structure  
 vi.mock('@/lib/supabase/client', () => {
   const mockClient = {
     auth: {
@@ -40,7 +40,22 @@ vi.mock('@/lib/supabase/client', () => {
       signUp: vi.fn(() => Promise.resolve({ data: { user: null, session: null }, error: null })),
       signInWithPassword: vi.fn(() => Promise.resolve({ data: { user: null, session: null }, error: null })),
       signOut: vi.fn(() => Promise.resolve({ error: null })),
-      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      resetPasswordForEmail: vi.fn(() => Promise.resolve({ data: {}, error: null })),
+      updateUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      refreshSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+      onAuthStateChange: vi.fn((callback) => {
+        // Store callback for manual triggering in tests
+        mockClient._authCallback = callback;
+        return { data: { subscription: { unsubscribe: vi.fn() } } };
+      }),
+      
+      // Helper methods for testing
+      _authCallback: null,
+      _triggerAuthStateChange: (event: string, session: any) => {
+        if (mockClient._authCallback) {
+          mockClient._authCallback(event, session);
+        }
+      },
     },
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
@@ -48,8 +63,25 @@ vi.mock('@/lib/supabase/client', () => {
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      lte: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
       single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      then: vi.fn((callback) => Promise.resolve({ data: null, error: null }).then(callback)),
     })),
+    
+    // Storage mock for file uploads
+    storage: {
+      from: vi.fn(() => ({
+        upload: vi.fn(() => Promise.resolve({ data: null, error: null })),
+        download: vi.fn(() => Promise.resolve({ data: null, error: null })),
+        remove: vi.fn(() => Promise.resolve({ data: null, error: null })),
+        list: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      })),
+    },
   };
 
   return {
@@ -150,6 +182,25 @@ beforeAll(() => {
     observe: vi.fn(),
     unobserve: vi.fn(),
     disconnect: vi.fn(),
+  }))
+
+  // Mock document.cookie for session management (check if document exists)
+  if (typeof document !== 'undefined') {
+    Object.defineProperty(document, 'cookie', {
+      writable: true,
+      value: '',
+    })
+  }
+  
+  // Mock Headers for Response objects
+  global.Headers = global.Headers || vi.fn().mockImplementation(() => ({
+    get: vi.fn(),
+    set: vi.fn(),
+    has: vi.fn(),
+    delete: vi.fn(),
+    entries: vi.fn(() => []),
+    keys: vi.fn(() => []),
+    values: vi.fn(() => []),
   }))
 
   // Mock console methods to reduce test noise

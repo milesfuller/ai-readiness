@@ -182,7 +182,7 @@ export const useExport = (options: UseExportOptions = {}) => {
    * Check if user can export personal data
    */
   const canExportPersonalData = useCallback(() => {
-    return user && ['admin', 'org_admin'].includes(user.role)
+    return user && ['system_admin', 'org_admin'].includes(user.role)
   }, [user])
 
   /**

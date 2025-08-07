@@ -2,7 +2,7 @@
 
 import { MainLayout } from '@/components/layout/main-layout'
 import { Button, Card, CardHeader, CardTitle, CardContent, StatsCard, CircularProgress, Progress } from '@/components/ui'
-import { AnimatedCounter } from '@/components/ui/whimsy'
+// Removed AnimatedCounter whimsy component
 import { Brain, Users, TrendingUp, Clock, CheckCircle2, BarChart3, Sparkles, Trophy, Zap } from 'lucide-react'
 
 interface DashboardClientProps {
@@ -31,7 +31,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           <div className="animate-fade-in animation-delay-100">
             <StatsCard
               title="Total Surveys"
-              value={<AnimatedCounter value={247} duration={2000} />}
+              value={247}
               description="Active assessments"
               icon={Brain}
               trend={{
@@ -44,7 +44,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           <div className="animate-fade-in animation-delay-200">
             <StatsCard
               title="Completion Rate"
-              value={<AnimatedCounter value={89} suffix="%" duration={2000} />}
+              value="89%"
               description="Survey completions"
               icon={CheckCircle2}
               trend={{
@@ -57,7 +57,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           <div className="animate-fade-in animation-delay-300">
             <StatsCard
               title="Active Users"
-              value={<AnimatedCounter value={156} duration={2000} />}
+              value={156}
               description="Organization members"
               icon={Users}
               trend={{
@@ -70,7 +70,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           <div className="animate-fade-in animation-delay-400">
             <StatsCard
               title="Avg. Time"
-              value={<AnimatedCounter value={18} suffix=" min" duration={2000} />}
+              value="18 min"
               description="Per assessment"
               icon={Clock}
               trend={{

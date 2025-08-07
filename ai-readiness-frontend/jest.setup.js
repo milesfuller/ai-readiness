@@ -307,7 +307,7 @@ const sqlInjectionPayloads = [
   "' OR EXISTS(SELECT * FROM users)--",
   "' AND (SELECT COUNT(*) FROM users) > 0--",
   "'; INSERT INTO users VALUES('hacker', 'password')--",
-  "' OR (SELECT user FROM users WHERE user='admin' AND mid(password,1,1)='a')--",
+  "' OR (SELECT user FROM users WHERE user='system_admin' AND mid(password,1,1)='a')--",
   "1' AND EXTRACT(second FROM NOW())=1--",
   "' OR 1=CONVERT(int, (SELECT TOP 1 name FROM sysobjects WHERE xtype='u'))--"
 ]

@@ -6,7 +6,7 @@
  * This file focuses on more complex mock objects and scenarios
  */
 
-import { jest } from '@jest/globals'
+import { vi } from 'vitest'
 import type {
   MockNextRequest,
   MockNextRequestOptions,
@@ -45,17 +45,17 @@ export const createMockQueryResponse = (data: any = null, error: any = null) => 
 
 function createMockQueryBuilder(): MockSupabaseQueryBuilder {
   const mockBuilder: any = {
-    select: jest.fn(),
-    insert: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    eq: jest.fn(),
-    neq: jest.fn(),
-    gte: jest.fn(),
-    order: jest.fn(),
-    limit: jest.fn(),
-    slice: jest.fn(),
-    single: jest.fn(() => Promise.resolve({ data: null, error: null }))
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    eq: vi.fn(),
+    neq: vi.fn(),
+    gte: vi.fn(),
+    order: vi.fn(),
+    limit: vi.fn(),
+    slice: vi.fn(),
+    single: vi.fn(() => Promise.resolve({ data: null, error: null }))
   }
   // Set up proper chaining for all methods except single
   Object.keys(mockBuilder).forEach(key => {
@@ -71,23 +71,23 @@ function createMockQueryBuilder(): MockSupabaseQueryBuilder {
 export const createMockSupabaseClient = (): MockSupabaseClient => {
   const mockClient: MockSupabaseClient = {
     auth: {
-      getUser: jest.fn(),
-      signInWithPassword: jest.fn(),
-      signOut: jest.fn(),
-      signUp: jest.fn(),
-      resetPasswordForEmail: jest.fn(),
-      updateUser: jest.fn(),
-      onAuthStateChange: jest.fn((callback: any) => ({
-        data: { subscription: { unsubscribe: jest.fn() } }
+      getUser: vi.fn(),
+      signInWithPassword: vi.fn(),
+      signOut: vi.fn(),
+      signUp: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
+      onAuthStateChange: vi.fn((callback: any) => ({
+        data: { subscription: { unsubscribe: vi.fn() } }
       })) as any,
       admin: {
-        createUser: jest.fn(),
-        deleteUser: jest.fn(),
-        listUsers: jest.fn()
+        createUser: vi.fn(),
+        deleteUser: vi.fn(),
+        listUsers: vi.fn()
       }
     },
-    from: jest.fn((table: string) => createMockQueryBuilder()) as any,
-    rpc: jest.fn()
+    from: vi.fn((table: string) => createMockQueryBuilder()) as any,
+    rpc: vi.fn()
   }
 
   return mockClient
@@ -98,9 +98,9 @@ export const createMockSupabaseClient = (): MockSupabaseClient => {
 // ============================================================================
 
 export const createMockLLMService = (): MockLLMService => ({
-  analyzeSurveyResponse: jest.fn(),
-  healthCheck: jest.fn(),
-  getConfig: jest.fn(() => ({
+  analyzeSurveyResponse: vi.fn(),
+  healthCheck: vi.fn(),
+  getConfig: vi.fn(() => ({
     provider: 'openai',
     model: 'gpt-4o',
     temperature: 0.2,
@@ -115,10 +115,10 @@ export const createMockLLMService = (): MockLLMService => ({
 // ============================================================================
 
 export const createMockExportService = (): MockExportService => ({
-  exportData: jest.fn(),
-  generateSurveyPDF: jest.fn(),
-  generateOrganizationReport: jest.fn(),
-  getAvailableFormats: jest.fn(() => [
+  exportData: vi.fn(),
+  generateSurveyPDF: vi.fn(),
+  generateOrganizationReport: vi.fn(),
+  getAvailableFormats: vi.fn(() => [
     { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
     { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
     { value: 'pdf', label: 'PDF', description: 'Portable Document Format' }
@@ -133,7 +133,7 @@ export const setupMockAuthScenario = (
   mockSupabase: MockSupabaseClient,
   scenario: AuthScenario
 ) => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
 
   switch (scenario) {
     case 'unauthenticated':
@@ -194,7 +194,7 @@ export const setupMockAuthScenario = (
       })
       mockSupabase.from('test').select().eq('id', 'test').single.mockResolvedValue({
         data: { 
-          role: 'admin', 
+          role: 'system_admin', 
           organization_id: 'org-1',
           ...createMockProfile({ user_id: admin.id })
         },
@@ -212,39 +212,39 @@ export const setupMockAuthScenario = (
 // ============================================================================
 
 export const resetAllMocks = () => {
-  jest.clearAllMocks()
-  jest.resetAllMocks()
+  vi.clearAllMocks()
+  vi.restoreAllMocks()
 }
 
 export const setupGlobalTestMocks = () => {
   // Setup global mocks that should be available in all tests
-  ;(global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
+  ;(global as any).ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
   })) as any
 
-  ;(global as any).IntersectionObserver = jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
+  ;(global as any).IntersectionObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
   })) as any
 
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation(query => ({
       matches: false,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   })
 
-  ;(global as any).fetch = jest.fn()
+  ;(global as any).fetch = vi.fn()
 }
 
 // ============================================================================
@@ -291,15 +291,15 @@ export const generateMockResponseData = (count = 1) => {
 // Type-safe Mock Helpers
 // ============================================================================
 
-export const createTypedMock = <T extends Record<string, any>>(): jest.Mocked<T> => {
-  return {} as jest.Mocked<T>
+export const createTypedMock = <T extends Record<string, any>>(): any => {
+  return {} as any
 }
 
 export const mockImplementation = <T extends (...args: any[]) => any>(
   fn: T,
   implementation?: T
-): jest.MockedFunction<T> => {
-  const mockFn = jest.fn() as unknown as jest.MockedFunction<T>
+): any => {
+  const mockFn = vi.fn() as unknown as any
   if (implementation) {
     mockFn.mockImplementation(implementation)
   }

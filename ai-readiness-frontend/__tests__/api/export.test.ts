@@ -14,7 +14,7 @@
  */
 
 // Mock NextRequest and NextResponse before importing
-jest.mock('next/server', () => {
+vi.mock('next/server', () => {
   class MockNextRequest {
     constructor(url: string, options: any = {}) {
       this.url = url;
@@ -55,48 +55,48 @@ import { exportService } from '@/lib/services/export-service';
 import { createServerClient } from '@supabase/ssr';
 
 // Mock dependencies
-jest.mock('@supabase/ssr');
-jest.mock('@/lib/services/export-service', () => ({
+vi.mock('@supabase/ssr');
+vi.mock('@/lib/services/export-service', () => ({
   exportService: {
-    exportData: jest.fn(),
-    generateSurveyPDF: jest.fn(),
-    generateOrganizationReport: jest.fn(),
-    getAvailableFormats: jest.fn(() => [
+    exportData: vi.fn(),
+    generateSurveyPDF: vi.fn(),
+    generateOrganizationReport: vi.fn(),
+    getAvailableFormats: vi.fn(() => [
       { value: 'csv', label: 'CSV', description: 'Comma-separated values' },
       { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
       { value: 'pdf', label: 'PDF', description: 'Portable Document Format' }
     ]),
   },
 }));
-jest.mock('next/headers', () => ({
-  cookies: jest.fn(() => ({
-    get: jest.fn(() => ({ value: 'test-cookie' })),
-    set: jest.fn(),
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() => ({
+    get: vi.fn(() => ({ value: 'test-cookie' })),
+    set: vi.fn(),
   })),
 }));
 
 const mockSupabase = {
   auth: {
-    getUser: jest.fn(),
+    getUser: vi.fn(),
   },
-  from: jest.fn(() => ({
-    select: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    slice: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: null, error: null }),
+  from: vi.fn(() => ({
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    slice: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
   })),
 };
 
-const mockExportService = exportService as jest.Mocked<typeof exportService>;
+const mockExportService = exportService as any;
 
 // Helper function to set up different mock scenarios
 const setupMockScenario = (scenario: 'authenticated_user' | 'authenticated_admin' | 'authenticated_org_admin' | 'unauthenticated' | 'no_profile') => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   
   switch (scenario) {
     case 'unauthenticated':
@@ -111,15 +111,15 @@ const setupMockScenario = (scenario: 'authenticated_user' | 'authenticated_admin
         error: null,
       });
       mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnThis(),
-        insert: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        gte: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        slice: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: null, error: new Error('Profile not found') }),
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        slice: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: new Error('Profile not found') }),
       });
       break;
     case 'authenticated_user':
@@ -128,15 +128,15 @@ const setupMockScenario = (scenario: 'authenticated_user' | 'authenticated_admin
         error: null,
       });
       mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnThis(),
-        insert: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        gte: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        slice: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { role: 'user', organization_id: 'org-1' }, error: null }),
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        slice: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { role: 'user', organization_id: 'org-1' }, error: null }),
       });
       break;
     case 'authenticated_admin':
@@ -145,15 +145,15 @@ const setupMockScenario = (scenario: 'authenticated_user' | 'authenticated_admin
         error: null,
       });
       mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnThis(),
-        insert: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        gte: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        slice: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { role: 'admin', organization_id: 'org-1' }, error: null }),
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        slice: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { role: 'system_admin', organization_id: 'org-1' }, error: null }),
       });
       break;
     case 'authenticated_org_admin':
@@ -162,20 +162,20 @@ const setupMockScenario = (scenario: 'authenticated_user' | 'authenticated_admin
         error: null,
       });
       mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnThis(),
-        insert: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        gte: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        slice: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { role: 'org_admin', organization_id: 'org-1' }, error: null }),
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        slice: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { role: 'org_admin', organization_id: 'org-1' }, error: null }),
       });
       break;
   }
   
-  (createServerClient as jest.Mock).mockReturnValue(mockSupabase);
+  (createServerClient as any).mockReturnValue(mockSupabase);
 };
 
 beforeEach(() => {
@@ -261,7 +261,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -364,7 +364,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -544,7 +544,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -688,7 +688,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -810,7 +810,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -871,7 +871,7 @@ describe('/api/export', () => {
     it('should handle blob conversion errors', async () => {
       // Mock a corrupted blob
       const corruptedBlob = {
-        arrayBuffer: jest.fn().mockRejectedValue(new Error('Blob read error')),
+        arrayBuffer: vi.fn().mockRejectedValue(new Error('Blob read error')),
       };
       
       mockExportService.generateSurveyPDF.mockResolvedValue(corruptedBlob as any);
@@ -985,7 +985,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin' },
+        data: { role: 'system_admin' },
         error: null,
       });
 
@@ -1055,7 +1055,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 
@@ -1135,7 +1135,7 @@ describe('/api/export', () => {
       });
 
       mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: { role: 'admin', organization_id: 'org-1' },
+        data: { role: 'system_admin', organization_id: 'org-1' },
         error: null,
       });
 

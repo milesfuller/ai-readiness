@@ -58,7 +58,7 @@ test.describe('Sidebar Visual States', () => {
     });
 
     test('should match admin sidebar with expanded menus', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/dashboard');
       await page.waitForLoadState('networkidle');

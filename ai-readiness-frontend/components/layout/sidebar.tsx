@@ -153,7 +153,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       ]
 
       switch (userRole) {
-        case 'admin':
+        case 'system_admin':
           return adminItems
         case 'org_admin':
           return orgAdminItems

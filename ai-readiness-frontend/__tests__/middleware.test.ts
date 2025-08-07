@@ -7,13 +7,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { middleware } from '../middleware'
 
 // Mock Supabase client
-jest.mock('@supabase/ssr', () => ({
-  createServerClient: jest.fn()
+vi.mock('@supabase/ssr', () => ({
+  createServerClient: vi.fn()
 }))
 
-jest.mock('../lib/security/middleware', () => ({
+vi.mock('../lib/security/middleware', () => ({
   createComprehensiveSecurityMiddleware: jest.fn(() => 
-    jest.fn().mockResolvedValue(
+    vi.fn().mockResolvedValue(
       new NextResponse(null, { 
         status: 200,
         headers: {
@@ -26,7 +26,7 @@ jest.mock('../lib/security/middleware', () => ({
 }))
 
 // Mock test-middleware to prevent 403 issues
-jest.mock('../lib/security/test-middleware', () => {
+vi.mock('../lib/security/test-middleware', () => {
   const { mockTestMiddleware } = require('./mocks/security-middleware')
   return mockTestMiddleware
 })
@@ -80,23 +80,23 @@ function createMockRequest(options: {
     nextUrl,
     cookies: {
       get: jest.fn((name: string) => mockCookies.get(name)),
-      set: jest.fn(),
-      delete: jest.fn(),
+      set: vi.fn(),
+      delete: vi.fn(),
       getAll: jest.fn(() => Array.from(mockCookies.values())),
       has: jest.fn((name: string) => mockCookies.has(name)),
-      forEach: jest.fn(),
-      [Symbol.iterator]: jest.fn()
+      forEach: vi.fn(),
+      [Symbol.iterator]: vi.fn()
     },
     geo: {},
     ip: '127.0.0.1',
     body: null,
     bodyUsed: false,
-    clone: jest.fn(),
-    text: jest.fn().mockResolvedValue(''),
-    json: jest.fn().mockResolvedValue({}),
-    formData: jest.fn(),
-    arrayBuffer: jest.fn(),
-    blob: jest.fn()
+    clone: vi.fn(),
+    text: vi.fn().mockResolvedValue(''),
+    json: vi.fn().mockResolvedValue({}),
+    formData: vi.fn(),
+    arrayBuffer: vi.fn(),
+    blob: vi.fn()
   } as unknown as NextRequest
 
   return request
@@ -105,7 +105,7 @@ function createMockRequest(options: {
 // Mock Supabase session states
 const createMockSupabaseClient = (sessionData: any) => ({
   auth: {
-    getSession: jest.fn().mockResolvedValue({
+    getSession: vi.fn().mockResolvedValue({
       data: { session: sessionData },
       error: null
     })
@@ -176,7 +176,7 @@ describe('Middleware Authentication Flow', () => {
       let cookieOperations: any[] = []
       mockSupabaseClient = {
         auth: {
-          getSession: jest.fn().mockResolvedValue({
+          getSession: vi.fn().mockResolvedValue({
             data: { session: mockSession },
             error: null
           })
@@ -361,7 +361,7 @@ describe('Middleware Authentication Flow', () => {
       let setCookieCalls: any[] = []
       mockSupabaseClient = {
         auth: {
-          getSession: jest.fn().mockResolvedValue({
+          getSession: vi.fn().mockResolvedValue({
             data: { session: mockSession },
             error: null
           })
@@ -433,7 +433,7 @@ describe('Middleware Authentication Flow', () => {
       let cookieOptions: any = {}
       mockSupabaseClient = {
         auth: {
-          getSession: jest.fn().mockResolvedValue({
+          getSession: vi.fn().mockResolvedValue({
             data: { session: mockSession },
             error: null
           })
@@ -492,7 +492,7 @@ describe('Middleware Authentication Flow', () => {
       const blockedResponse = new NextResponse('Blocked', { status: 403 })
       const { createComprehensiveSecurityMiddleware } = require('../lib/security/middleware')
       createComprehensiveSecurityMiddleware.mockImplementation(() => 
-        jest.fn().mockResolvedValue(blockedResponse)
+        vi.fn().mockResolvedValue(blockedResponse)
       )
 
       mockSupabaseClient = createMockSupabaseClient(null)
@@ -517,7 +517,7 @@ describe('Middleware Authentication Flow', () => {
 
       const { createComprehensiveSecurityMiddleware } = require('../lib/security/middleware')
       createComprehensiveSecurityMiddleware.mockImplementation(() => 
-        jest.fn().mockResolvedValue(mockSecurityResponse)
+        vi.fn().mockResolvedValue(mockSecurityResponse)
       )
 
       mockSupabaseClient = createMockSupabaseClient(null)
@@ -543,7 +543,7 @@ describe('Middleware Authentication Flow', () => {
 
       const { createComprehensiveSecurityMiddleware } = require('../lib/security/middleware')
       createComprehensiveSecurityMiddleware.mockImplementation(() => 
-        jest.fn().mockResolvedValue(mockSecurityResponse)
+        vi.fn().mockResolvedValue(mockSecurityResponse)
       )
 
       const mockSession = {
@@ -583,7 +583,7 @@ describe('Middleware Authentication Flow', () => {
     test('should handle session retrieval errors', async () => {
       mockSupabaseClient = {
         auth: {
-          getSession: jest.fn().mockRejectedValue(new Error('Session error'))
+          getSession: vi.fn().mockRejectedValue(new Error('Session error'))
         }
       }
 
@@ -601,7 +601,7 @@ describe('Middleware Authentication Flow', () => {
     test('should handle malformed session data', async () => {
       mockSupabaseClient = {
         auth: {
-          getSession: jest.fn().mockResolvedValue({
+          getSession: vi.fn().mockResolvedValue({
             data: { session: 'invalid-session-data' },
             error: null
           })

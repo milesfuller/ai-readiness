@@ -9,10 +9,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { SurveyQuestion } from '@/components/survey/survey-question'
 import { 
-  Confetti, 
-  ProgressMilestone, 
-  FloatingHearts, 
-  useKonamiCode 
+  useKonamiCode,
+  Confetti,
+  ProgressMilestone
 } from '@/components/ui/whimsy'
 import { 
   Save, 
@@ -25,12 +24,13 @@ import {
   Trophy
 } from 'lucide-react'
 import { surveyQuestions, surveyCategories, getTotalProgress, SurveyQuestion as QuestionType } from '@/lib/data/survey-questions'
+import { surveyService, formatSurveyAnswersForSubmission } from '@/lib/services/survey-service'
 
 interface Props {
   params: Promise<{ sessionId: string }>
 }
 
-interface SurveyAnswer {
+interface LocalSurveyAnswer {
   questionId: string
   answer: string
   inputMethod: 'text' | 'voice'
@@ -41,7 +41,7 @@ interface SurveyAnswer {
 interface SurveySession {
   sessionId: string
   userId: string
-  answers: Record<string, SurveyAnswer>
+  answers: Record<string, LocalSurveyAnswer>
   currentQuestionIndex: number
   startedAt: Date
   lastUpdated: Date
@@ -82,16 +82,13 @@ export default function SurveyPage({ params }: Props) {
     Promise.resolve(params).then(setResolvedParams)
   }, [params])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, SurveyAnswer>>({})
+  const [answers, setAnswers] = useState<Record<string, LocalSurveyAnswer>>({})
   const [inputMethod, setInputMethod] = useState<'text' | 'voice'>('text')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [timeSpent, setTimeSpent] = useState(0)
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const [session, setSession] = useState<SurveySession | null>(null)
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [showMilestoneHearts, setShowMilestoneHearts] = useState(false)
   const [lastCelebratedMilestone, setLastCelebratedMilestone] = useState(0)
-  const [konamiActivated, setKonamiActivated] = useState(false)
   
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const timeIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -107,14 +104,11 @@ export default function SurveyPage({ params }: Props) {
   
   // Handle milestone celebrations
   const handleMilestone = useCallback((milestone: number) => {
-    // Debug milestone - removed in production
-    
+    // Simple success message for milestones
     if (milestone === 100) {
-      setShowConfetti(true)
-      setTimeout(() => setShowConfetti(false), 4000)
+      console.log('Survey completed!')
     } else {
-      setShowMilestoneHearts(true)
-      setTimeout(() => setShowMilestoneHearts(false), 2000)
+      console.log(`Milestone reached: ${milestone}%`)
     }
   }, [])
 
@@ -135,10 +129,39 @@ export default function SurveyPage({ params }: Props) {
     setSaveStatus('saving')
     
     try {
-      // Mock save to Supabase - shorter delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 300))
-      console.log('Progress saved successfully:', { sessionId: session.sessionId, answers: Object.keys(answers) })
-      setSaveStatus('saved')
+      // Convert local answers to service format
+      const serviceAnswers: Record<string, import('@/lib/services/survey-service').SurveyAnswer> = {}
+      Object.entries(answers).forEach(([key, localAnswer]) => {
+        serviceAnswers[key] = {
+          questionId: localAnswer.questionId,
+          answer: localAnswer.answer,
+          inputMethod: localAnswer.inputMethod,
+          timeSpent: 0, // Could track this if needed
+          audioUrl: localAnswer.audioUrl
+        }
+      })
+      
+      // Save progress using the survey service
+      const success = await surveyService.saveProgress(session.sessionId, serviceAnswers)
+      
+      if (success) {
+        console.log('Progress saved successfully:', { sessionId: session.sessionId, answers: Object.keys(answers) })
+        setSaveStatus('saved')
+        
+        // Update session on server
+        await fetch('/api/survey/session', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: session.sessionId,
+            currentQuestionIndex,
+            timeSpent,
+            answers
+          })
+        })
+      } else {
+        throw new Error('Failed to save progress')
+      }
       
       // Return to idle after showing success
       setTimeout(() => {
@@ -150,7 +173,7 @@ export default function SurveyPage({ params }: Props) {
       setSaveStatus('error')
       setTimeout(() => setSaveStatus('idle'), 2000)
     }
-  }, [answers, session]) // Removed saveStatus from dependencies to prevent infinite loop
+  }, [answers, session, currentQuestionIndex, timeSpent]) // Removed saveStatus from dependencies to prevent infinite loop
 
   // Resolve params and initialize session
   useEffect(() => {
@@ -158,16 +181,72 @@ export default function SurveyPage({ params }: Props) {
       const resolved = await params
       setResolvedParams(resolved)
       
-      setSession({
-        sessionId: resolved.sessionId,
-        userId: mockUser.id,
-        answers: {},
-        currentQuestionIndex: 0,
-        startedAt: new Date(),
-        lastUpdated: new Date(),
-        timeSpent: 0,
-        status: 'in_progress'
-      })
+      try {
+        // Initialize session on server
+        const response = await fetch('/api/survey/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: resolved.sessionId,
+            metadata: {
+              userAgent: navigator.userAgent,
+              device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+            }
+          })
+        })
+        
+        if (response.ok) {
+          const sessionData = await response.json()
+          console.log('Session initialized:', sessionData)
+        }
+        
+        // Load any existing progress
+        const existingAnswers = await surveyService.loadProgress(resolved.sessionId)
+        
+        // Convert service answers to local format
+        const convertedAnswers: Record<string, LocalSurveyAnswer> = {}
+        if (existingAnswers) {
+          Object.entries(existingAnswers).forEach(([key, serviceAnswer]) => {
+            convertedAnswers[key] = {
+              questionId: serviceAnswer.questionId,
+              answer: serviceAnswer.answer,
+              inputMethod: serviceAnswer.inputMethod,
+              lastSaved: new Date(), // Convert from service format
+              audioUrl: serviceAnswer.audioUrl
+            }
+          })
+        }
+        
+        setSession({
+          sessionId: resolved.sessionId,
+          userId: mockUser.id,
+          answers: convertedAnswers,
+          currentQuestionIndex: 0,
+          startedAt: new Date(),
+          lastUpdated: new Date(),
+          timeSpent: 0,
+          status: 'in_progress'
+        })
+        
+        // Set loaded answers
+        if (Object.keys(convertedAnswers).length > 0) {
+          setAnswers(convertedAnswers)
+          console.log('Loaded existing answers:', Object.keys(convertedAnswers))
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error)
+        // Fallback to basic session creation
+        setSession({
+          sessionId: resolved.sessionId,
+          userId: mockUser.id,
+          answers: {},
+          currentQuestionIndex: 0,
+          startedAt: new Date(),
+          lastUpdated: new Date(),
+          timeSpent: 0,
+          status: 'in_progress'
+        })
+      }
     }
     
     resolveParams()
@@ -235,15 +314,7 @@ export default function SurveyPage({ params }: Props) {
     })
   }, [progress, lastCelebratedMilestone, handleMilestone, celebrationMilestones])
   
-  // Konami code easter egg
-  useKonamiCode(() => {
-    setKonamiActivated(true)
-    setShowConfetti(true)
-    setTimeout(() => {
-      setKonamiActivated(false)
-      setShowConfetti(false)
-    }, 5000)
-  })
+  // Removed Konami code easter egg
 
   // Navigation functions with useCallback
   const goToQuestion = useCallback((index: number) => {
@@ -291,11 +362,7 @@ export default function SurveyPage({ params }: Props) {
         }
       }
       
-      // Fun keyboard shortcuts
-      if (event.shiftKey && event.key === 'H') {
-        setShowMilestoneHearts(true)
-        setTimeout(() => setShowMilestoneHearts(false), 1000)
-      }
+      // Removed whimsy keyboard shortcuts
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -321,8 +388,8 @@ export default function SurveyPage({ params }: Props) {
   const completeSurvey = useCallback(async () => {
     console.log('completeSurvey called', { resolvedParams, session })
     
-    if (!resolvedParams) {
-      console.log('No resolved params, returning')
+    if (!resolvedParams || !session) {
+      console.log('No resolved params or session, returning')
       return
     }
     
@@ -333,8 +400,48 @@ export default function SurveyPage({ params }: Props) {
       await saveProgress()
       console.log('Progress saved')
       
-      // Update session status
-      if (session) {
+      // Convert local answers to service format for submission
+      const serviceAnswers: Record<string, import('@/lib/services/survey-service').SurveyAnswer> = {}
+      Object.entries(answers).forEach(([key, localAnswer]) => {
+        serviceAnswers[key] = {
+          questionId: localAnswer.questionId,
+          answer: localAnswer.answer,
+          inputMethod: localAnswer.inputMethod,
+          timeSpent: 0, // Could track this if needed
+          audioUrl: localAnswer.audioUrl
+        }
+      })
+      
+      // Submit the complete survey
+      const submission = formatSurveyAnswersForSubmission(
+        session.sessionId,
+        serviceAnswers,
+        {
+          completionTime: timeSpent,
+          userAgent: navigator.userAgent,
+          device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+          voiceInputUsed: Object.values(answers).some(a => a.inputMethod === 'voice')
+        }
+      )
+      
+      console.log('Submitting survey...', { answersCount: submission.answers.length })
+      const result = await surveyService.submitSurvey(submission)
+      
+      if (result.success) {
+        console.log('Survey submitted successfully:', result)
+        
+        // Update session status on server
+        await fetch('/api/survey/session', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: session.sessionId,
+            status: 'completed',
+            timeSpent
+          })
+        })
+        
+        // Update local session
         const completedSession = {
           ...session,
           status: 'completed' as const,
@@ -342,16 +449,23 @@ export default function SurveyPage({ params }: Props) {
         }
         setSession(completedSession)
         console.log('Session updated to completed')
+        
+        // Navigate to completion page
+        console.log('Navigating to completion page...')
+        router.push(`/survey/${resolvedParams.sessionId}/complete`)
+      } else {
+        throw new Error(result.error || 'Failed to submit survey')
       }
-      
-      // Navigate to completion page
-      console.log('Navigating to completion page...')
-      router.push(`/survey/${resolvedParams.sessionId}/complete`)
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Failed to complete survey:', error)
+      // Show error to user but still allow navigation to completion page
+      // In production, you might want to show a proper error modal
+      setSaveStatus('error')
+      setTimeout(() => {
+        router.push(`/survey/${resolvedParams.sessionId}/complete`)
+      }, 2000)
     }
-  }, [resolvedParams, saveProgress, session, router])
+  }, [resolvedParams, saveProgress, session, router, answers, timeSpent])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -388,14 +502,8 @@ export default function SurveyPage({ params }: Props) {
 
   return (
     <MainLayout user={mockUser} currentPath={`/survey/${resolvedParams.sessionId}`}>
-      <div className={`max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0 ${konamiActivated ? 'konami-activated' : ''}`}>
-        {/* Celebration Effects */}
-        <Confetti 
-          active={showConfetti} 
-          intensity={progress === 100 ? 'high' : 'medium'}
-          duration={progress === 100 ? 5000 : 3000}
-        />
-        <FloatingHearts active={showMilestoneHearts} count={progress >= 100 ? 10 : 5} />
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
+        {/* Removed celebration effects */}
         {/* Header */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -457,11 +565,7 @@ export default function SurveyPage({ params }: Props) {
                   progress >= 75 ? 'progress-milestone' : ''
                 }`}
               />
-              <ProgressMilestone 
-                progress={progress}
-                milestones={celebrationMilestones}
-                onMilestone={handleMilestone}
-              />
+              {/* Removed progress milestone celebrations */}
             </div>
             {/* Progress encouragement */}
             {progress > 0 && progress < 100 && (
@@ -553,13 +657,9 @@ export default function SurveyPage({ params }: Props) {
             <div className="text-center hidden sm:block">
               <p className="text-xs text-muted-foreground">
                 Use <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+←</kbd> / <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+→</kbd> to navigate, <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+S</kbd> to save
-                {konamiActivated && (
-                  <span className="ml-2 text-rainbow animate-pulse">🎮 Konami Code Activated! 🎮</span>
-                )}
+                {/* Removed Konami code reference */}
               </p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                💡 Try <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Shift+H</kbd> for a little surprise
-              </p>
+              {/* Removed whimsy keyboard shortcut hint */}
             </div>
           </div>
         </Card>
@@ -613,20 +713,7 @@ export default function SurveyPage({ params }: Props) {
           </div>
         </Card>
         
-        {/* Hidden easter egg message */}
-        {konamiActivated && (
-          <Card className="p-4 border-rainbow animate-pulse">
-            <div className="text-center space-y-2">
-              <div className="text-2xl">🎮✨🚀</div>
-              <p className="text-sm font-medium text-rainbow">
-                You found the secret! You&apos;re clearly ready for AI if you can master the Konami Code!
-              </p>
-              <div className="text-xs text-muted-foreground">
-                Keep this energy for your AI journey!
-              </div>
-            </div>
-          </Card>
-        )}
+        {/* Removed easter egg message */}
       </div>
     </MainLayout>
   )

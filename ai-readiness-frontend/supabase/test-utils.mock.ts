@@ -1,4 +1,5 @@
 // Mock utilities for Supabase testing
+import { vi } from 'vitest'
 import { createMockSupabaseClient, createMockUser, createMockSession } from '../__tests__/utils/mock-factories';
 import type { MockSupabaseClient } from '../__tests__/types/mocks';
 
@@ -10,10 +11,10 @@ export type { MockSupabaseClient };
 export const mockSupabaseClient = createMockSupabaseClient();
 
 // Mock server-side Supabase client creation
-export const mockCreateServerClient = jest.fn(() => mockSupabaseClient);
+export const mockCreateServerClient = vi.fn(() => mockSupabaseClient);
 
 // Mock browser-side Supabase client creation
-export const mockCreateBrowserClient = jest.fn(() => mockSupabaseClient);
+export const mockCreateBrowserClient = vi.fn(() => mockSupabaseClient);
 
 // Common test data
 export const mockTestUser = createMockUser({

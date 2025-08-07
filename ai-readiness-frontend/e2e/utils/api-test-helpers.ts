@@ -18,7 +18,7 @@ export interface TestUser {
   firstName: string
   lastName: string
   organizationName: string
-  role: 'admin' | 'user' | 'org_admin'
+  role: 'system_admin' | 'user' | 'org_admin'
 }
 
 export interface APITestResponse {
@@ -53,7 +53,7 @@ export class APITestDataGenerator {
     return `${Date.now()}-${++this.counter}`
   }
 
-  generateTestUser(role: 'user' | 'org_admin' | 'admin' = 'user'): TestUser {
+  generateTestUser(role: 'user' | 'org_admin' | 'system_admin' = 'user'): TestUser {
     const id = this.getUniqueId()
     return {
       email: `test-${id}@test-aireadiness.com`,
@@ -67,7 +67,7 @@ export class APITestDataGenerator {
     }
   }
 
-  generateBulkTestUsers(count: number, role: 'user' | 'org_admin' | 'admin' = 'user'): TestUser[] {
+  generateBulkTestUsers(count: number, role: 'user' | 'org_admin' | 'system_admin' = 'user'): TestUser[] {
     return Array(count).fill(null).map(() => this.generateTestUser(role))
   }
 
@@ -237,7 +237,7 @@ export class APITestDataGenerator {
 export class APIAuthenticationHelper {
   constructor(private page: Page) {}
 
-  async loginAsRole(role: 'admin' | 'org_admin' | 'user' = 'admin'): Promise<void> {
+  async loginAsRole(role: 'system_admin' | 'org_admin' | 'user' = 'system_admin'): Promise<void> {
     const credentials = this.getCredentialsForRole(role)
     
     await this.page.goto('/auth/login')
@@ -246,7 +246,7 @@ export class APIAuthenticationHelper {
     await this.page.click('button[type="submit"]')
     
     // Wait for successful login
-    if (role === 'admin') {
+    if (role === 'system_admin') {
       await this.page.waitForURL('/admin', { timeout: 10000 })
     } else {
       await this.page.waitForURL('/dashboard', { timeout: 10000 })

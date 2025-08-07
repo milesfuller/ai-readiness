@@ -11,7 +11,7 @@ const inputVariants = cva(
     variants: {
       variant: {
         default: "border-border focus-visible:border-teal-500 hover:border-teal-500/50",
-        glass: "glass-input focus-visible:border-teal-500 focus-visible:glow-teal hover:bg-white/10",
+        glass: "glass-card focus-visible:border-teal-500/50 focus-visible:glow-teal hover:bg-white/15 backdrop-blur-xl border-white/20 dark:border-white/10",
         error: "border-destructive focus-visible:ring-destructive/50 focus-visible:border-destructive bg-destructive/5",
         success: "border-green-500 focus-visible:ring-green-500/50 focus-visible:border-green-500 bg-green-500/5",
         warning: "border-yellow-500 focus-visible:ring-yellow-500/50 focus-visible:border-yellow-500 bg-yellow-500/5",

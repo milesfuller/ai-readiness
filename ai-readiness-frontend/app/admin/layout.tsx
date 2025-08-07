@@ -10,7 +10,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <RoleGuard allowedRoles={['admin', 'org_admin']}>
+    <RoleGuard allowedRoles={['system_admin', 'org_admin']}>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-teal-900">
         <div className="flex">
           <AdminSidebar />

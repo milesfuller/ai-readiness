@@ -2,111 +2,112 @@
  * Mock for @supabase/ssr
  * Provides createServerClient mock for server-side rendering tests
  */
+import { vi } from 'vitest'
 
 // Default mock client that can be configured per test
 const mockClient = {
   auth: {
-    getSession: jest.fn().mockResolvedValue({
+    getSession: vi.fn().mockResolvedValue({
       data: { session: null },
       error: null
     }),
-    getUser: jest.fn().mockResolvedValue({
+    getUser: vi.fn().mockResolvedValue({
       data: { user: null },
       error: null
     }),
-    signOut: jest.fn().mockResolvedValue({
+    signOut: vi.fn().mockResolvedValue({
       error: null
     }),
-    onAuthStateChange: jest.fn().mockReturnValue({
-      data: { subscription: { unsubscribe: jest.fn() } }
+    onAuthStateChange: vi.fn().mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } }
     })
   },
-  from: jest.fn().mockReturnValue({
-    select: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    neq: jest.fn().mockReturnThis(),
-    gt: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    lt: jest.fn().mockReturnThis(),
-    lte: jest.fn().mockReturnThis(),
-    like: jest.fn().mockReturnThis(),
-    ilike: jest.fn().mockReturnThis(),
-    is: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    contains: jest.fn().mockReturnThis(),
-    containedBy: jest.fn().mockReturnThis(),
-    rangeGt: jest.fn().mockReturnThis(),
-    rangeGte: jest.fn().mockReturnThis(),
-    rangeLt: jest.fn().mockReturnThis(),
-    rangeLte: jest.fn().mockReturnThis(),
-    rangeAdjacent: jest.fn().mockReturnThis(),
-    overlaps: jest.fn().mockReturnThis(),
-    textSearch: jest.fn().mockReturnThis(),
-    match: jest.fn().mockReturnThis(),
-    not: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    filter: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    head: jest.fn().mockReturnThis(),
-    count: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({
+  from: vi.fn().mockReturnValue({
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
+    gt: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    like: vi.fn().mockReturnThis(),
+    ilike: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    contains: vi.fn().mockReturnThis(),
+    containedBy: vi.fn().mockReturnThis(),
+    rangeGt: vi.fn().mockReturnThis(),
+    rangeGte: vi.fn().mockReturnThis(),
+    rangeLt: vi.fn().mockReturnThis(),
+    rangeLte: vi.fn().mockReturnThis(),
+    rangeAdjacent: vi.fn().mockReturnThis(),
+    overlaps: vi.fn().mockReturnThis(),
+    textSearch: vi.fn().mockReturnThis(),
+    match: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    or: vi.fn().mockReturnThis(),
+    filter: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    range: vi.fn().mockReturnThis(),
+    head: vi.fn().mockReturnThis(),
+    count: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({
       data: null,
       error: null
     }),
-    maybeSingle: jest.fn().mockResolvedValue({
+    maybeSingle: vi.fn().mockResolvedValue({
       data: null,
       error: null
     }),
-    csv: jest.fn().mockResolvedValue({
+    csv: vi.fn().mockResolvedValue({
       data: null,
       error: null
     }),
-    geojson: jest.fn().mockResolvedValue({
+    geojson: vi.fn().mockResolvedValue({
       data: null,
       error: null
     }),
-    explain: jest.fn().mockResolvedValue({
+    explain: vi.fn().mockResolvedValue({
       data: null,
       error: null
     })
   }),
-  rpc: jest.fn().mockResolvedValue({
+  rpc: vi.fn().mockResolvedValue({
     data: null,
     error: null
   }),
-  schema: jest.fn().mockReturnThis(),
+  schema: vi.fn().mockReturnThis(),
   storage: {
-    from: jest.fn().mockReturnValue({
-      upload: jest.fn().mockResolvedValue({
+    from: vi.fn().mockReturnValue({
+      upload: vi.fn().mockResolvedValue({
         data: null,
         error: null
       }),
-      download: jest.fn().mockResolvedValue({
+      download: vi.fn().mockResolvedValue({
         data: null,
         error: null
       }),
-      list: jest.fn().mockResolvedValue({
+      list: vi.fn().mockResolvedValue({
         data: [],
         error: null
       }),
-      remove: jest.fn().mockResolvedValue({
+      remove: vi.fn().mockResolvedValue({
         data: null,
         error: null
       }),
-      createSignedUrl: jest.fn().mockResolvedValue({
+      createSignedUrl: vi.fn().mockResolvedValue({
         data: { signedURL: 'https://example.com/signed-url' },
         error: null
       }),
-      createSignedUrls: jest.fn().mockResolvedValue({
+      createSignedUrls: vi.fn().mockResolvedValue({
         data: [],
         error: null
       }),
-      getPublicUrl: jest.fn().mockReturnValue({
+      getPublicUrl: vi.fn().mockReturnValue({
         data: { publicUrl: 'https://example.com/public-url' }
       })
     })
@@ -114,7 +115,7 @@ const mockClient = {
 };
 
 // Mock createServerClient function
-const createServerClient = jest.fn((url, key, options = {}) => {
+const createServerClient = vi.fn((url, key, options = {}) => {
   // Handle cookie operations if provided
   if (options.cookies) {
     const { get, set, remove } = options.cookies;

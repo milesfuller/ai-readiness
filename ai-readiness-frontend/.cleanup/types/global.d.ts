@@ -134,7 +134,7 @@ export interface TestUser {
   password: string
   userId: string
   organizationId: string
-  role?: 'admin' | 'org_admin' | 'user' | 'analyst'
+  role?: 'system_admin' | 'org_admin' | 'user' | 'analyst'
   profile?: {
     first_name: string
     last_name: string

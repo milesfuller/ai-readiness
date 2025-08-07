@@ -17,7 +17,7 @@ export interface TestUser {
   firstName?: string
   lastName?: string
   organizationName?: string
-  role?: 'user' | 'org_admin' | 'admin'
+  role?: 'user' | 'org_admin' | 'system_admin'
   
   // Alternative field names for legacy compatibility
   id?: string

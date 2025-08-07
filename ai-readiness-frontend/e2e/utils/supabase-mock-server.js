@@ -67,7 +67,7 @@ class SupabaseMockServer {
         email,
         email_confirmed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        role: email.includes('admin') ? 'admin' : 'user'
+        role: email.includes('admin') ? 'system_admin' : 'user'
       };
       
       this.users.set(email, { ...user, password });
@@ -251,7 +251,7 @@ class SupabaseMockServer {
       {
         email: 'testadmin@example.com',
         password: 'AdminPassword123!',
-        role: 'admin'
+        role: 'system_admin'
       }
     ];
     

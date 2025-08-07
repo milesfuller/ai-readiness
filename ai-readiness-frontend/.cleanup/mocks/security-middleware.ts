@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Mock security middleware that's test-friendly
 export const createMockSecurityMiddleware = () => {
-  return jest.fn().mockImplementation(async (request: NextRequest) => {
+  return vi.fn().mockImplementation(async (request: NextRequest) => {
     // In test environment, always return successful response
     // Security checks are tested separately and should not interfere with other tests
     const response = NextResponse.next()
@@ -22,8 +22,8 @@ export const createMockSecurityMiddleware = () => {
 
 // Mock comprehensive security middleware
 export const createMockComprehensiveSecurityMiddleware = () => {
-  return jest.fn().mockImplementation(() => {
-    return jest.fn().mockResolvedValue(
+  return vi.fn().mockImplementation(() => {
+    return vi.fn().mockResolvedValue(
       new NextResponse(null, { 
         status: 200,
         headers: {
@@ -39,7 +39,7 @@ export const createMockComprehensiveSecurityMiddleware = () => {
 
 // Mock test security middleware
 export const createMockTestSecurityMiddleware = () => {
-  return jest.fn().mockImplementation(async (request: NextRequest) => {
+  return vi.fn().mockImplementation(async (request: NextRequest) => {
     // Always allow requests in test environment
     return null // null means continue processing
   })
@@ -47,7 +47,7 @@ export const createMockTestSecurityMiddleware = () => {
 
 // Mock production data guard that's safe for tests
 export const createMockProductionDataGuard = () => {
-  return jest.fn().mockImplementation(async (request: NextRequest) => {
+  return vi.fn().mockImplementation(async (request: NextRequest) => {
     // Never block requests in test environment
     return null
   })
@@ -55,7 +55,7 @@ export const createMockProductionDataGuard = () => {
 
 // Mock environment validator for tests
 export const createMockTestEnvironmentValidator = () => {
-  return jest.fn().mockImplementation(async (request: NextRequest) => {
+  return vi.fn().mockImplementation(async (request: NextRequest) => {
     // Always validate successfully in test
     return null
   })
@@ -63,7 +63,7 @@ export const createMockTestEnvironmentValidator = () => {
 
 // Mock rate limiter that's permissive for tests  
 export const createMockTestAwareRateLimit = () => {
-  return jest.fn().mockImplementation(async (request: NextRequest) => {
+  return vi.fn().mockImplementation(async (request: NextRequest) => {
     // Never rate limit in test environment
     return null
   })
@@ -71,9 +71,9 @@ export const createMockTestAwareRateLimit = () => {
 
 // Mock utility functions
 export const mockTestSecurityUtils = {
-  shouldBypassRateLimit: jest.fn().mockReturnValue(true), // Always bypass in tests
-  isTestEnvironment: jest.fn().mockReturnValue(true), // Always true in tests
-  validateTestEnvironment: jest.fn().mockReturnValue({
+  shouldBypassRateLimit: vi.fn().mockReturnValue(true), // Always bypass in tests
+  isTestEnvironment: vi.fn().mockReturnValue(true), // Always true in tests
+  validateTestEnvironment: vi.fn().mockReturnValue({
     valid: true,
     errors: [],
     warnings: []
@@ -81,11 +81,11 @@ export const mockTestSecurityUtils = {
   createTestAwareRateLimit: createMockTestAwareRateLimit,
   createProductionDataGuard: createMockProductionDataGuard,
   createTestEnvironmentValidator: createMockTestEnvironmentValidator,
-  createTestSecurityMonitor: jest.fn().mockImplementation(() => 
-    jest.fn().mockResolvedValue(null)
+  createTestSecurityMonitor: vi.fn().mockImplementation(() => 
+    vi.fn().mockResolvedValue(null)
   ),
   createTestSecurityMiddleware: createMockTestSecurityMiddleware,
-  applyTestSecurityHeaders: jest.fn().mockImplementation((response: NextResponse) => {
+  applyTestSecurityHeaders: vi.fn().mockImplementation((response: NextResponse) => {
     response.headers.set('X-Test-Environment', 'true')
     return response
   })
@@ -99,11 +99,11 @@ export const mockTestMiddleware = {
   createTestAwareRateLimit: createMockTestAwareRateLimit,
   createProductionDataGuard: createMockProductionDataGuard,
   createTestEnvironmentValidator: createMockTestEnvironmentValidator,
-  createTestSecurityMonitor: jest.fn().mockImplementation(() => 
-    jest.fn().mockResolvedValue(null)
+  createTestSecurityMonitor: vi.fn().mockImplementation(() => 
+    vi.fn().mockResolvedValue(null)
   ),
   createTestSecurityMiddleware: createMockTestSecurityMiddleware,
-  applyTestSecurityHeaders: jest.fn().mockImplementation((response: NextResponse) => {
+  applyTestSecurityHeaders: vi.fn().mockImplementation((response: NextResponse) => {
     response.headers.set('X-Test-Environment', 'true')
     return response
   }),

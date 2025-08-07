@@ -27,9 +27,9 @@
   }
 
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 0 0% 0%;  /* Pure black #000000 */
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 0 0% 0%;  /* Pure black for cards too */
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
@@ -147,6 +147,18 @@
   
   .glass-input {
     @apply bg-white/5 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10;
+  }
+  
+  .glass-nav {
+    @apply bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/20 dark:border-white/5;
+  }
+  
+  .glass-modal {
+    @apply bg-white/20 dark:bg-black/40 backdrop-blur-2xl border border-white/30 dark:border-white/10;
+  }
+  
+  .glass-sidebar {
+    @apply bg-white/5 dark:bg-black/20 backdrop-blur-lg border-r border-white/20 dark:border-white/5;
   }
   
   /* Interactive Cards */

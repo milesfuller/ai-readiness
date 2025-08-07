@@ -67,7 +67,7 @@ export interface RecoveryAction {
 }
 
 export interface AuthRequirement {
-  role: 'admin' | 'user' | 'org_admin' | 'anonymous';
+  role: 'system_admin' | 'user' | 'org_admin' | 'anonymous';
   permissions: string[];
   sessionType: 'persistent' | 'temporary';
 }
@@ -309,7 +309,7 @@ export class TestInfrastructureManager extends EventEmitter {
    * Set up authentication state for testing
    */
   async setupAuthenticationState(
-    role: 'admin' | 'user' | 'org_admin' | 'anonymous',
+    role: 'system_admin' | 'user' | 'org_admin' | 'anonymous',
     scenario?: TestScenario
   ): Promise<AuthState> {
     console.log(`🔐 Setting up authentication for role: ${role}`);
@@ -768,4 +768,4 @@ export class TestInfrastructureManager extends EventEmitter {
 
 // Export types for external use
 export type AuthState = any; // Would be defined in AuthenticationFlowCoordinator
-export type UserRole = 'admin' | 'user' | 'org_admin' | 'anonymous';
+export type UserRole = 'system_admin' | 'user' | 'org_admin' | 'anonymous';

@@ -15,10 +15,12 @@ import { NextResponse } from 'next/server'
 import { GET } from '@/app/auth/callback/route'
 import { createClient } from '@/lib/supabase/server'
 
+import { vi } from 'vitest'
+
 // Mock Next.js server components
-jest.mock('next/server', () => ({
+vi.mock('next/server', () => ({
   NextResponse: {
-    redirect: jest.fn((url) => ({
+    redirect: vi.fn((url) => ({
       status: 302,
       headers: new Map([['Location', url.toString()]]),
       url: url.toString()
@@ -27,17 +29,17 @@ jest.mock('next/server', () => ({
 }))
 
 // Mock Supabase server client
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn()
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn()
 }))
 
-const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>
-const mockNextResponseRedirect = NextResponse.redirect as jest.MockedFunction<typeof NextResponse.redirect>
+const mockCreateClient = createClient as any
+const mockNextResponseRedirect = NextResponse.redirect as any
 
 // Mock Supabase client with auth methods
 const createMockSupabaseClient = (shouldSucceed = true, exchangeError: any = null) => ({
   auth: {
-    exchangeCodeForSession: jest.fn().mockResolvedValue({
+    exchangeCodeForSession: vi.fn().mockResolvedValue({
       error: exchangeError,
       data: shouldSucceed ? { session: { access_token: 'mock-token' } } : null
     })
@@ -46,7 +48,7 @@ const createMockSupabaseClient = (shouldSucceed = true, exchangeError: any = nul
 
 describe('/app/auth/callback/route.ts - GET Handler', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('Successful OAuth Callback', () => {
@@ -187,7 +189,7 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
     it('should redirect to login when code exchange throws an exception', async () => {
       const mockSupabase = {
         auth: {
-          exchangeCodeForSession: jest.fn().mockRejectedValue(new Error('Network error'))
+          exchangeCodeForSession: vi.fn().mockRejectedValue(new Error('Network error'))
         }
       }
       mockCreateClient.mockReturnValue(mockSupabase as any)
@@ -236,7 +238,7 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
       ]
 
       for (const malformedCode of malformedCodes) {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         
         const exchangeError = { message: 'Invalid code format' }
         const mockSupabase = createMockSupabaseClient(false, exchangeError)
@@ -316,7 +318,7 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
       ]
 
       for (const maliciousUrl of maliciousUrls) {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         
         const request = new Request(`https://example.com/auth/callback?code=test_code&next=${encodeURIComponent(maliciousUrl)}`)
 
@@ -344,7 +346,7 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
       ]
 
       for (const testCase of edgeCases) {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         
         const queryParam = testCase.next ? `&next=${encodeURIComponent(testCase.next)}` : ''
         const request = new Request(`https://example.com/auth/callback?code=test_code${queryParam}`)
@@ -406,7 +408,7 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
       ]
 
       for (let i = 0; i < scenarios.length; i++) {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         
         const scenario = scenarios[i]
         const mockSupabase = createMockSupabaseClient(
@@ -446,7 +448,7 @@ describe('/app/auth/callback/route.ts - GET Handler', () => {
     it('should handle timeout scenarios gracefully', async () => {
       const mockSupabase = {
         auth: {
-          exchangeCodeForSession: jest.fn().mockImplementation(() => 
+          exchangeCodeForSession: vi.fn().mockImplementation(() => 
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Request timeout')), 100)
             )

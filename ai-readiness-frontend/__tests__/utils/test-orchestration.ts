@@ -16,7 +16,7 @@ export interface TestUser {
   id: string
   email: string
   password: string
-  role: 'admin' | 'user'
+  role: 'system_admin' | 'user'
   verified: boolean
 }
 

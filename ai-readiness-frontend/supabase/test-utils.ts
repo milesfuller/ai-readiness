@@ -149,7 +149,7 @@ export class SupabaseTestHelper {
   /**
    * Add user to organization
    */
-  async addUserToOrganization(userId: string, organizationId: string, role: 'owner' | 'admin' | 'member' = 'member') {
+  async addUserToOrganization(userId: string, organizationId: string, role: 'owner' | 'system_admin' | 'member' = 'member') {
     const { error } = await this.adminClient
       .from('organization_members')
       .insert({
@@ -336,7 +336,7 @@ export const testScenarios = {
   async basicUserWorkflow() {
     const user = await testHelper.createTestUser()
     const org = await testHelper.createTestOrganization()
-    await testHelper.addUserToOrganization(user.id, org.id, 'admin')
+    await testHelper.addUserToOrganization(user.id, org.id, 'system_admin')
     const survey = await testHelper.createTestSurvey(org.id, user.id)
     
     return { user, org, survey }
@@ -348,7 +348,7 @@ export const testScenarios = {
     
     // Add users with different roles
     await testHelper.addUserToOrganization(users[0].id, org.id, 'owner')
-    await testHelper.addUserToOrganization(users[1].id, org.id, 'admin')
+    await testHelper.addUserToOrganization(users[1].id, org.id, 'system_admin')
     await testHelper.addUserToOrganization(users[2].id, org.id, 'member')
     await testHelper.addUserToOrganization(users[3].id, org.id, 'member')
     await testHelper.addUserToOrganization(users[4].id, org.id, 'member')

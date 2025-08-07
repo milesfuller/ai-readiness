@@ -51,6 +51,32 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Input sanitization and length validation
+    if (typeof responseText !== 'string' || responseText.trim().length === 0) {
+      return NextResponse.json({
+        error: 'responseText must be a non-empty string'
+      }, { status: 400 });
+    }
+
+    if (typeof questionText !== 'string' || questionText.trim().length === 0) {
+      return NextResponse.json({
+        error: 'questionText must be a non-empty string'
+      }, { status: 400 });
+    }
+
+    // Length validation
+    if (responseText.length > 5000) {
+      return NextResponse.json({
+        error: 'responseText exceeds maximum length of 5000 characters'
+      }, { status: 400 });
+    }
+
+    if (questionText.length > 1000) {
+      return NextResponse.json({
+        error: 'questionText exceeds maximum length of 1000 characters'
+      }, { status: 400 });
+    }
+
     // Validate expectedForce enum
     const validForces: JTBDForceType[] = ['pain_of_old', 'pull_of_new', 'anchors_to_old', 'anxiety_of_new', 'demographic'];
     if (!validForces.includes(expectedForce)) {
@@ -95,6 +121,18 @@ export async function POST(request: NextRequest) {
       responseId,
       surveyId: surveyId || response.survey_id
     };
+
+    // Check if API keys are available before attempting analysis
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+    
+    if (!hasOpenAI && !hasAnthropic) {
+      return NextResponse.json({
+        error: 'LLM analysis unavailable',
+        message: 'No LLM API keys configured. Please set OPENAI_API_KEY or ANTHROPIC_API_KEY environment variable.',
+        code: 'NO_API_KEYS'
+      }, { status: 503 });
+    }
 
     // Perform LLM analysis
     const analysisResult = await llmService.analyzeSurveyResponse(
@@ -142,11 +180,47 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('LLM Analysis Error:', error);
     
+    // Determine appropriate error code and status
+    let errorCode = 'ANALYSIS_FAILED';
+    let statusCode = 500;
+    let message = 'Analysis failed';
+
+    if (error instanceof Error) {
+      message = error.message;
+      
+      // API key related errors
+      if (error.message.includes('API key') || error.message.includes('401')) {
+        errorCode = 'AUTH_ERROR';
+        statusCode = 401;
+      }
+      // Rate limiting errors
+      else if (error.message.includes('429') || error.message.includes('rate limit')) {
+        errorCode = 'RATE_LIMITED';
+        statusCode = 429;
+      }
+      // Timeout errors
+      else if (error.message.includes('timeout') || error.name === 'AbortError') {
+        errorCode = 'TIMEOUT';
+        statusCode = 408;
+      }
+      // Service unavailable
+      else if (error.message.includes('503') || error.message.includes('service unavailable')) {
+        errorCode = 'SERVICE_UNAVAILABLE';
+        statusCode = 503;
+      }
+      // JSON parsing errors
+      else if (error.message.includes('JSON') || error.message.includes('parse')) {
+        errorCode = 'INVALID_RESPONSE';
+        statusCode = 502;
+      }
+    }
+    
     return NextResponse.json({
       error: 'Analysis failed',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-      code: error instanceof Error && 'code' in error ? error.code : 'UNKNOWN'
-    }, { status: 500 });
+      message,
+      code: errorCode,
+      timestamp: new Date().toISOString()
+    }, { status: statusCode });
   }
 }
 
@@ -161,14 +235,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Perform LLM service health check
-    const healthStatus = await llmService.healthCheck();
+    // Check API key availability
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+    
+    const apiKeyStatus = {
+      openai: hasOpenAI ? 'configured' : 'missing',
+      anthropic: hasAnthropic ? 'configured' : 'missing'
+    };
+
+    // Perform LLM service health check if any API key is available
+    let healthStatus: { status: 'healthy' | 'degraded' | 'unhealthy'; latency?: number; error?: string } = { 
+      status: 'unhealthy', 
+      error: 'No API keys configured' 
+    };
+    
+    if (hasOpenAI || hasAnthropic) {
+      try {
+        healthStatus = await llmService.healthCheck();
+      } catch (error) {
+        healthStatus = { 
+          status: 'unhealthy', 
+          error: error instanceof Error ? error.message : 'Health check failed' 
+        };
+      }
+    }
     
     return NextResponse.json({
       service: 'LLM Analysis API',
       status: healthStatus.status,
       latency: healthStatus.latency,
       timestamp: new Date().toISOString(),
+      apiKeys: apiKeyStatus,
       config: {
         provider: llmService.getConfig().provider,
         model: llmService.getConfig().model

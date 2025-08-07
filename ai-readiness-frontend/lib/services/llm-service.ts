@@ -69,19 +69,31 @@ export class LLMService {
   }
 
   private getAPIKey(provider: LLMProvider): string {
+    // Import config utilities safely
+    const isServer = typeof window === 'undefined';
+    const isBuild = process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NEXT_PHASE;
+    const isTest = process.env.NODE_ENV === 'test' || process.env.PLAYWRIGHT_TEST === 'true';
+    
+    // During build time or testing, use dummy keys to prevent build failures
+    if (isBuild || isTest) {
+      return 'dummy-key-for-build';
+    }
+
+    // Only access environment variables on the server side
+    if (!isServer) {
+      console.warn(`API keys should not be accessed on client side. Using dummy key.`);
+      return 'dummy-key-for-client';
+    }
+
     const key = provider === 'openai' 
       ? process.env.OPENAI_API_KEY 
       : process.env.ANTHROPIC_API_KEY;
     
-    // During build time, allow missing API keys
-    if (!key && (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development')) {
-      console.warn(`Missing API key for ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`);
-      return 'dummy-key-for-build';
-    }
-    
+    // Provide more helpful error messages
     if (!key) {
-      console.warn(`Missing API key for ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`);
-      return 'dummy-key-for-build';
+      const envVar = `${provider.toUpperCase()}_API_KEY`;
+      console.warn(`Missing ${envVar} environment variable. LLM features will not work properly. Please set ${envVar} in your .env.local file.`);
+      return 'missing-api-key';
     }
     
     return key;
@@ -225,7 +237,7 @@ export class LLMService {
   }
 
   /**
-   * Generate JTBD analysis prompt based on template
+   * Generate JTBD analysis prompt based on enhanced template
    */
   private generateAnalysisPrompt(
     responseText: string,
@@ -235,24 +247,12 @@ export class LLMService {
   ): string {
     const wordCount = responseText.split(/\s+/).length;
     
-    const systemPrompt = `You are an expert organizational psychologist and AI adoption specialist with deep expertise in the Jobs-to-be-Done (JTBD) Forces of Progress framework. Your role is to analyze employee survey responses about AI readiness and provide structured, actionable insights.
-
-ANALYSIS FRAMEWORK:
-You will classify responses according to four forces that drive or hinder organizational change, specifically in the context of AI adoption. These forces work together to create a dynamic tension that determines readiness for change.
-
-CRITICAL REQUIREMENTS:
-- Provide consistent, objective analysis suitable for organizational decision-making
-- Always respond in valid JSON format with all required fields
-- Base classifications on evidence in the response text
-- Provide actionable insights that organizations can use
-- Consider the business context and practical implications
-
-QUALITY STANDARDS:
-- High confidence scores (4-5) for clear signals
-- Lower confidence scores (1-3) for ambiguous responses
-- Themes should be specific and actionable
-- Insights should connect to business outcomes`;
-
+    // Use enhanced system prompt from revised templates
+    const systemPrompt = this.getEnhancedSystemPrompt();
+    
+    // Generate question-specific template
+    const questionSpecificTemplate = this.getQuestionSpecificTemplate(expectedForce);
+    
     const mainPrompt = `Analyze this AI readiness survey response using the JTBD Forces of Progress framework:
 
 **CONTEXT:**
@@ -267,52 +267,7 @@ QUALITY STANDARDS:
 **EMPLOYEE RESPONSE:**
 "${responseText}"
 
-**ANALYSIS FRAMEWORK:**
-
-## JTBD Forces Classification:
-
-### **Pain of the Old** (Current Problems)
-Frustrations, inefficiencies, and friction with current tools/processes that create pressure for change.
-- Score 1: No significant pain points mentioned
-- Score 2: Minor inconveniences or occasional friction
-- Score 3: Moderate pain points affecting productivity
-- Score 4: Significant frustrations with clear business impact
-- Score 5: Severe pain points causing major inefficiency or frustration
-
-### **Pull of the New** (AI Attraction)
-Excitement, benefits, and opportunities that AI solutions could provide, creating attraction toward adoption.
-- Score 1: No interest or attraction to AI benefits
-- Score 2: Minimal awareness of AI potential
-- Score 3: Some interest in AI capabilities
-- Score 4: Clear enthusiasm with specific use cases identified
-- Score 5: Strong desire for AI adoption with detailed vision
-
-### **Anchors to the Old** (Resistance Forces)
-Organizational inertia, processes, investments, or comfort with current state that resist change.
-- Score 1: No barriers to change mentioned
-- Score 2: Minor procedural hurdles
-- Score 3: Moderate organizational resistance or process barriers
-- Score 4: Significant structural barriers to change
-- Score 5: Deep entrenchment or major barriers preventing adoption
-
-### **Anxiety of the New** (Concerns & Fears)
-Worries, uncertainties, risks, or fears about adopting AI that create hesitation.
-- Score 1: No concerns or anxiety about AI adoption
-- Score 2: Minor questions or uncertainties
-- Score 3: Moderate concerns about AI implementation
-- Score 4: Significant worries about risks or changes
-- Score 5: Major fears or strong resistance to AI adoption
-
-## ANALYSIS REQUIREMENTS:
-
-1. **Primary Force**: Identify the strongest force signal in the response
-2. **Secondary Forces**: Note any other forces clearly present (limit to 2)
-3. **Force Strength**: Score 1-5 based on intensity and specificity
-4. **Confidence Level**: How certain are you about this classification?
-5. **Key Themes**: Extract 3-5 specific, actionable themes
-6. **Sentiment Analysis**: Overall emotional tone toward AI adoption
-7. **Business Impact**: What this means for the organization
-8. **Recommendations**: Specific actions this insight suggests
+${questionSpecificTemplate}
 
 ## RESPONSE FORMAT (JSON only):
 
@@ -370,6 +325,123 @@ Worries, uncertainties, risks, or fears about adopting AI that create hesitation
   }
 
   /**
+   * Get enhanced system prompt from revised templates
+   */
+  private getEnhancedSystemPrompt(): string {
+    return `You are an expert organizational psychologist and AI adoption specialist with deep expertise in the Jobs-to-be-Done (JTBD) Forces of Progress framework. Your role is to analyze employee survey responses about AI readiness and provide structured, actionable insights.
+
+ANALYSIS FRAMEWORK:
+You will classify responses according to four forces that drive or hinder organizational change, specifically in the context of AI adoption. These forces work together to create a dynamic tension that determines readiness for change.
+
+CRITICAL REQUIREMENTS:
+- Provide consistent, objective analysis suitable for organizational decision-making
+- Always respond in valid JSON format with all required fields
+- Base classifications on evidence in the response text
+- Provide actionable insights that organizations can use
+- Consider the business context and practical implications
+
+QUALITY STANDARDS:
+- High confidence scores (4-5) for clear signals
+- Lower confidence scores (1-3) for ambiguous responses
+- Themes should be specific and actionable
+- Insights should connect to business outcomes`;
+  }
+
+  /**
+   * Get question-specific template based on expected force
+   */
+  private getQuestionSpecificTemplate(expectedForce: JTBDForceType): string {
+    switch (expectedForce) {
+      case 'pain_of_old':
+        return `**PAIN OF THE OLD ANALYSIS:**
+Focus on identifying frustrations, inefficiencies, and friction points with current processes. Look for business impact and urgency indicators.
+
+Enhanced Analysis Guidelines:
+- Quantify impact when possible (time, money, frustration level)
+- Identify root causes vs symptoms
+- Assess urgency and priority level
+- Consider organizational vs individual pain points
+- Look for automation opportunities
+
+Scoring Refinements:
+- Score 5: Mentions specific time/cost impact, strong emotional language, systemic issues
+- Score 4: Clear frustrations with examples, business impact implied
+- Score 3: General inefficiencies mentioned, moderate concern
+- Score 2: Minor issues, occasional inconvenience
+- Score 1: No significant pain points, satisfaction with current state`;
+
+      case 'pull_of_new':
+        return `**PULL OF THE NEW ANALYSIS:**
+Focus on AI benefits, opportunities, and positive possibilities that create attraction toward adoption.
+
+Enhanced Analysis Guidelines:
+- Distinguish between realistic and aspirational goals
+- Assess specificity of AI use cases mentioned
+- Identify business value drivers
+- Consider feasibility of mentioned applications
+- Look for innovation mindset indicators
+
+Scoring Refinements:
+- Score 5: Specific AI use cases, clear value proposition, innovation mindset
+- Score 4: Strong enthusiasm with concrete examples
+- Score 3: General interest in AI benefits
+- Score 2: Vague awareness of AI potential
+- Score 1: No interest in AI possibilities`;
+
+      case 'anchors_to_old':
+        return `**ANCHORS TO THE OLD ANALYSIS:**
+Focus on organizational barriers, resistance forces, and factors that maintain status quo.
+
+Enhanced Analysis Guidelines:
+- Distinguish between process barriers and cultural resistance
+- Assess whether barriers are temporary or structural
+- Identify key decision makers and influencers
+- Consider regulatory or compliance constraints
+- Evaluate change management requirements
+
+Scoring Refinements:
+- Score 5: Deep structural barriers, cultural resistance, major change requirements
+- Score 4: Significant organizational barriers with specific examples
+- Score 3: Moderate resistance or bureaucratic processes
+- Score 2: Minor procedural hurdles
+- Score 1: Few barriers, organization ready for change`;
+
+      case 'anxiety_of_new':
+        return `**ANXIETY OF THE NEW ANALYSIS:**
+Focus on concerns, fears, and uncertainties about AI adoption that create hesitation.
+
+Enhanced Analysis Guidelines:
+- Distinguish between rational concerns and emotional fears
+- Assess whether concerns are founded or unfounded
+- Identify specific risk categories (job security, privacy, etc.)
+- Consider past experiences influencing current anxiety
+- Evaluate mitigation strategies
+
+Scoring Refinements:
+- Score 5: Deep fears, job security concerns, past negative experiences
+- Score 4: Significant concerns with specific examples
+- Score 3: Moderate anxiety about change
+- Score 2: Minor concerns, mostly manageable
+- Score 1: No anxiety, confident about AI adoption`;
+
+      case 'demographic':
+        return `**DEMOGRAPHIC ANALYSIS:**
+This is a demographic/usage question. Focus on extracting current AI experience and usage patterns rather than JTBD force analysis.
+
+Enhanced Analysis for Demographics:
+- Current AI tool usage (specific tools and frequency)
+- Experience level indicators (beginner, intermediate, advanced)
+- Usage context (work vs personal, formal vs informal)
+- Technology adoption patterns
+- Learning preferences and barriers`;
+
+      default:
+        return `**GENERAL ANALYSIS:**
+Apply standard JTBD framework analysis with focus on identifying the primary force present in the response.`;
+    }
+  }
+
+  /**
    * Generate organizational analysis prompt
    */
   private generateOrganizationalPrompt(
@@ -402,6 +474,16 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
    * Call the appropriate LLM API
    */
   private async callLLMAPI(prompt: string): Promise<any> {
+    // Check if API key is valid before making requests
+    if (this.apiKey === 'missing-api-key' || this.apiKey === 'dummy-key-for-client') {
+      throw new Error(`Invalid API key. Please set ${this.config.provider.toUpperCase()}_API_KEY environment variable.`);
+    }
+
+    // For build-time dummy keys, return mock response
+    if (this.apiKey === 'dummy-key-for-build') {
+      return this.getMockResponse();
+    }
+
     const maxRetries = this.config.retries;
     let lastError: Error;
 
@@ -427,6 +509,60 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
     }
 
     throw lastError!;
+  }
+
+  /**
+   * Get mock response for build time or testing
+   */
+  private getMockResponse(): any {
+    return {
+      content: JSON.stringify({
+        primary_jtbd_force: "pull_of_new",
+        secondary_jtbd_forces: [],
+        force_strength_score: 4,
+        confidence_score: 3,
+        reasoning: "Mock analysis for build time",
+        key_themes: ["efficiency", "automation", "productivity"],
+        theme_categories: {
+          process: ["workflow optimization"],
+          technology: ["AI tools", "automation"],
+          people: ["skill development"],
+          organizational: ["change management"]
+        },
+        sentiment_analysis: {
+          overall_score: 0.6,
+          sentiment_label: "positive",
+          emotional_indicators: ["excited", "optimistic"],
+          tone: "optimistic"
+        },
+        business_implications: {
+          impact_level: "medium",
+          affected_areas: ["productivity", "efficiency"],
+          urgency: "medium",
+          business_value: "Potential for process improvement"
+        },
+        actionable_insights: {
+          summary_insight: "Mock analysis indicates positive sentiment toward change",
+          detailed_analysis: "This is a mock response generated during build time",
+          immediate_actions: ["Evaluate current tools", "Plan training"],
+          long_term_recommendations: ["Implement AI solutions", "Monitor adoption"]
+        },
+        quality_indicators: {
+          response_quality: "fair",
+          specificity_level: "general",
+          actionability: "medium",
+          business_relevance: "medium"
+        },
+        analysis_metadata: {
+          processing_notes: "Mock response for build time",
+          follow_up_questions: ["What specific tools are being considered?"],
+          related_themes: ["digital transformation", "process optimization"]
+        }
+      }),
+      usage: {
+        total_tokens: 150
+      }
+    };
   }
 
   /**
@@ -530,16 +666,17 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
   }
 
   /**
-   * Validate LLM response structure and content
+   * Comprehensive response validation based on revised templates
    */
   private validateResponse(response: any, originalText: string): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    // Required fields validation
+    // Required field validation from enhanced templates
     const requiredFields = [
       'primary_jtbd_force', 'force_strength_score', 'confidence_score',
-      'key_themes', 'sentiment_analysis', 'actionable_insights'
+      'reasoning', 'key_themes', 'sentiment_analysis', 'business_implications',
+      'actionable_insights', 'quality_indicators', 'analysis_metadata'
     ];
 
     requiredFields.forEach(field => {
@@ -548,47 +685,186 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
       }
     });
 
-    // Score validation
-    if (response.force_strength_score < 1 || response.force_strength_score > 5) {
-      errors.push('Force strength score must be 1-5');
+    // Enhanced score validation
+    if (typeof response.force_strength_score !== 'number' || 
+        response.force_strength_score < 1 || response.force_strength_score > 5) {
+      errors.push('Force strength score must be numeric 1-5');
     }
 
-    if (response.confidence_score < 1 || response.confidence_score > 5) {
-      errors.push('Confidence score must be 1-5');
+    if (typeof response.confidence_score !== 'number' || 
+        response.confidence_score < 1 || response.confidence_score > 5) {
+      errors.push('Confidence score must be numeric 1-5');
     }
 
-    if (response.sentiment_analysis?.overall_score < -1 || response.sentiment_analysis?.overall_score > 1) {
-      errors.push('Sentiment score must be -1 to 1');
+    // Enhanced sentiment validation
+    if (response.sentiment_analysis) {
+      const sentiment = response.sentiment_analysis;
+      if (typeof sentiment.overall_score !== 'number' || 
+          sentiment.overall_score < -1 || sentiment.overall_score > 1) {
+        errors.push('Sentiment overall_score must be numeric -1 to 1');
+      }
+
+      const validSentimentLabels = ['very_negative', 'negative', 'neutral', 'positive', 'very_positive'];
+      if (!validSentimentLabels.includes(sentiment.sentiment_label)) {
+        errors.push(`Invalid sentiment_label: ${sentiment.sentiment_label}`);
+      }
+
+      if (!Array.isArray(sentiment.emotional_indicators)) {
+        errors.push('emotional_indicators must be an array');
+      }
+
+      if (!sentiment.tone || typeof sentiment.tone !== 'string') {
+        errors.push('tone must be a non-empty string');
+      }
     }
 
-    // Content validation
-    if (!response.key_themes || response.key_themes.length === 0) {
+    // Enhanced business implications validation
+    if (response.business_implications) {
+      const implications = response.business_implications;
+      const validImpactLevels = ['low', 'medium', 'high', 'critical'];
+      const validUrgencyLevels = ['low', 'medium', 'high'];
+
+      if (!validImpactLevels.includes(implications.impact_level)) {
+        errors.push(`Invalid impact_level: ${implications.impact_level}`);
+      }
+
+      if (!validUrgencyLevels.includes(implications.urgency)) {
+        errors.push(`Invalid urgency level: ${implications.urgency}`);
+      }
+
+      if (!Array.isArray(implications.affected_areas)) {
+        errors.push('affected_areas must be an array');
+      }
+
+      if (!implications.business_value || typeof implications.business_value !== 'string') {
+        errors.push('business_value must be a non-empty string');
+      }
+    }
+
+    // Enhanced actionable insights validation
+    if (response.actionable_insights) {
+      const insights = response.actionable_insights;
+      
+      if (!insights.summary_insight || typeof insights.summary_insight !== 'string') {
+        errors.push('summary_insight is required and must be a string');
+      }
+
+      if (!insights.detailed_analysis || typeof insights.detailed_analysis !== 'string') {
+        errors.push('detailed_analysis is required and must be a string');
+      }
+
+      if (!Array.isArray(insights.immediate_actions)) {
+        errors.push('immediate_actions must be an array');
+      }
+
+      if (!Array.isArray(insights.long_term_recommendations)) {
+        errors.push('long_term_recommendations must be an array');
+      }
+    }
+
+    // Enhanced quality indicators validation
+    if (response.quality_indicators) {
+      const quality = response.quality_indicators;
+      const validQualities = ['poor', 'fair', 'good', 'excellent'];
+      const validLevels = ['low', 'medium', 'high'];
+      const validSpecificity = ['vague', 'general', 'specific', 'very_specific'];
+
+      if (!validQualities.includes(quality.response_quality)) {
+        errors.push(`Invalid response_quality: ${quality.response_quality}`);
+      }
+
+      if (!validSpecificity.includes(quality.specificity_level)) {
+        errors.push(`Invalid specificity_level: ${quality.specificity_level}`);
+      }
+
+      if (!validLevels.includes(quality.actionability)) {
+        errors.push(`Invalid actionability: ${quality.actionability}`);
+      }
+
+      if (!validLevels.includes(quality.business_relevance)) {
+        errors.push(`Invalid business_relevance: ${quality.business_relevance}`);
+      }
+    }
+
+    // Content quality validation
+    if (!response.key_themes || !Array.isArray(response.key_themes) || response.key_themes.length === 0) {
       warnings.push('No themes extracted - response may be too short or unclear');
-    }
-
-    if (response.key_themes && response.key_themes.length > 8) {
+    } else if (response.key_themes.length > 8) {
       warnings.push('Too many themes extracted - may indicate unfocused response');
     }
 
-    if (!response.actionable_insights?.summary_insight) {
-      errors.push('Summary insight is required');
+    // Theme categories validation
+    if (response.theme_categories) {
+      const categories = ['process', 'technology', 'people', 'organizational'];
+      categories.forEach(category => {
+        if (!Array.isArray(response.theme_categories[category])) {
+          warnings.push(`theme_categories.${category} should be an array`);
+        }
+      });
     }
 
-    // Quality assessment
+    // Response length assessment
     const responseLength = originalText.length;
     if (responseLength < 20) {
       warnings.push('Very short response - analysis may be limited');
+    } else if (responseLength > 2000) {
+      warnings.push('Very long response - may contain multiple themes');
     }
 
-    if (responseLength > 2000) {
-      warnings.push('Very long response - may contain multiple themes');
+    // JTBD force validation
+    const validForces = ['pain_of_old', 'pull_of_new', 'anchors_to_old', 'anxiety_of_new', 'demographic'];
+    if (!validForces.includes(response.primary_jtbd_force)) {
+      errors.push(`Invalid primary_jtbd_force: ${response.primary_jtbd_force}`);
+    }
+
+    if (response.secondary_jtbd_forces && Array.isArray(response.secondary_jtbd_forces)) {
+      response.secondary_jtbd_forces.forEach((force: string) => {
+        if (!validForces.includes(force)) {
+          errors.push(`Invalid secondary force: ${force}`);
+        }
+      });
+    }
+
+    // Analysis metadata validation
+    if (response.analysis_metadata) {
+      const metadata = response.analysis_metadata;
+      
+      if (!Array.isArray(metadata.follow_up_questions)) {
+        warnings.push('follow_up_questions should be an array');
+      }
+
+      if (!Array.isArray(metadata.related_themes)) {
+        warnings.push('related_themes should be an array');
+      }
+
+      if (typeof metadata.processing_notes !== 'string') {
+        warnings.push('processing_notes should be a string');
+      }
+    }
+
+    // Calculate quality score based on enhanced criteria
+    let qualityScore = 1.0;
+    
+    // Deduct points for errors (critical issues)
+    qualityScore -= errors.length * 0.25;
+    
+    // Deduct points for warnings (minor issues)  
+    qualityScore -= warnings.length * 0.1;
+    
+    // Bonus points for completeness
+    if (response.theme_categories && Object.keys(response.theme_categories).length === 4) {
+      qualityScore += 0.05;
+    }
+    
+    if (response.key_themes && response.key_themes.length >= 3 && response.key_themes.length <= 5) {
+      qualityScore += 0.05;
     }
 
     return { 
       errors, 
       warnings, 
       isValid: errors.length === 0,
-      score: Math.max(0, 1 - (errors.length * 0.2) - (warnings.length * 0.1))
+      score: Math.max(0, Math.min(1, qualityScore))
     };
   }
 

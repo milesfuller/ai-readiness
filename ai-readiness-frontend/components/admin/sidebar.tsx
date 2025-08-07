@@ -22,43 +22,43 @@ const adminNavItems = [
     title: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
-    roles: ['admin', 'org_admin']
+    roles: ['system_admin', 'org_admin']
   },
   {
     title: 'Surveys',
     href: '/admin/surveys',
     icon: FileText,
-    roles: ['admin', 'org_admin']
+    roles: ['system_admin', 'org_admin']
   },
   {
     title: 'Users',
     href: '/admin/users',
     icon: Users,
-    roles: ['admin', 'org_admin']
+    roles: ['system_admin', 'org_admin']
   },
   {
     title: 'Organizations',
     href: '/admin/organizations',
     icon: Building2,
-    roles: ['admin']
+    roles: ['system_admin']
   },
   {
     title: 'Analytics',
     href: '/admin/analytics',
     icon: BarChart3,
-    roles: ['admin', 'org_admin']
+    roles: ['system_admin', 'org_admin']
   },
   {
     title: 'Exports',
     href: '/admin/exports',
     icon: Download,
-    roles: ['admin', 'org_admin']
+    roles: ['system_admin', 'org_admin']
   },
   {
     title: 'Settings',
     href: '/admin/settings',
     icon: Settings,
-    roles: ['admin']
+    roles: ['system_admin']
   }
 ]
 

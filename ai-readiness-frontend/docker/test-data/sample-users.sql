@@ -56,7 +56,7 @@ BEGIN
             NULL,
             NOW(),
             '{"provider": "email", "providers": ["email"]}',
-            '{"name": "Test Admin", "role": "admin"}',
+            '{"name": "Test Admin", "role": "system_admin"}',
             NOW(),
             NOW(),
             '',

@@ -3,7 +3,7 @@
  * Ensures that the new simplified client structure works correctly
  */
 
-import { jest } from '@jest/globals'
+import { vi } from 'vitest'
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
@@ -12,7 +12,7 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 describe('Supabase Client Simplified Singleton', () => {
   beforeEach(() => {
     // Clear the module cache to test fresh instances
-    jest.resetModules()
+    vi.resetModules()
   })
 
   afterEach(() => {

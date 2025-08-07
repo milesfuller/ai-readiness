@@ -5,7 +5,7 @@
  * and async helpers used across all test files.
  */
 
-import { jest } from '@jest/globals'
+import { vi } from 'vitest'
 import type { 
   MockUser, 
   MockProfile, 
@@ -71,7 +71,7 @@ export const sqlInjectionPayloads = [
   "' OR EXISTS(SELECT * FROM users)--",
   "' AND (SELECT COUNT(*) FROM users) > 0--",
   "'; INSERT INTO users VALUES('hacker', 'password')--",
-  "' OR (SELECT user FROM users WHERE user='admin' AND mid(password,1,1)='a')--",
+  "' OR (SELECT user FROM users WHERE user='system_admin' AND mid(password,1,1)='a')--",
   "1' AND EXTRACT(second FROM NOW())=1--",
   "' OR 1=CONVERT(int, (SELECT TOP 1 name FROM sysobjects WHERE xtype='u'))--"
 ]
@@ -293,15 +293,15 @@ export const createMockNextResponse = (data: any, options: { status?: number; he
 export const mockMatchMedia = (matches: boolean = false) => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation(query => ({
       matches,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   })
 }
@@ -314,18 +314,18 @@ export const mockLocalStorage = () => {
   
   Object.defineProperty(window, 'localStorage', {
     value: {
-      getItem: jest.fn((key: string) => store[key] || null),
-      setItem: jest.fn((key: string, value: string) => {
+      getItem: vi.fn((key: string) => store[key] || null),
+      setItem: vi.fn((key: string, value: string) => {
         store[key] = value
       }),
-      removeItem: jest.fn((key: string) => {
+      removeItem: vi.fn((key: string) => {
         delete store[key]
       }),
-      clear: jest.fn(() => {
+      clear: vi.fn(() => {
         Object.keys(store).forEach(key => delete store[key])
       }),
       length: Object.keys(store).length,
-      key: jest.fn((index: number) => Object.keys(store)[index] || null),
+      key: vi.fn((index: number) => Object.keys(store)[index] || null),
     },
     writable: true,
   })
@@ -339,18 +339,18 @@ export const mockSessionStorage = () => {
   
   Object.defineProperty(window, 'sessionStorage', {
     value: {
-      getItem: jest.fn((key: string) => store[key] || null),
-      setItem: jest.fn((key: string, value: string) => {
+      getItem: vi.fn((key: string) => store[key] || null),
+      setItem: vi.fn((key: string, value: string) => {
         store[key] = value
       }),
-      removeItem: jest.fn((key: string) => {
+      removeItem: vi.fn((key: string) => {
         delete store[key]
       }),
-      clear: jest.fn(() => {
+      clear: vi.fn(() => {
         Object.keys(store).forEach(key => delete store[key])
       }),
       length: Object.keys(store).length,
-      key: jest.fn((index: number) => Object.keys(store)[index] || null),
+      key: vi.fn((index: number) => Object.keys(store)[index] || null),
     },
     writable: true,
   })
@@ -360,10 +360,10 @@ export const mockSessionStorage = () => {
  * Mock ResizeObserver
  */
 export const mockResizeObserver = () => {
-  global.ResizeObserver = jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
+  global.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
   }))
 }
 
@@ -371,10 +371,10 @@ export const mockResizeObserver = () => {
  * Mock IntersectionObserver
  */
 export const mockIntersectionObserver = () => {
-  global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
+  global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
   }))
 }
 
@@ -384,9 +384,9 @@ export const mockIntersectionObserver = () => {
 export const mockGetUserMedia = () => {
   Object.defineProperty(navigator, 'mediaDevices', {
     value: {
-      getUserMedia: jest.fn().mockResolvedValue({
+      getUserMedia: vi.fn().mockResolvedValue({
         getTracks: () => [{
-          stop: jest.fn(),
+          stop: vi.fn(),
           kind: 'audio',
           label: 'Mock microphone',
           enabled: true,
@@ -401,11 +401,11 @@ export const mockGetUserMedia = () => {
  * Mock MediaRecorder for audio recording tests
  */
 export const mockMediaRecorder = () => {
-  global.MediaRecorder = jest.fn().mockImplementation(() => ({
-    start: jest.fn(),
-    stop: jest.fn(),
-    pause: jest.fn(),
-    resume: jest.fn(),
+  global.MediaRecorder = vi.fn().mockImplementation(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
     ondataavailable: null,
     onstop: null,
     onstart: null,
@@ -413,7 +413,7 @@ export const mockMediaRecorder = () => {
   }))
   
   // Add isTypeSupported static method
-  ;(global.MediaRecorder as any).isTypeSupported = jest.fn().mockReturnValue(true)
+  ;(global.MediaRecorder as any).isTypeSupported = vi.fn().mockReturnValue(true)
 }
 
 /**
@@ -421,8 +421,8 @@ export const mockMediaRecorder = () => {
  */
 export const mockSpeechRecognition = () => {
   const mockRecognition = {
-    start: jest.fn(),
-    stop: jest.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
     onresult: null,
     onerror: null,
     onend: null,
@@ -431,8 +431,8 @@ export const mockSpeechRecognition = () => {
     lang: 'en-US',
   }
   
-  global.webkitSpeechRecognition = jest.fn().mockImplementation(() => mockRecognition)
-  global.SpeechRecognition = jest.fn().mockImplementation(() => mockRecognition)
+  global.webkitSpeechRecognition = vi.fn().mockImplementation(() => mockRecognition)
+  global.SpeechRecognition = vi.fn().mockImplementation(() => mockRecognition)
   
   return mockRecognition
 }
@@ -441,7 +441,7 @@ export const mockSpeechRecognition = () => {
  * Mock fetch for network requests
  */
 export const mockFetch = (responseData: any = {}, status: number = 200) => {
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
     statusText: 'OK',
@@ -463,7 +463,7 @@ export const mockFetch = (responseData: any = {}, status: number = 200) => {
  */
 export const setupTestEnvironment = () => {
   // Clean up any existing mocks
-  jest.clearAllMocks()
+  vi.clearAllMocks()
   
   // Set up common DOM mocks
   mockMatchMedia()
@@ -481,17 +481,17 @@ export const setupTestEnvironment = () => {
   mockFetch()
   
   // Suppress console methods during tests (unless specifically needed)
-  jest.spyOn(console, 'error').mockImplementation(() => {})
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-  jest.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'log').mockImplementation(() => {})
 }
 
 /**
  * Cleans up after tests
  */
 export const cleanupTestEnvironment = () => {
-  jest.restoreAllMocks()
-  jest.clearAllMocks()
+  vi.restoreAllMocks()
+  vi.clearAllMocks()
 }
 
 // ============================================================================
@@ -511,19 +511,19 @@ export const createMockQueryResponse = (data: any = null, error: any = null) => 
  */
 export const createMockQueryBuilder = (finalResponse: any = { data: null, error: null }) => {
   const builder = {
-    select: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    neq: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    lte: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    slice: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(finalResponse),
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    slice: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue(finalResponse),
   }
   
   // Make the builder thenable for direct await
@@ -543,13 +543,13 @@ export const mockSubtleCrypto = () => {
   Object.defineProperty(window, 'crypto', {
     value: {
       subtle: {
-        digest: jest.fn().mockResolvedValue(new ArrayBuffer(32)),
-        generateKey: jest.fn().mockResolvedValue({}),
-        importKey: jest.fn().mockResolvedValue({}),
-        sign: jest.fn().mockResolvedValue(new ArrayBuffer(64)),
-        verify: jest.fn().mockResolvedValue(true),
+        digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+        generateKey: vi.fn().mockResolvedValue({}),
+        importKey: vi.fn().mockResolvedValue({}),
+        sign: vi.fn().mockResolvedValue(new ArrayBuffer(64)),
+        verify: vi.fn().mockResolvedValue(true),
       },
-      getRandomValues: jest.fn((arr) => {
+      getRandomValues: vi.fn((arr) => {
         for (let i = 0; i < arr.length; i++) {
           arr[i] = Math.floor(Math.random() * 256)
         }

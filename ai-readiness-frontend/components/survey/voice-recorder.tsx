@@ -269,9 +269,9 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         {!audioBlob ? (
           <div className="space-y-4">
             {/* Recording Button */}
-            <div className={`w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-full border-4 flex items-center justify-center transition-all duration-300 relative whimsy-hover ${
+            <div className={`w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-full border-4 flex items-center justify-center transition-all duration-300 relative ${
               isRecording 
-                ? 'border-red-500 bg-red-500/10 voice-recording-pulse' 
+                ? 'border-red-500 bg-red-500/10 animate-pulse' 
                 : 'border-teal-500 bg-teal-500/10 hover:bg-teal-500/20 hover:scale-105'
             }`}>
               <button
@@ -320,19 +320,19 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
               <p className={`text-base sm:text-lg font-medium transition-all duration-300 ${
                 isRecording ? 'animate-pulse text-red-400' : ''
               }`}>
-                {isRecording ? '🎙️ Recording...' : '🎤 Tap to start recording'}
+                {isRecording ? 'Recording...' : 'Tap to start recording'}
               </p>
               {isRecording && (
                 <p className="text-teal-400 font-mono text-lg sm:text-xl animate-pulse">
-                  ⏱️ {formatDuration(recordingDuration)}
+                  {formatDuration(recordingDuration)}
                 </p>
               )}
               <p className="text-xs sm:text-sm text-muted-foreground px-4">
                 {isRecording 
-                  ? '✋ Tap the microphone again to stop' 
+                  ? 'Tap the microphone again to stop' 
                   : permissionState === 'denied'
-                  ? '🔒 Microphone access denied - use button below'
-                  : '💡 Speak clearly for best results'
+                  ? 'Microphone access denied - use button below'
+                  : 'Speak clearly for best results'
                 }
               </p>
               
@@ -341,7 +341,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                 <div className="mt-4 p-4 bg-amber-950/20 border border-amber-500/30 rounded-lg">
                   <div className="text-center space-y-3">
                     <p className="text-sm text-amber-400">
-                      🎤 Microphone permission is required for voice recording
+                      Microphone permission is required for voice recording
                     </p>
                     <Button
                       onClick={async () => {
@@ -362,7 +362,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                       variant="outline"
                       className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
                     >
-                      🔓 Allow Microphone Access
+                      Allow Microphone Access
                     </Button>
                     <p className="text-xs text-muted-foreground">
                       Click to request microphone permissions from your browser
@@ -380,15 +380,15 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
               <div className="flex flex-col items-center justify-center space-y-3 text-teal-400">
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>🧠 Processing recording...</span>
+                  <span>Processing recording...</span>
                 </div>
-                <div className="loading-dots">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                 </div>
-                <p className="text-xs text-muted-foreground animate-pulse">
-                  ✨ Converting speech to text with AI magic
+                <p className="text-xs text-muted-foreground">
+                  Converting speech to text...
                 </p>
               </div>
             )}
@@ -442,7 +442,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           <div className="space-y-3">
             <div className="text-sm font-medium text-teal-400 flex items-center space-x-2">
               <Mic className="h-4 w-4 animate-pulse" />
-              <span>📝 Transcription:</span>
+              <span>Transcription:</span>
             </div>
             
             <Textarea
@@ -457,7 +457,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             />
             
             <p className="text-xs text-muted-foreground">
-              ✏️ You can edit the transcription above to ensure accuracy.
+              You can edit the transcription above to ensure accuracy.
             </p>
           </div>
         </Card>

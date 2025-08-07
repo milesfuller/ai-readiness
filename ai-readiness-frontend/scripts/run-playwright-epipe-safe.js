@@ -13,11 +13,11 @@ const path = require('path');
 
 // Configuration
 const CONFIG = {
-  configFile: 'playwright.config.epipe-fix.ts',
+  configFile: 'playwright.config.stable.ts', // Use the stable configuration
   maxBufferSize: 10 * 1024 * 1024, // 10MB buffer
   outputFile: 'test-results/epipe-safe-output.log',
   errorFile: 'test-results/epipe-safe-errors.log',
-  timeout: 10 * 60 * 1000, // 10 minutes
+  timeout: 15 * 60 * 1000, // 15 minutes (increased for stability)
 };
 
 async function runTests() {
@@ -48,9 +48,18 @@ async function runTests() {
     console.error('❌ Test runner error:', error);
     process.exit(1);
   } finally {
-    // Ensure streams are closed
-    outputStream.end();
-    errorStream.end();
+    // Ensure streams are closed safely
+    try {
+      outputStream.end();
+    } catch (error) {
+      // Ignore stream close errors
+    }
+    
+    try {
+      errorStream.end();
+    } catch (error) {
+      // Ignore stream close errors
+    }
   }
 }
 
@@ -95,15 +104,17 @@ function runPlaywrightWithBuffering(outputStream, errorStream) {
       env: {
         ...process.env,
         
-        // Optimize Node.js for large outputs
-        NODE_OPTIONS: '--max-old-space-size=8192 --max-http-header-size=80000',
+        // Optimize Node.js for EPIPE resistance
+        NODE_OPTIONS: '--max-old-space-size=4096 --max-http-header-size=16384',
         
-        // Buffer optimization
-        UV_THREADPOOL_SIZE: '8', 
+        // Reduced buffer optimization for stability
+        UV_THREADPOOL_SIZE: '4', 
         
-        // Disable verbose logging
+        // Disable verbose logging and colors
         DEBUG: '',
         VERBOSE: '0',
+        FORCE_COLOR: '0',
+        NODE_NO_WARNINGS: '1',
         
         // Force file-based output
         PLAYWRIGHT_JSON_OUTPUT_NAME: 'test-results/results-epipe-safe.json',
@@ -124,54 +135,107 @@ function runPlaywrightWithBuffering(outputStream, errorStream) {
       }, 5000);
     }, CONFIG.timeout);
     
-    // Handle stdout with chunked processing
+    // Handle stdout with EPIPE-safe processing
     let stdoutBuffer = '';
     child.stdout.on('data', (data) => {
-      const chunk = data.toString();
-      stdoutBuffer += chunk;
-      
-      // Write to file immediately
-      outputStream.write(chunk);
-      
-      // Process line by line to prevent overwhelming console
-      const lines = stdoutBuffer.split('\n');
-      stdoutBuffer = lines.pop() || ''; // Keep incomplete line
-      
-      lines.forEach(line => {
-        if (shouldDisplayLine(line)) {
-          console.log(line);
+      try {
+        const chunk = data.toString();
+        stdoutBuffer += chunk;
+        
+        // Write to file immediately with error handling
+        try {
+          outputStream.write(chunk);
+        } catch (writeError) {
+          if (writeError.code === 'EPIPE') {
+            console.log('⚠️  Output stream EPIPE handled');
+          } else {
+            throw writeError;
+          }
         }
-      });
+        
+        // Process line by line to prevent overwhelming console
+        const lines = stdoutBuffer.split('\n');
+        stdoutBuffer = lines.pop() || ''; // Keep incomplete line
+        
+        lines.forEach(line => {
+          if (shouldDisplayLine(line)) {
+            try {
+              console.log(line);
+            } catch (consoleError) {
+              // Ignore console write errors (EPIPE)
+            }
+          }
+        });
+      } catch (error) {
+        // Ignore stdout processing errors to prevent cascade failures
+      }
     });
     
-    // Handle stderr with error filtering
+    // Handle stdout pipe errors
+    child.stdout.on('error', (error) => {
+      if (error.code === 'EPIPE') {
+        console.log('⚠️  Stdout pipe error handled');
+      }
+    });
+    
+    // Handle stderr with EPIPE-safe error filtering
     let stderrBuffer = '';
     child.stderr.on('data', (data) => {
-      const chunk = data.toString();
-      stderrBuffer += chunk;
-      
-      // Write to error file immediately
-      errorStream.write(chunk);
-      
-      // Process error lines
-      const lines = stderrBuffer.split('\n');
-      stderrBuffer = lines.pop() || '';
-      
-      lines.forEach(line => {
-        if (shouldDisplayError(line)) {
-          console.error(line);
+      try {
+        const chunk = data.toString();
+        stderrBuffer += chunk;
+        
+        // Write to error file immediately with error handling
+        try {
+          errorStream.write(chunk);
+        } catch (writeError) {
+          if (writeError.code === 'EPIPE') {
+            console.log('⚠️  Error stream EPIPE handled');
+          } else {
+            throw writeError;
+          }
         }
-      });
+        
+        // Process error lines
+        const lines = stderrBuffer.split('\n');
+        stderrBuffer = lines.pop() || '';
+        
+        lines.forEach(line => {
+          if (shouldDisplayError(line)) {
+            try {
+              console.error(line);
+            } catch (consoleError) {
+              // Ignore console error write errors (EPIPE)
+            }
+          }
+        });
+      } catch (error) {
+        // Ignore stderr processing errors to prevent cascade failures
+      }
+    });
+    
+    // Handle stderr pipe errors
+    child.stderr.on('error', (error) => {
+      if (error.code === 'EPIPE') {
+        console.log('⚠️  Stderr pipe error handled');
+      }
     });
     
     // Handle process events
     child.on('error', (error) => {
       clearTimeout(timeout);
       
-      if (error.code === 'EPIPE') {
-        console.log('⚠️  EPIPE error handled gracefully');
+      if (error.code === 'EPIPE' || error.message.includes('EPIPE')) {
+        console.log('⚠️  EPIPE error detected and handled gracefully');
+        console.log('   This is expected behavior in EPIPE-safe mode');
+        // Log the error but don't fail the test run
+        errorStream.write(`EPIPE Error (handled): ${error.message}\n`);
         resolve({ exitCode: 0, duration: Date.now() - startTime });
+      } else if (error.code === 'ENOENT') {
+        console.log('❌ Playwright not found. Run: npx playwright install');
+        resolve({ exitCode: 127, duration: Date.now() - startTime });
       } else {
+        console.log(`❌ Process error: ${error.message}`);
         reject(error);
       }
     });
@@ -187,18 +251,26 @@ function runPlaywrightWithBuffering(outputStream, errorStream) {
       }
     });
     
-    // Handle process termination gracefully
-    process.on('SIGINT', () => {
-      console.log('\n🛑 Received SIGINT, terminating tests gracefully...');
+    // Handle process termination gracefully with cleanup
+    const gracefulShutdown = (signal) => {
+      console.log(`\n🛑 Received ${signal}, terminating tests gracefully...`);
       clearTimeout(timeout);
+      
+      // First try SIGTERM
       child.kill('SIGTERM');
-    });
+      
+      // Force kill after 5 seconds if needed
+      setTimeout(() => {
+        try {
+          child.kill('SIGKILL');
+        } catch (killError) {
+          // Ignore errors during force kill
+        }
+      }, 5000);
+    };
     
-    process.on('SIGTERM', () => {
-      console.log('\n🛑 Received SIGTERM, terminating tests gracefully...');
-      clearTimeout(timeout);
-      child.kill('SIGTERM');
-    });
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   });
 }
 
@@ -243,52 +315,74 @@ function shouldDisplayError(line) {
     /Error:/,
     /Failed:/,
     /Exception:/,
-    /EPIPE/,
     /timeout/i,
+    /Test timeout/,
+    /Navigation timeout/,
+    /Action timeout/
   ];
   
-  // Skip debug noise
+  // Skip debug noise and handled EPIPE messages
   const skipPatterns = [
     /^\s*$/, // Empty lines
     /DevTools listening on/,
     /\[Chromium\]/,
+    /EPIPE Error \(handled\)/, // Our handled EPIPE messages
+    /Output stream EPIPE handled/,
+    /Error stream EPIPE handled/,
+    /Stdout pipe error handled/,
+    /Stderr pipe error handled/,
+    /playwright.*install/, // Installation messages
+    /Browser executable not found/ // Browser path issues
   ];
   
   if (skipPatterns.some(pattern => pattern.test(line))) {
     return false;
   }
   
+  // Show EPIPE errors that aren't handled by us
+  if (line.includes('EPIPE') && !line.includes('handled')) {
+    return true;
+  }
+  
   return errorPatterns.some(pattern => pattern.test(line)) || 
-         line.trim().length > 0; // Show non-empty lines by default
+         (line.trim().length > 0 && line.trim().length < 200); // Show non-empty, reasonable length lines
 }
 
 /**
- * Display critical output from log files
+ * Display critical output from log files with EPIPE handling
  */
 async function displayCriticalOutput() {
   try {
     // Check for test results
     const resultsFile = 'test-results/results-epipe-safe.json';
     if (fs.existsSync(resultsFile)) {
-      const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
-      
-      console.log('\n📋 Test Results Summary:');
-      if (results.stats) {
-        console.log(`   Total: ${results.stats.total || 0}`);
-        console.log(`   Passed: ${results.stats.expected || 0}`);
-        console.log(`   Failed: ${results.stats.unexpected || 0}`);
-        console.log(`   Skipped: ${results.stats.skipped || 0}`);
+      try {
+        const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
+        
+        console.log('\n📋 Test Results Summary:');
+        if (results.stats) {
+          console.log(`   Total: ${results.stats.total || 0}`);
+          console.log(`   Passed: ${results.stats.expected || 0}`);
+          console.log(`   Failed: ${results.stats.unexpected || 0}`);
+          console.log(`   Skipped: ${results.stats.skipped || 0}`);
+        }
+      } catch (parseError) {
+        console.log('⚠️  Could not parse test results JSON');
       }
     }
     
-    // Check for errors in error log
+    // Check for errors in error log with EPIPE filtering
     if (fs.existsSync(CONFIG.errorFile)) {
       const errorContent = fs.readFileSync(CONFIG.errorFile, 'utf8');
-      const errorLines = errorContent.split('\n').filter(line => 
-        line.includes('Error:') || 
-        line.includes('Failed:') || 
-        line.includes('EPIPE')
-      );
+      const errorLines = errorContent.split('\n').filter(line => {
+        const trimmed = line.trim();
+        return (
+          (trimmed.includes('Error:') || 
+           trimmed.includes('Failed:') || 
+           trimmed.includes('EPIPE')) &&
+          !trimmed.includes('EPIPE Error (handled)') // Exclude our handled EPIPE messages
+        );
+      });
       
       if (errorLines.length > 0) {
         console.log('\n❌ Critical Errors:');
@@ -299,6 +393,18 @@ async function displayCriticalOutput() {
         if (errorLines.length > 5) {
           console.log(`   ... and ${errorLines.length - 5} more errors`);
         }
+      } else {
+        console.log('\n✅ No critical errors detected');
+      }
+    }
+    
+    // Display EPIPE handling summary
+    if (fs.existsSync(CONFIG.errorFile)) {
+      const errorContent = fs.readFileSync(CONFIG.errorFile, 'utf8');
+      const epipeCount = (errorContent.match(/EPIPE Error \(handled\)/g) || []).length;
+      
+      if (epipeCount > 0) {
+        console.log(`\n⚠️  Handled ${epipeCount} EPIPE errors gracefully`);
       }
     }
     

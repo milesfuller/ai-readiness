@@ -30,7 +30,7 @@ const ADMIN_TEST_CREDENTIALS = {
   SYSTEM_ADMIN: {
     email: 'admin@aireadiness.com',
     password: 'AdminPass123!',
-    role: 'admin' as const,
+    role: 'system_admin' as const,
     firstName: 'System',
     lastName: 'Admin',
     permissions: ['users:create', 'users:read', 'users:update', 'users:delete', 'org:manage', 'surveys:manage']

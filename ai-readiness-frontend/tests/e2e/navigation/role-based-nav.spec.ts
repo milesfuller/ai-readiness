@@ -132,7 +132,7 @@ test.describe('Role-based Navigation', () => {
 
   test.describe('Admin Role Navigation', () => {
     test('should show all navigation items for admin', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/dashboard');
       
@@ -147,7 +147,7 @@ test.describe('Role-based Navigation', () => {
     });
 
     test('should expand administration menu and show all admin options', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/dashboard');
       
@@ -170,7 +170,7 @@ test.describe('Role-based Navigation', () => {
     });
 
     test('should expand system menu and show system options', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/dashboard');
       
@@ -183,7 +183,7 @@ test.describe('Role-based Navigation', () => {
     });
 
     test('should navigate to all admin routes correctly', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/dashboard');
       
@@ -231,7 +231,7 @@ test.describe('Role-based Navigation', () => {
 
   test.describe('Admin Panel Sidebar (Separate Component)', () => {
     test('should show correct admin panel navigation', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/admin');
       
@@ -272,7 +272,7 @@ test.describe('Role-based Navigation', () => {
     });
 
     test('should show active states in admin panel navigation', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/admin/users');
       
@@ -288,7 +288,7 @@ test.describe('Role-based Navigation', () => {
     test('should show user info in admin panel sidebar', async ({ page }) => {
       const admin = await createTestUser('admin', { 
         email: 'admin@test.com',
-        role: 'admin'
+        role: 'system_admin'
       });
       await authSetup(page, admin);
       await page.goto('/admin');
@@ -304,7 +304,7 @@ test.describe('Role-based Navigation', () => {
     });
 
     test('should handle sign out from admin panel', async ({ page }) => {
-      const admin = await createTestUser('admin');
+      const admin = await createTestUser('system_admin');
       await authSetup(page, admin);
       await page.goto('/admin');
       

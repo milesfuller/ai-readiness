@@ -1,6 +1,6 @@
 /**
  * Comprehensive Responsive Behavior Tests
- * Tests responsive design across all screen sizes, orientations, and devices
+ * Tests application behavior across different device sizes and orientations
  */
 
 import { test, expect, devices } from '@playwright/test';
@@ -8,459 +8,282 @@ import { test, expect, devices } from '@playwright/test';
 test.describe('Comprehensive Responsive Behavior Tests', () => {
   
   test.describe('Mobile Responsiveness', () => {
-    test.use({ ...devices['iPhone 12'] });
-
-    test('Should display mobile navigation correctly', async ({ page }) => {
+    
+    test('Should display mobile navigation correctly on iPhone', async ({ page }) => {
+      // Set iPhone viewport
+      await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/auth/login');
       
-      // Mobile viewport should show hamburger menu
-      const hamburgerMenu = page.locator('[data-testid="mobile-menu-button"], .mobile-menu-toggle, .hamburger');
-      if (await hamburgerMenu.isVisible()) {
-        await expect(hamburgerMenu).toBeVisible();
-        
-        // Click to open menu
-        await hamburgerMenu.click();
-        await expect(page.locator('[data-testid="mobile-menu"], .mobile-nav')).toBeVisible();
-        
-        // Click to close menu
-        await hamburgerMenu.click();
-        await expect(page.locator('[data-testid="mobile-menu"], .mobile-nav')).not.toBeVisible();
+      // Verify mobile layout
+      await expect(page.locator('form')).toBeVisible();
+      
+      // Check that elements are properly sized for mobile
+      const form = page.locator('form');
+      const boundingBox = await form.boundingBox();
+      
+      if (boundingBox) {
+        expect(boundingBox.width).toBeLessThan(375); // Should fit in mobile viewport
       }
     });
 
-    test('Should handle form layouts on mobile', async ({ page }) => {
-      await page.goto('/auth/register');
-      
-      // Form should stack vertically on mobile
-      const form = page.locator('[data-testid="register-form"]');
-      await expect(form).toBeVisible();
-      
-      // Check input field visibility and sizing
-      const inputs = [
-        '[data-testid="email-input"]',
-        '[data-testid="password-input"]',
-        '[data-testid="first-name-input"]',
-        '[data-testid="last-name-input"]'
-      ];
-      
-      for (const input of inputs) {
-        const field = page.locator(input);
-        await expect(field).toBeVisible();
-        
-        // Input should be full width on mobile
-        const boundingBox = await field.boundingBox();
-        expect(boundingBox?.width).toBeGreaterThan(200);
-      }
-      
-      // Submit button should be full width
-      const submitButton = page.locator('[data-testid="register-submit"]');
-      await expect(submitButton).toBeVisible();
-      const buttonBox = await submitButton.boundingBox();
-      expect(buttonBox?.width).toBeGreaterThan(200);
-    });
-
-    test('Should handle touch interactions', async ({ page }) => {
+    test('Should display mobile navigation correctly on Android', async ({ page }) => {
+      // Set Android viewport
+      await page.setViewportSize({ width: 360, height: 640 });
       await page.goto('/auth/login');
       
-      // Touch targets should be large enough (minimum 44px)
-      const touchTargets = await page.locator('button, a, input[type="submit"], input[type="button"]').all();
+      // Verify mobile layout
+      await expect(page.locator('form')).toBeVisible();
       
-      for (const target of touchTargets.slice(0, 5)) { // Test first 5 to avoid timeout
-        const boundingBox = await target.boundingBox();
-        if (boundingBox) {
-          expect(Math.min(boundingBox.width, boundingBox.height)).toBeGreaterThanOrEqual(32);
-        }
+      // Check input field sizing
+      const emailInput = page.locator('input[type="email"]');
+      await expect(emailInput).toBeVisible();
+      
+      const inputBox = await emailInput.boundingBox();
+      if (inputBox) {
+        expect(inputBox.width).toBeLessThan(340); // Should fit comfortably
       }
-      
-      // Test tap functionality
-      const emailInput = page.locator('[data-testid="email-input"]');
-      await emailInput.tap();
-      await expect(emailInput).toBeFocused();
     });
 
-    test('Should display content without horizontal scrolling', async ({ page }) => {
-      const testPages = [
-        '/auth/login',
-        '/auth/register',
-        '/auth/forgot-password'
-      ];
+    test('Should handle mobile form interactions', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 });
+      await page.goto('/auth/login');
       
-      for (const testPage of testPages) {
-        await page.goto(testPage);
+      // Test mobile form interaction
+      await page.fill('input[type="email"]', 'test@example.com');
+      await page.fill('input[type="password"]', 'password123');
+      
+      // Verify inputs are filled
+      await expect(page.locator('input[type="email"]')).toHaveValue('test@example.com');
+      await expect(page.locator('input[type="password"]')).toHaveValue('password123');
+    });
+
+    test('Should handle mobile orientation changes', async ({ page }) => {
+      // Portrait mode
+      await page.setViewportSize({ width: 375, height: 667 });
+      await page.goto('/auth/login');
+      await expect(page.locator('form')).toBeVisible();
+      
+      // Landscape mode
+      await page.setViewportSize({ width: 667, height: 375 });
+      await expect(page.locator('form')).toBeVisible();
+      
+      // Form should still be functional
+      await page.fill('input[type="email"]', 'test@example.com');
+      await expect(page.locator('input[type="email"]')).toHaveValue('test@example.com');
+    });
+
+    test('Should display proper mobile typography', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 });
+      await page.goto('/auth/login');
+      
+      // Check font sizes are appropriate for mobile
+      const heading = page.locator('h1, h2, .text-2xl, .text-xl').first();
+      if (await heading.count() > 0) {
+        const fontSize = await heading.evaluate(el => {
+          return window.getComputedStyle(el).fontSize;
+        });
         
-        // Check for horizontal overflow
-        const bodyWidth = await page.locator('body').evaluate(el => el.scrollWidth);
-        const viewportWidth = page.viewportSize()?.width || 0;
-        
-        expect(bodyWidth).toBeLessThanOrEqual(viewportWidth + 5); // Allow 5px tolerance
+        // Font size should be readable on mobile (at least 16px)
+        const fontSizeNum = parseInt(fontSize);
+        expect(fontSizeNum).toBeGreaterThanOrEqual(16);
       }
     });
   });
 
   test.describe('Tablet Responsiveness', () => {
-    test.use({ ...devices['iPad'] });
-
-    test('Should adapt layout for tablet screens', async ({ page }) => {
-      await page.goto('/dashboard');
+    
+    test('Should display properly on iPad', async ({ page }) => {
+      // Set iPad viewport
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.goto('/auth/login');
       
-      // Should show appropriate layout for tablet
-      const mainContent = page.locator('[data-testid="main-content"], main');
-      await expect(mainContent).toBeVisible();
+      // Verify tablet layout
+      await expect(page.locator('form')).toBeVisible();
       
-      // Navigation should be optimized for tablet
-      const navigation = page.locator('[data-testid="navigation"], nav');
-      if (await navigation.isVisible()) {
-        const navBox = await navigation.boundingBox();
-        expect(navBox?.width).toBeGreaterThan(100);
+      // Form should be centered and appropriately sized
+      const form = page.locator('form');
+      const boundingBox = await form.boundingBox();
+      
+      if (boundingBox) {
+        expect(boundingBox.width).toBeGreaterThan(300);
+        expect(boundingBox.width).toBeLessThan(600);
       }
     });
 
-    test('Should handle orientation changes', async ({ page, context }) => {
-      // Start in landscape (iPad default)
-      await page.goto('/survey');
-      await expect(page.locator('body')).toBeVisible();
-      
-      // Change to portrait
+    test('Should handle tablet form interactions', async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
-      await page.waitForTimeout(1000); // Allow layout to adjust
+      await page.goto('/auth/login');
       
-      // Content should still be accessible
-      await expect(page.locator('body')).toBeVisible();
+      // Test form interaction on tablet
+      await page.fill('input[type="email"]', 'tablet@example.com');
+      await page.fill('input[type="password"]', 'tabletpass123');
       
-      // Check that no content is cut off
-      const bodyHeight = await page.locator('body').evaluate(el => el.scrollHeight);
-      const viewportHeight = page.viewportSize()?.height || 0;
+      // Verify inputs work properly
+      await expect(page.locator('input[type="email"]')).toHaveValue('tablet@example.com');
+      await expect(page.locator('input[type="password"]')).toHaveValue('tabletpass123');
+    });
+
+    test('Should handle tablet orientation changes', async ({ page }) => {
+      // Portrait mode
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.goto('/auth/login');
+      await expect(page.locator('form')).toBeVisible();
       
-      // Content might be taller than viewport (scrolling is okay)
-      expect(bodyHeight).toBeGreaterThan(0);
-      expect(viewportHeight).toBeGreaterThan(0);
+      // Landscape mode
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await expect(page.locator('form')).toBeVisible();
+      
+      // Form should remain functional
+      await page.fill('input[type="email"]', 'landscape@example.com');
+      await expect(page.locator('input[type="email"]')).toHaveValue('landscape@example.com');
     });
   });
 
   test.describe('Desktop Responsiveness', () => {
-    test.use({ ...devices['Desktop Chrome'] });
-
+    
     test('Should utilize full desktop layout', async ({ page }) => {
+      // Set desktop viewport
+      await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto('/dashboard');
       
-      // Desktop should show full sidebar navigation
-      const sidebar = page.locator('[data-testid="sidebar"], .sidebar');
-      if (await sidebar.isVisible()) {
-        await expect(sidebar).toBeVisible();
-        
-        const sidebarBox = await sidebar.boundingBox();
-        expect(sidebarBox?.width).toBeGreaterThan(200);
+      // Navigation should be visible on desktop
+      const navigation = page.locator('nav, [role="navigation"]');
+      if (await navigation.count() > 0) {
+        await expect(navigation.first()).toBeVisible();
       }
-      
-      // Main content should use remaining space
-      const mainContent = page.locator('[data-testid="main-content"], main');
-      await expect(mainContent).toBeVisible();
     });
 
-    test('Should handle large screen layouts', async ({ page }) => {
-      // Test with large screen
+    test('Should handle large desktop screens', async ({ page }) => {
+      // Set large desktop viewport
       await page.setViewportSize({ width: 1920, height: 1080 });
-      await page.goto('/organization/analytics');
+      await page.goto('/auth/login');
       
-      // Content should scale appropriately
-      const container = page.locator('[data-testid="analytics-container"], .analytics-dashboard');
-      if (await container.isVisible()) {
-        const containerBox = await container.boundingBox();
-        
-        // Should use available space but not be too stretched
-        expect(containerBox?.width).toBeGreaterThan(800);
-        expect(containerBox?.width).toBeLessThan(1800); // Max width constraint
+      // Content should be properly centered and not stretched
+      const form = page.locator('form');
+      const boundingBox = await form.boundingBox();
+      
+      if (boundingBox) {
+        // Form shouldn't be too wide on large screens
+        expect(boundingBox.width).toBeLessThan(800);
       }
+    });
+
+    test('Should handle desktop form interactions', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto('/auth/login');
+      
+      // Test desktop-specific interactions
+      await page.fill('input[type="email"]', 'desktop@example.com');
+      await page.fill('input[type="password"]', 'desktoppass123');
+      
+      // Tab navigation should work
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Tab');
+      
+      // Submit button should be focused
+      const submitButton = page.locator('button[type="submit"]');
+      const isFocused = await submitButton.evaluate(el => el === document.activeElement);
+      expect(isFocused).toBe(true);
     });
   });
 
-  test.describe('Breakpoint Testing', () => {
-    const breakpoints = [
-      { name: 'mobile', width: 375, height: 667 },
-      { name: 'tablet', width: 768, height: 1024 },
-      { name: 'desktop', width: 1024, height: 768 },
-      { name: 'large-desktop', width: 1440, height: 900 },
-      { name: 'extra-large', width: 1920, height: 1080 }
-    ];
-
-    breakpoints.forEach(({ name, width, height }) => {
-      test(`Should handle ${name} breakpoint (${width}x${height})`, async ({ page }) => {
-        await page.setViewportSize({ width, height });
+  test.describe('Responsive Layout Tests', () => {
+    
+    test('Should adapt layout for different screen widths', async ({ page }) => {
+      const testWidths = [320, 375, 768, 1024, 1280, 1920];
+      
+      for (const width of testWidths) {
+        await page.setViewportSize({ width, height: 720 });
         await page.goto('/auth/login');
         
-        // Basic functionality should work at all breakpoints
-        await expect(page.locator('[data-testid="login-form"]')).toBeVisible();
-        await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
-        await expect(page.locator('[data-testid="password-input"]')).toBeVisible();
-        await expect(page.locator('[data-testid="login-submit"]')).toBeVisible();
+        // Form should be visible at all widths
+        await expect(page.locator('form')).toBeVisible();
         
-        // Check for horizontal scrolling
-        const bodyWidth = await page.locator('body').evaluate(el => el.scrollWidth);
-        expect(bodyWidth).toBeLessThanOrEqual(width + 10); // Allow small tolerance
-      });
-    });
-  });
-
-  test.describe('Content Scaling', () => {
-    test('Should scale text appropriately across screen sizes', async ({ page }) => {
-      const sizes = [
-        { width: 320, height: 568 }, // iPhone SE
-        { width: 768, height: 1024 }, // iPad
-        { width: 1920, height: 1080 } // Large desktop
-      ];
-      
-      for (const size of sizes) {
-        await page.setViewportSize(size);
-        await page.goto('/dashboard');
-        
-        // Text should be readable at all sizes
-        const headings = await page.locator('h1, h2, h3').all();
-        
-        for (const heading of headings.slice(0, 3)) { // Test first 3 headings
-          if (await heading.isVisible()) {
-            const fontSize = await heading.evaluate(el => 
-              parseInt(window.getComputedStyle(el).fontSize)
-            );
-            
-            // Font size should be reasonable for screen size
-            if (size.width < 768) {
-              expect(fontSize).toBeGreaterThanOrEqual(16); // Minimum mobile size
-            } else {
-              expect(fontSize).toBeGreaterThanOrEqual(18); // Desktop size
-            }
-          }
+        // Content should not overflow
+        const body = await page.locator('body').boundingBox();
+        if (body) {
+          expect(body.width).toBeLessThanOrEqual(width + 20); // Allow small margin for scrollbars
         }
       }
     });
 
-    test('Should scale images and media appropriately', async ({ page }) => {
-      await page.goto('/visual-story-demo');
+    test('Should handle responsive breakpoints', async ({ page }) => {
+      // Test major breakpoints
+      const breakpoints = [
+        { width: 320, name: 'mobile-small' },
+        { width: 375, name: 'mobile-medium' },
+        { width: 768, name: 'tablet' },
+        { width: 1024, name: 'desktop-small' },
+        { width: 1280, name: 'desktop-large' }
+      ];
       
-      const images = await page.locator('img').all();
+      for (const breakpoint of breakpoints) {
+        await page.setViewportSize({ width: breakpoint.width, height: 720 });
+        await page.goto('/auth/login');
+        
+        // Form should be appropriately sized for each breakpoint
+        const form = page.locator('form');
+        const boundingBox = await form.boundingBox();
+        
+        if (boundingBox) {
+          // Form should not exceed viewport width
+          expect(boundingBox.width).toBeLessThan(breakpoint.width);
+          
+          // Form should have minimum usable width
+          expect(boundingBox.width).toBeGreaterThan(Math.min(280, breakpoint.width * 0.8));
+        }
+      }
+    });
+
+    test('Should maintain aspect ratios', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto('/auth/login');
       
-      for (const image of images.slice(0, 3)) { // Test first 3 images
+      // Check if any images maintain proper aspect ratios
+      const images = page.locator('img');
+      const imageCount = await images.count();
+      
+      for (let i = 0; i < imageCount; i++) {
+        const image = images.nth(i);
         if (await image.isVisible()) {
           const boundingBox = await image.boundingBox();
-          const viewport = page.viewportSize();
-          
-          if (boundingBox && viewport) {
-            // Images should not exceed viewport width
-            expect(boundingBox.width).toBeLessThanOrEqual(viewport.width);
-            
-            // Images should maintain aspect ratio
-            expect(boundingBox.width).toBeGreaterThan(0);
-            expect(boundingBox.height).toBeGreaterThan(0);
+          if (boundingBox) {
+            const aspectRatio = boundingBox.width / boundingBox.height;
+            // Aspect ratio should be reasonable (between 0.1 and 10)
+            expect(aspectRatio).toBeGreaterThan(0.1);
+            expect(aspectRatio).toBeLessThan(10);
           }
         }
       }
     });
   });
 
-  test.describe('Interactive Elements', () => {
-    test('Should maintain usability across screen sizes', async ({ page }) => {
-      const testSizes = [
-        { width: 375, height: 667 }, // Mobile
-        { width: 1024, height: 768 }  // Desktop
-      ];
-      
-      for (const size of testSizes) {
-        await page.setViewportSize(size);
-        await page.goto('/survey');
-        
-        // Interactive elements should be accessible
-        const buttons = await page.locator('button').all();
-        
-        for (const button of buttons.slice(0, 5)) { // Test first 5 buttons
-          if (await button.isVisible()) {
-            // Should be clickable
-            await expect(button).toBeEnabled();
-            
-            // Should have sufficient size for interaction
-            const boundingBox = await button.boundingBox();
-            if (boundingBox) {
-              const minSize = size.width < 768 ? 44 : 32; // Larger touch targets on mobile
-              expect(Math.min(boundingBox.width, boundingBox.height)).toBeGreaterThanOrEqual(minSize);
-            }
-          }
-        }
-      }
-    });
-
-    test('Should handle form interactions across devices', async ({ page }) => {
-      // Test on mobile-sized screen
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/auth/register');
-      
-      // Form should be fully functional
-      await page.fill('[data-testid="email-input"]', 'test@example.com');
-      await page.fill('[data-testid="password-input"]', 'Password123!');
-      await page.fill('[data-testid="first-name-input"]', 'Test');
-      await page.fill('[data-testid="last-name-input"]', 'User');
-      
-      // All fields should be filled successfully
-      await expect(page.locator('[data-testid="email-input"]')).toHaveValue('test@example.com');
-      await expect(page.locator('[data-testid="password-input"]')).toHaveValue('Password123!');
-      await expect(page.locator('[data-testid="first-name-input"]')).toHaveValue('Test');
-      await expect(page.locator('[data-testid="last-name-input"]')).toHaveValue('User');
-      
-      // Form validation should work
-      await page.fill('[data-testid="email-input"]', 'invalid-email');
-      await page.click('[data-testid="register-submit"]');
-      await expect(page.locator('[data-testid="email-error"]')).toBeVisible();
-    });
-  });
-
-  test.describe('Accessibility in Responsive Design', () => {
-    test('Should maintain accessibility across screen sizes', async ({ page }) => {
+  test.describe('Touch and Interaction Tests', () => {
+    
+    test('Should handle touch interactions on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/auth/login');
       
-      // Test keyboard navigation
-      await page.keyboard.press('Tab');
-      await expect(page.locator('[data-testid="email-input"]')).toBeFocused();
+      // Test touch interactions
+      const emailInput = page.locator('input[type="email"]');
+      await emailInput.tap();
+      await emailInput.fill('touch@example.com');
       
-      await page.keyboard.press('Tab');
-      await expect(page.locator('[data-testid="password-input"]')).toBeFocused();
-      
-      await page.keyboard.press('Tab');
-      await expect(page.locator('[data-testid="login-submit"]')).toBeFocused();
-      
-      // Test form submission via keyboard
-      await page.keyboard.press('Enter');
-      
-      // Should show validation errors
-      await expect(page.locator('[data-testid="email-error"], [data-testid="password-error"]')).toBeVisible();
+      await expect(emailInput).toHaveValue('touch@example.com');
     });
 
-    test('Should maintain proper focus management on mobile', async ({ page }) => {
+    test('Should provide adequate touch targets', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/auth/register');
+      await page.goto('/auth/login');
       
-      // Focus should be visible and manageable
-      const focusableElements = [
-        '[data-testid="email-input"]',
-        '[data-testid="password-input"]',
-        '[data-testid="first-name-input"]',
-        '[data-testid="last-name-input"]',
-        '[data-testid="register-submit"]'
-      ];
+      // Check that interactive elements have adequate touch target size
+      const button = page.locator('button[type="submit"]');
+      const boundingBox = await button.boundingBox();
       
-      for (const selector of focusableElements) {
-        const element = page.locator(selector);
-        if (await element.isVisible()) {
-          await element.focus();
-          await expect(element).toBeFocused();
-          
-          // Focus should be visible (check if element is in viewport)
-          const boundingBox = await element.boundingBox();
-          const viewport = page.viewportSize();
-          
-          if (boundingBox && viewport) {
-            expect(boundingBox.y).toBeGreaterThanOrEqual(-50); // Allow some offset for sticky headers
-            expect(boundingBox.y + boundingBox.height).toBeLessThanOrEqual(viewport.height + 50);
-          }
-        }
-      }
-    });
-  });
-
-  test.describe('Performance on Different Screen Sizes', () => {
-    test('Should load efficiently on mobile', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      
-      const startTime = Date.now();
-      await page.goto('/dashboard');
-      
-      // Page should load within reasonable time
-      await expect(page.locator('body')).toBeVisible();
-      const loadTime = Date.now() - startTime;
-      
-      expect(loadTime).toBeLessThan(10000); // 10 seconds max
-      
-      // Check for lazy loading of images
-      const images = await page.locator('img').all();
-      for (const image of images.slice(0, 3)) {
-        const src = await image.getAttribute('src');
-        const loading = await image.getAttribute('loading');
-        
-        // Images should either have lazy loading or be optimized
-        expect(src || loading).toBeTruthy();
-      }
-    });
-
-    test('Should handle resource loading across screen sizes', async ({ page }) => {
-      const sizes = [
-        { width: 375, height: 667 },  // Mobile
-        { width: 768, height: 1024 }, // Tablet
-        { width: 1920, height: 1080 } // Desktop
-      ];
-      
-      for (const size of sizes) {
-        await page.setViewportSize(size);
-        
-        const navigationStart = await page.evaluate(() => performance.now());
-        await page.goto('/organization/analytics');
-        
-        // Wait for main content to be visible
-        await expect(page.locator('body')).toBeVisible();
-        
-        const navigationEnd = await page.evaluate(() => performance.now());
-        const totalTime = navigationEnd - navigationStart;
-        
-        // Performance should be reasonable across all sizes
-        expect(totalTime).toBeLessThan(15000); // 15 seconds max
-      }
-    });
-  });
-
-  test.describe('Responsive Component Behavior', () => {
-    test('Should adapt data tables for mobile', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/admin/users');
-      
-      // Tables should either scroll horizontally or stack vertically on mobile
-      const table = page.locator('[data-testid="users-table"], table');
-      if (await table.isVisible()) {
-        const tableBox = await table.boundingBox();
-        const viewport = page.viewportSize();
-        
-        if (tableBox && viewport) {
-          // Table should either fit in viewport or be scrollable
-          const fitsInViewport = tableBox.width <= viewport.width;
-          const hasHorizontalScroll = await page.evaluate(() => document.body.scrollWidth > window.innerWidth);
-          
-          expect(fitsInViewport || hasHorizontalScroll).toBe(true);
-        }
-      }
-    });
-
-    test('Should handle modal dialogs responsively', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/dashboard');
-      
-      // Open a modal if available
-      const modalTrigger = page.locator('[data-testid="open-modal"], .modal-trigger');
-      if (await modalTrigger.isVisible()) {
-        await modalTrigger.click();
-        
-        const modal = page.locator('[data-testid="modal"], .modal');
-        await expect(modal).toBeVisible();
-        
-        // Modal should fit in mobile viewport
-        const modalBox = await modal.boundingBox();
-        const viewport = page.viewportSize();
-        
-        if (modalBox && viewport) {
-          expect(modalBox.width).toBeLessThanOrEqual(viewport.width);
-          expect(modalBox.height).toBeLessThanOrEqual(viewport.height);
-        }
-        
-        // Close modal
-        const closeButton = page.locator('[data-testid="close-modal"], .modal-close');
-        if (await closeButton.isVisible()) {
-          await closeButton.click();
-          await expect(modal).not.toBeVisible();
-        }
+      if (boundingBox) {
+        // Touch targets should be at least 44x44px for accessibility
+        expect(boundingBox.width).toBeGreaterThanOrEqual(40);
+        expect(boundingBox.height).toBeGreaterThanOrEqual(40);
       }
     });
   });

@@ -239,6 +239,8 @@ module.exports = {
         // Multi-color brand gradients for hero sections
         'brand-hero': 'linear-gradient(135deg, #14b8a6 0%, #8b5cf6 50%, #ec4899 100%)',
         'brand-subtle': 'linear-gradient(135deg, #14b8a6/10 0%, #8b5cf6/10 50%, #ec4899/10 100%)',
+        'brand-animated': 'linear-gradient(90deg, #14b8a6 0%, #8b5cf6 25%, #ec4899 50%, #8b5cf6 75%, #14b8a6 100%)',
+        'progress-glow': 'linear-gradient(135deg, #14b8a6 0%, #8b5cf6 50%, #ec4899 100%)',
         
         // Dark theme optimized gradients
         'dark-brand': 'linear-gradient(135deg, #042f2e 0%, #1a1a1a 50%, #500724 100%)',

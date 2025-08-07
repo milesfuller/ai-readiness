@@ -18,27 +18,12 @@ import {
   Brain,
   Award,
   Sparkles,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
-
-interface DashboardStats {
-  totalSurveys: number
-  activeSurveys: number
-  totalResponses: number
-  totalUsers: number
-  organizationCount: number
-  completionRate: number
-  recentActivity: ActivityItem[]
-}
-
-interface ActivityItem {
-  id: string
-  type: 'survey_created' | 'survey_completed' | 'user_registered'
-  description: string
-  timestamp: string
-  user?: string
-}
+import { fetchDashboardStats, type DashboardStats, type ActivityItem } from '@/lib/services/admin'
+import { useActivityLogsRealtime } from '@/lib/hooks/useRealtimeUpdates'
 
 export default function AdminDashboard() {
   const { user } = useAuth()
@@ -52,54 +37,69 @@ export default function AdminDashboard() {
     recentActivity: []
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulate API call to fetch dashboard stats
-    const fetchStats = async () => {
+    // Fetch real dashboard stats from Supabase
+    const loadDashboardStats = async () => {
       try {
-        // Mock data for demonstration
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        setStats({
-          totalSurveys: 24,
-          activeSurveys: 8,
-          totalResponses: 1547,
-          totalUsers: 342,
-          organizationCount: 12,
-          completionRate: 78.5,
-          recentActivity: [
-            {
-              id: '1',
-              type: 'survey_completed',
-              description: 'AI Readiness Assessment completed',
-              timestamp: '2 hours ago',
-              user: 'john.doe@company.com'
-            },
-            {
-              id: '2',
-              type: 'user_registered',
-              description: 'New user registered',
-              timestamp: '3 hours ago',
-              user: 'jane.smith@company.com'
-            },
-            {
-              id: '3',
-              type: 'survey_created',
-              description: 'Digital Transformation Survey created',
-              timestamp: '5 hours ago',
-              user: 'admin@company.com'
-            }
-          ]
-        })
+        setLoading(true)
+        setError(null)
+
+        if (!user) {
+          throw new Error('User not authenticated')
+        }
+
+        const userRole = user.role as string
+        const organizationId = user.organizationId
+
+        const dashboardStats = await fetchDashboardStats(userRole, organizationId)
+        setStats(dashboardStats)
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
+        
+        // Fallback to empty state rather than mock data
+        setStats({
+          totalSurveys: 0,
+          activeSurveys: 0,
+          totalResponses: 0,
+          totalUsers: 0,
+          organizationCount: 0,
+          completionRate: 0,
+          recentActivity: []
+        })
       } finally {
         setLoading(false)
       }
     }
 
-    fetchStats()
-  }, [])
+    loadDashboardStats()
+  }, [user])
+
+  // Set up real-time updates for activity logs
+  useActivityLogsRealtime(
+    (newActivity) => {
+      // Add the new activity to the beginning of the list
+      setStats(prev => ({
+        ...prev,
+        recentActivity: [
+          {
+            id: newActivity.id,
+            type: newActivity.action.includes('survey') ? 'survey_created' :
+                  newActivity.action.includes('response') ? 'survey_completed' :
+                  'user_registered',
+            description: newActivity.action.replace('_', ' ').replace(/^\w/, (c: string) => c.toUpperCase()),
+            timestamp: 'Just now',
+            user: 'Unknown' // Would need to join with profile data
+          },
+          ...prev.recentActivity.slice(0, 9) // Keep only the most recent 10
+        ]
+      }))
+    },
+    user?.organizationId,
+    !!user // Enable only when user is loaded
+  )
 
   const StatCard = ({ 
     title, 
@@ -150,6 +150,23 @@ export default function AdminDashboard() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="glass-card max-w-md">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">Failed to Load Dashboard</h3>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -159,7 +176,7 @@ export default function AdminDashboard() {
           <p className="text-gray-400">Welcome back, {user?.profile?.firstName || user?.email}</p>
         </div>
         <Badge variant="outline" className="text-teal-400 border-teal-400">
-          {user?.role === 'admin' ? 'System Admin' : 'Organization Admin'}
+          {(user?.role as string) === 'system_admin' ? 'System Admin' : 'Organization Admin'}
         </Badge>
       </div>
 
@@ -196,7 +213,7 @@ export default function AdminDashboard() {
           trend="up"
           href="/admin/users"
         />
-        {user?.role === 'admin' && (
+        {user?.role === 'system_admin' && (
           <StatCard
             title="Organizations"
             value={stats.organizationCount}

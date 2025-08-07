@@ -64,7 +64,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
     }
     const getRoleIcon = (role: UserRole) => {
       switch (role) {
-        case 'admin':
+        case 'system_admin':
           return <Shield className="h-4 w-4" />
         case 'org_admin':
           return <BarChart3 className="h-4 w-4" />
@@ -75,7 +75,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 
     const getRoleLabel = (role: UserRole) => {
       switch (role) {
-        case 'admin':
+        case 'system_admin':
           return 'System Admin'
         case 'org_admin':
           return 'Organization Admin'

@@ -185,7 +185,7 @@ test.describe('Mobile Menu Navigation', () => {
     });
 
     test('should handle nested menus on mobile for admin users', async ({ page }) => {
-      const adminUser = await createTestUser('admin');
+      const adminUser = await createTestUser('system_admin');
       await page.goto('/dashboard');
       
       const menuToggle = page.locator('[data-testid="mobile-menu-toggle"]');

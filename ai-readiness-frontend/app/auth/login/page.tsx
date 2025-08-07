@@ -154,7 +154,7 @@ export default function LoginPage({
               disabled
             >
               <div className="flex items-center space-x-2">
-                <SuccessCheckmark show={true} size={16} />
+                <CheckCircle2 className="h-4 w-4" />
                 <span>Welcome back! Redirecting...</span>
               </div>
             </Button>
@@ -173,8 +173,7 @@ export default function LoginPage({
           )}
         </div>
         
-        {/* Success Hearts */}
-        <FloatingHearts active={showHearts} count={6} />
+        {/* Removed success hearts */}
 
         {/* Sign Up Link */}
         <div className="text-center pt-4">
