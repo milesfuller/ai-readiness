@@ -37,8 +37,8 @@ import {
 
 // Import report components
 import { ReportGenerator } from '@/components/reports/ReportGenerator'
-import { ReportHistory } from '@/components/reports/ReportHistory'
-import { ScheduledReports } from '@/components/reports/ScheduledReports'
+import { ReportsList } from '@/components/reports/ReportsList'
+import { ScheduleManager } from '@/components/reports/ScheduleManager'
 import { TemplateSelector } from '@/components/reports/TemplateSelector'
 
 interface DashboardStats {
@@ -316,7 +316,7 @@ export default function ReportsPage() {
             </div>
           </div>
           
-          <ReportHistory />
+          <ReportsList />
         </TabsContent>
 
         {/* Scheduled Tab */}
@@ -334,7 +334,7 @@ export default function ReportsPage() {
             </Button>
           </div>
           
-          <ScheduledReports />
+          <ScheduleManager />
         </TabsContent>
 
         {/* Templates Tab */}
