@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { createSurveyTemplateService } from '@/services/database/survey-template.service'
 
 export async function POST(
   request: NextRequest,
@@ -22,40 +23,43 @@ export async function POST(
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
-    // Check if source template exists and user has access
-    const { data: sourceTemplate } = await supabase
-      .from('survey_templates')
-      .select('*')
-      .eq('id', templateId)
-      .single()
-
+    // Use SurveyTemplateService for template operations
+    const surveyTemplateService = createSurveyTemplateService()
+    
+    // Get source template with questions
+    const sourceTemplate = await surveyTemplateService.getTemplate(templateId, true)
+    
     if (!sourceTemplate) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
-    // Use the duplicate_template function
-    const { data: newTemplateId, error } = await supabase.rpc('duplicate_template', {
-      p_template_id: templateId,
-      p_new_title: title,
-      p_organization_id: organizationId
-    })
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to duplicate template' }, { status: 500 })
+    // Create duplicate template
+    const duplicateData = {
+      ...sourceTemplate,
+      title,
+      organization_id: organizationId,
+      status: 'draft' // New templates start as draft
     }
+    // Remove properties that will be auto-generated
+    const { id, created_at, updated_at, ...cleanDuplicateData } = duplicateData
+    
+    const newTemplate = await surveyTemplateService.createTemplate(cleanDuplicateData, user.id)
+    
+    // Copy questions if they exist
+    const questions = await surveyTemplateService.getTemplateQuestions(templateId)
+    for (const question of questions) {
+      const { id: qId, created_at: qCreated, updated_at: qUpdated, ...questionData } = {
+        ...question,
+        template_id: newTemplate.id
+      }
+      
+      await surveyTemplateService.addQuestion(newTemplate.id, questionData)
+    }
+    
+    // Get the complete new template with questions
+    const completeNewTemplate = await surveyTemplateService.getTemplate(newTemplate.id, true)
 
-    // Fetch the new template with related data
-    const { data: newTemplate } = await supabase
-      .from('survey_templates')
-      .select(`
-        *,
-        questions:survey_template_questions(*)
-      `)
-      .eq('id', newTemplateId)
-      .single()
-
-    return NextResponse.json(newTemplate, { status: 201 })
+    return NextResponse.json(completeNewTemplate, { status: 201 })
 
   } catch (error) {
     console.error('API error:', error)

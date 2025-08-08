@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for integration tests
+  postgres-test:
+    image: supabase/postgres:15.1.0.147
+    container_name: ai-readiness-test-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: testpass123
+      POSTGRES_DB: test_ai_readiness
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - postgres-test-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Optional: Supabase for full integration testing
+  supabase-test:
+    image: supabase/supabase:latest
+    container_name: ai-readiness-test-supabase
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres-test
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: testpass123
+      POSTGRES_DB: test_ai_readiness
+      JWT_SECRET: test-jwt-secret-key-minimum-32-characters-long
+      ANON_KEY: test-anon-key
+      SERVICE_KEY: test-service-key
+    ports:
+      - "54321:54321"  # Supabase Studio
+      - "54322:54322"  # Supabase API
+    networks:
+      - test-network
+
+volumes:
+  postgres-test-data:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge

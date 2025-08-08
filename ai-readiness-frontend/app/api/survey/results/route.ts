@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { surveyCategories, surveyQuestions } from '@/lib/data/survey-questions'
+import { createActivityLogService } from '@/services/database/activity-log.service'
 
 // Mark this route as dynamic since it uses request.url
 export const dynamic = 'force-dynamic'
@@ -58,15 +59,17 @@ export async function GET(request: NextRequest) {
 
       surveyResponse = data
     } else if (sessionId) {
-      // Find response by session ID (from activity logs)
-      const { data: sessionLogs } = await supabase
-        .from('activity_logs')
-        .select('details')
-        .eq('resource_id', sessionId)
-        .eq('user_id', user.id)
-        .eq('action', 'survey_response_submitted')
-        .order('created_at', { ascending: false })
-        .limit(1)
+      // Find response by session ID using ActivityLogService
+      const activityLogService = createActivityLogService()
+      const { data: sessionLogs } = await activityLogService.getActivityLogs({
+        userId: user.id,
+        activityTypes: ['create'],
+        entityTypes: ['survey'],
+        entityId: sessionId,
+        limit: 1,
+        orderBy: 'occurred_at',
+        orderDirection: 'desc'
+      })
 
       if (!sessionLogs || sessionLogs.length === 0) {
         // No completed survey found for this session
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Try to get the actual response
-      const responseDetails = sessionLogs[0].details
+      const responseDetails = sessionLogs[0].context
       if (responseDetails?.survey_id) {
         const { data, error } = await supabase
           .from('survey_responses')

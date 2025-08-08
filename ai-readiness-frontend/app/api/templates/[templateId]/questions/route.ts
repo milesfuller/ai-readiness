@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { createSurveyTemplateService } from '@/services/database/survey-template.service'
 
 export async function GET(
   request: NextRequest,
@@ -10,18 +11,11 @@ export async function GET(
     const supabase = createRouteHandlerClient({ cookies })
     const { templateId } = params
 
-    const { data: questions, error } = await supabase
-      .from('survey_template_questions')
-      .select('*')
-      .eq('template_id', templateId)
-      .order('order_index', { ascending: true })
+    // Use SurveyTemplateService to get questions
+    const surveyTemplateService = createSurveyTemplateService()
+    const questions = await surveyTemplateService.getTemplateQuestions(templateId)
 
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to fetch questions' }, { status: 500 })
-    }
-
-    return NextResponse.json(questions || [])
+    return NextResponse.json(questions)
 
   } catch (error) {
     console.error('API error:', error)
@@ -71,66 +65,34 @@ export async function POST(
       )
     }
 
-    // Check if template exists and user has permission
-    const { data: template } = await supabase
-      .from('survey_templates')
-      .select('created_by, organization_id')
-      .eq('id', templateId)
-      .single()
+    // Use SurveyTemplateService to verify template exists
+    const surveyTemplateService = createSurveyTemplateService()
+    const template = await surveyTemplateService.getTemplate(templateId)
 
     if (!template) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
-    // Get next order index if not provided
-    let finalOrderIndex = orderIndex
-    if (finalOrderIndex === undefined) {
-      const { data: lastQuestion } = await supabase
-        .from('survey_template_questions')
-        .select('order_index')
-        .eq('template_id', templateId)
-        .order('order_index', { ascending: false })
-        .limit(1)
-        .single()
-      
-      finalOrderIndex = (lastQuestion?.order_index || 0) + 1
-    }
-
-    const { data: question, error } = await supabase
-      .from('survey_template_questions')
-      .insert({
-        template_id: templateId,
-        question_text: questionText,
-        question_type: questionType,
-        description,
-        placeholder_text: placeholderText,
-        help_text: helpText,
-        options,
-        validation_rules: validationRules,
-        required,
-        group_id: groupId,
-        group_title: groupTitle,
-        order_index: finalOrderIndex,
-        jtbd_category: jtbdCategory,
-        jtbd_weight: jtbdWeight,
-        tags,
-        display_conditions: displayConditions,
-        skip_logic: skipLogic,
-        analytics_enabled: analyticsEnabled
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to create question' }, { status: 500 })
-    }
-
-    // Update template's updated_at timestamp
-    await supabase
-      .from('survey_templates')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', templateId)
+    // Add question using the service
+    const question = await surveyTemplateService.addQuestion(templateId, {
+      question_text: questionText,
+      question_type: questionType,
+      description,
+      placeholder_text: placeholderText,
+      help_text: helpText,
+      options,
+      validation_rules: validationRules,
+      required,
+      group_id: groupId,
+      group_title: groupTitle,
+      order_index: orderIndex,
+      jtbd_category: jtbdCategory,
+      jtbd_weight: jtbdWeight,
+      tags,
+      display_conditions: displayConditions,
+      skip_logic: skipLogic,
+      analytics_enabled: analyticsEnabled
+    })
 
     return NextResponse.json(question, { status: 201 })
 
@@ -160,32 +122,24 @@ export async function PUT(
       return NextResponse.json({ error: 'Questions must be an array' }, { status: 400 })
     }
 
-    // Check if template exists and user has permission
-    const { data: template } = await supabase
-      .from('survey_templates')
-      .select('created_by, organization_id')
-      .eq('id', templateId)
-      .single()
+    // Use SurveyTemplateService to verify template exists
+    const surveyTemplateService = createSurveyTemplateService()
+    const template = await surveyTemplateService.getTemplate(templateId)
 
     if (!template) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
-    // Start transaction by deleting existing questions and inserting new ones
-    const { error: deleteError } = await supabase
-      .from('survey_template_questions')
-      .delete()
-      .eq('template_id', templateId)
-
-    if (deleteError) {
-      console.error('Database error deleting questions:', deleteError)
-      return NextResponse.json({ error: 'Failed to update questions' }, { status: 500 })
+    // Delete existing questions first
+    const existingQuestions = await surveyTemplateService.getTemplateQuestions(templateId)
+    for (const question of existingQuestions) {
+      await surveyTemplateService.deleteQuestion(question.id)
     }
 
-    // Insert new questions if any
-    if (questions.length > 0) {
-      const questionsToInsert = questions.map((q, index) => ({
-        template_id: templateId,
+    // Add new questions
+    for (let index = 0; index < questions.length; index++) {
+      const q = questions[index]
+      await surveyTemplateService.addQuestion(templateId, {
         question_text: q.questionText,
         question_type: q.questionType,
         description: q.description,
@@ -203,32 +157,13 @@ export async function PUT(
         display_conditions: q.displayConditions || {},
         skip_logic: q.skipLogic || {},
         analytics_enabled: q.analyticsEnabled !== false
-      }))
-
-      const { error: insertError } = await supabase
-        .from('survey_template_questions')
-        .insert(questionsToInsert)
-
-      if (insertError) {
-        console.error('Database error inserting questions:', insertError)
-        return NextResponse.json({ error: 'Failed to update questions' }, { status: 500 })
-      }
+      })
     }
 
-    // Update template's updated_at timestamp
-    await supabase
-      .from('survey_templates')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', templateId)
+    // Get updated questions
+    const updatedQuestions = await surveyTemplateService.getTemplateQuestions(templateId)
 
-    // Fetch and return updated questions
-    const { data: updatedQuestions } = await supabase
-      .from('survey_template_questions')
-      .select('*')
-      .eq('template_id', templateId)
-      .order('order_index', { ascending: true })
-
-    return NextResponse.json(updatedQuestions || [])
+    return NextResponse.json(updatedQuestions)
 
   } catch (error) {
     console.error('API error:', error)

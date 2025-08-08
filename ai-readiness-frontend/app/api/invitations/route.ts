@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { emailService } from '@/lib/services/email-service'
 import { createClient } from '@/lib/supabase/server'
+import { createInvitationService } from '@/services/database/invitation.service'
+import { createUserProfileService } from '@/services/database/user-profile.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,71 +33,56 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify user has permission to invite to this organization
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('organization_members!inner(organization_id, role)')
-      .eq('user_id', user.id)
-      .eq('organization_members.organization_id', organizationId)
-      .single()
-
-    if (!userProfile) {
-      return NextResponse.json(
-        { error: 'You do not have permission to invite users to this organization' },
-        { status: 403 }
-      )
-    }
-
-    const userRole = userProfile.organization_members?.[0]?.role
-    if (userRole !== 'org_admin' && userRole !== 'system_admin') {
+    // Use UserProfileService to verify user permissions
+    const userProfileService = createUserProfileService()
+    const userProfile = await userProfileService.getUserProfile(user.id)
+    
+    if (!userProfile || userProfile.role !== 'org_admin' && userProfile.role !== 'system_admin') {
       return NextResponse.json(
         { error: 'Only administrators can send invitations' },
         { status: 403 }
       )
     }
 
-    // Check if user already exists in the organization
-    const { data: existingMember } = await supabase
-      .from('profiles')
-      .select('organization_members!inner(*)')
-      .eq('email', email)
-      .eq('organization_members.organization_id', organizationId)
-      .single()
-
-    if (existingMember) {
-      return NextResponse.json(
-        { error: 'User is already a member of this organization' },
-        { status: 400 }
-      )
-    }
-
-    // Check for existing pending invitation
-    const { data: existingInvitation } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('email', email)
-      .eq('organization_id', organizationId)
-      .eq('status', 'pending')
-      .gt('expires_at', new Date().toISOString())
-      .single()
-
-    if (existingInvitation) {
+    // Use InvitationService to check for existing invitations
+    const invitationService = createInvitationService()
+    const hasPending = await invitationService.hasPendingInvitation(
+      email, 
+      'organization', 
+      organizationId
+    )
+    
+    if (hasPending) {
       return NextResponse.json(
         { error: 'A pending invitation already exists for this email' },
         { status: 400 }
       )
     }
 
-    // Send invitation
-    const result = await emailService.sendInvitation({
+    // Create invitation using InvitationService
+    const invitation = await invitationService.createInvitation({
+      type: 'organization',
       email,
-      organizationId,
-      role,
-      invitedBy: user.id,
-      firstName,
-      lastName,
-      message
-    })
+      target_id: organizationId,
+      metadata: {
+        role,
+        permissions: [],
+        custom_fields: {
+          first_name: firstName,
+          last_name: lastName,
+          message
+        },
+        redirect_url: null,
+        campaign_id: null,
+        source: null,
+        tags: []
+      },
+      priority: 'normal',
+      delivery_method: 'email',
+      subject: `Invitation to join organization`
+    }, user.id, true)
+    
+    const result = { success: true, trackingId: invitation.id }
 
     if (result.success) {
       return NextResponse.json({
@@ -105,8 +92,9 @@ export async function POST(request: NextRequest) {
       })
     } else {
       // Handle fallback case where email service is unavailable
-      if (result.error?.includes('Manual link:') || result.error?.includes('share this link manually:')) {
-        const linkMatch = result.error.match(/(https?:\/\/[^\s]+)/)
+      const error = (result as any).error
+      if (error?.includes('Manual link:') || error?.includes('share this link manually:')) {
+        const linkMatch = error.match(/(https?:\/\/[^\s]+)/)
         return NextResponse.json({
           success: false,
           error: 'Email service unavailable',
@@ -116,7 +104,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: result.error || 'Failed to send invitation' },
+        { error: error || 'Failed to send invitation' },
         { status: 500 }
       )
     }

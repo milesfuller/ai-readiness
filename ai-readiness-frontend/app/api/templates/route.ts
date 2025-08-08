@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { SurveyTemplate, TemplateFilters } from '@/lib/types'
+import { createSurveyTemplateService } from '@/services/database/survey-template.service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,71 +31,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Build query
-    let query = supabase
-      .from('survey_templates')
-      .select(`
-        *,
-        created_by_profile:profiles!survey_templates_created_by_fkey(
-          first_name,
-          last_name,
-          avatar_url
-        ),
-        organization:organizations(
-          name
-        ),
-        question_count:survey_template_questions(count)
-      `)
-
-    // Apply filters
-    if (filters.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
-    }
+    // Use SurveyTemplateService to list templates with filters
+    const surveyTemplateService = createSurveyTemplateService()
     
-    if (filters.category) {
-      query = query.eq('category', filters.category)
-    }
-    
-    if (filters.status) {
-      query = query.eq('status', filters.status)
-    }
-    
-    if (filters.visibility) {
-      query = query.eq('visibility', filters.visibility)
-    }
-    
-    if (filters.tags && filters.tags.length > 0) {
-      query = query.overlaps('tags', filters.tags)
-    }
-    
-    if (filters.difficultyLevel) {
-      query = query.eq('difficulty_level', filters.difficultyLevel)
+    // Convert filters to service format
+    const serviceOptions = {
+      search: filters.search,
+      category: filters.category,
+      status: filters.status,
+      visibility: filters.visibility,
+      tags: filters.tags,
+      limit: pageSize,
+      offset
     }
 
-    // Apply sorting and pagination
-    query = query
-      .order('updated_at', { ascending: false })
-      .range(offset, offset + pageSize - 1)
-
-    const { data: templates, error, count } = await query
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 })
-    }
-
-    // Get total count for pagination
-    const { count: totalCount } = await supabase
-      .from('survey_templates')
-      .select('*', { count: 'exact', head: true })
+    const { templates, total: totalCount } = await surveyTemplateService.listTemplates(serviceOptions)
 
     return NextResponse.json({
-      data: templates || [],
+      data: templates,
       pagination: {
         page,
         pageSize,
-        total: totalCount || 0,
-        totalPages: Math.ceil((totalCount || 0) / pageSize)
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / pageSize)
       }
     })
 
@@ -149,38 +108,31 @@ export async function POST(request: NextRequest) {
       customBranding: {}
     }
 
-    const { data: template, error } = await supabase
-      .from('survey_templates')
-      .insert({
-        title,
-        description,
-        category,
-        visibility,
-        estimated_duration: estimatedDuration,
-        difficulty_level: difficultyLevel,
-        tags,
-        introduction_text: introductionText,
-        conclusion_text: conclusionText,
-        settings: { ...defaultSettings, ...settings },
-        created_by: user.id,
-        organization_id: organizationId || null,
-        marketplace_data: {
-          price: 0,
-          downloads: 0,
-          rating: 0,
-          reviews: 0,
-          featured: false,
-          license: 'standard'
-        },
-        question_groups: []
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to create template' }, { status: 500 })
-    }
+    // Use SurveyTemplateService to create template
+    const surveyTemplateService = createSurveyTemplateService()
+    
+    const template = await surveyTemplateService.createTemplate({
+      title,
+      description,
+      category,
+      visibility,
+      estimated_duration: estimatedDuration,
+      difficulty_level: difficultyLevel,
+      tags,
+      introduction_text: introductionText,
+      conclusion_text: conclusionText,
+      settings: { ...defaultSettings, ...settings },
+      organization_id: organizationId || null,
+      marketplace_data: {
+        price: 0,
+        downloads: 0,
+        rating: 0,
+        reviews: 0,
+        featured: false,
+        license: 'standard'
+      },
+      question_groups: []
+    }, user.id)
 
     return NextResponse.json(template, { status: 201 })
 
