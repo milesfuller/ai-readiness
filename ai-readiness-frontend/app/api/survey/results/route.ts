@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Try to get the actual response
-      const responseDetails = sessionLogs[0].context
+      const responseDetails = sessionLogs[0].context as any
       if (responseDetails?.survey_id) {
         const { data, error } = await supabase
           .from('survey_responses')

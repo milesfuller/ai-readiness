@@ -1328,3 +1328,86 @@ export const ForeignKeys = {
     organization_id: 'organizations(id) ON DELETE CASCADE'
   }
 };
+
+// ============================================================================
+// ACTIVITY LOG SCHEMAS AND HELPERS (for compatibility)
+// ============================================================================
+
+// Activity log related schemas - placeholder for missing exports
+export const ActivityLogsTableSchema = z.object({
+  id: z.string().uuid(),
+  activity_type: z.string(),
+  entity_type: z.string(),
+  entity_id: z.string(),
+  user_id: z.string().uuid().nullable(),
+  organization_id: z.string().uuid().nullable(),
+  description: z.string(),
+  metadata: z.any(),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  status: z.enum(['pending', 'completed', 'failed']),
+  created_at: z.date()
+});
+
+export const ActivityAnalyticsTableSchema = z.object({
+  id: z.string().uuid(),
+  organization_id: z.string().uuid(),
+  period: z.string(),
+  metrics: z.any(),
+  created_at: z.date()
+});
+
+export const ActivitySubscriptionsTableSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  activity_types: z.array(z.string()),
+  notification_method: z.enum(['email', 'in_app', 'webhook']),
+  is_active: z.boolean(),
+  created_at: z.date()
+});
+
+export const ActivityNotificationsTableSchema = z.object({
+  id: z.string().uuid(),
+  subscription_id: z.string().uuid(),
+  activity_id: z.string().uuid(),
+  status: z.enum(['pending', 'sent', 'failed']),
+  sent_at: z.date().nullable(),
+  created_at: z.date()
+});
+
+export const RetentionPolicySchema = z.object({
+  duration_days: z.number().int().positive(),
+  archive_enabled: z.boolean()
+});
+
+// Helper functions for activity logs
+export const validateActivityLog = (data: unknown) => ActivityLogsTableSchema.parse(data);
+export const validateActivityAnalytics = (data: unknown) => ActivityAnalyticsTableSchema.parse(data);
+export const validateActivitySubscription = (data: unknown) => ActivitySubscriptionsTableSchema.parse(data);
+export const validateActivityNotification = (data: unknown) => ActivityNotificationsTableSchema.parse(data);
+
+export const shouldTriggerNotification = (activity: any, subscription: any): boolean => {
+  return subscription.is_active && subscription.activity_types.includes(activity.activity_type);
+};
+
+export const createActivityLogEntry = (params: any) => ({
+  id: crypto.randomUUID(),
+  ...params,
+  created_at: new Date()
+});
+
+export const formatActivityDescription = (activity: any): string => {
+  return `${activity.activity_type} on ${activity.entity_type} ${activity.entity_id}`;
+};
+
+export const isHighSeverityActivity = (activity: any): boolean => {
+  return activity.severity === 'high' || activity.severity === 'critical';
+};
+
+export type CreateActivityLogParams = z.infer<typeof ActivityLogsTableSchema>;
+
+// ============================================================================
+// ADDITIONAL PLACEHOLDER SCHEMAS (for build compatibility)
+// ============================================================================
+
+// Re-export all placeholder schemas for missing services
+export * from './schema-placeholders';

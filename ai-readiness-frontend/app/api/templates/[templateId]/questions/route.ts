@@ -92,7 +92,7 @@ export async function POST(
       display_conditions: displayConditions,
       skip_logic: skipLogic,
       analytics_enabled: analyticsEnabled
-    })
+    } as any)
 
     return NextResponse.json(question, { status: 201 })
 
@@ -157,7 +157,7 @@ export async function PUT(
         display_conditions: q.displayConditions || {},
         skip_logic: q.skipLogic || {},
         analytics_enabled: q.analyticsEnabled !== false
-      })
+      } as any)
     }
 
     // Get updated questions

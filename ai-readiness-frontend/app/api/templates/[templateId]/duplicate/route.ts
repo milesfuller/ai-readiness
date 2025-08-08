@@ -43,7 +43,7 @@ export async function POST(
     // Remove properties that will be auto-generated
     const { id, created_at, updated_at, ...cleanDuplicateData } = duplicateData
     
-    const newTemplate = await surveyTemplateService.createTemplate(cleanDuplicateData, user.id)
+    const newTemplate = await surveyTemplateService.createTemplate(cleanDuplicateData as any, user.id)
     
     // Copy questions if they exist
     const questions = await surveyTemplateService.getTemplateQuestions(templateId)
