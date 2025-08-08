@@ -1,0 +1,1814 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AI Readiness Assessment API",
+    "description": "Comprehensive API for AI readiness assessment platform including survey management, analytics, LLM analysis, and user management",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AI Readiness Support",
+      "email": "support@ai-readiness.com",
+      "url": "https://ai-readiness.com/support"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://ai-readiness-frontend.vercel.app/api",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "cookieAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "summary": "User registration",
+        "description": "Register a new user account with email verification",
+        "operationId": "registerUser",
+        "tags": ["Authentication"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              },
+              "example": {
+                "email": "john.doe@company.com",
+                "password": "SecurePassword123!",
+                "firstName": "John",
+                "lastName": "Doe",
+                "organizationName": "Acme Corporation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registration successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "success": true,
+                  "user": {
+                    "id": "uuid-user-id",
+                    "email": "john.doe@company.com"
+                  },
+                  "message": "Please check your email to verify your account"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Email is already registered"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "User logout",
+        "description": "Log out the current user and clear session",
+        "operationId": "logoutUser",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Successfully logged out"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/check-permission": {
+      "get": {
+        "summary": "Check user permissions",
+        "description": "Verify user authentication and role-based permissions",
+        "operationId": "checkPermission",
+        "tags": ["Authentication"],
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "query",
+            "description": "Permission to check",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["admin", "survey_create", "analytics_view", "llm_access"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission check result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/survey/submit": {
+      "post": {
+        "summary": "Submit survey response",
+        "description": "Submit or update a survey response with automatic LLM analysis for completed responses",
+        "operationId": "submitSurveyResponse",
+        "tags": ["Survey"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SurveySubmissionRequest"
+              },
+              "example": {
+                "surveyId": "uuid-survey-id",
+                "answers": [
+                  {
+                    "questionId": "q1",
+                    "answer": "We face challenges with data quality and integration"
+                  }
+                ],
+                "status": "completed",
+                "metadata": {
+                  "completionTime": 420,
+                  "voiceInputUsed": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Survey response submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SurveySubmissionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get survey responses",
+        "description": "Retrieve survey responses by session ID or survey ID",
+        "operationId": "getSurveyResponses",
+        "tags": ["Survey"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "query",
+            "description": "Session ID to get specific response",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "surveyId",
+            "in": "query",
+            "description": "Survey ID to get all responses",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Survey responses retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "response": {
+                          "$ref": "#/components/schemas/SurveyResponse"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "responses": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SurveyResponse"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/survey/session": {
+      "post": {
+        "summary": "Create survey session",
+        "description": "Create a new survey response session",
+        "operationId": "createSurveySession",
+        "tags": ["Survey"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "surveyId": {
+                    "type": "string"
+                  }
+                },
+                "required": ["surveyId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "surveyId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/dashboard": {
+      "get": {
+        "summary": "Get dashboard analytics",
+        "description": "Retrieve comprehensive analytics data for dashboard display",
+        "operationId": "getDashboardAnalytics",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "description": "Organization ID to filter results",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start date for data range",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End date for data range",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "metrics",
+            "in": "query",
+            "description": "Comma-separated list of metrics to include",
+            "schema": {
+              "type": "string"
+            },
+            "example": "overview,jtbd_trends,voice_quality"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "description": "Aggregation period",
+            "schema": {
+              "type": "string",
+              "enum": ["daily", "weekly", "monthly"],
+              "default": "weekly"
+            }
+          },
+          {
+            "name": "export",
+            "in": "query",
+            "description": "Export data instead of displaying",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "Export format",
+            "schema": {
+              "type": "string",
+              "enum": ["json", "csv"],
+              "default": "json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard analytics data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardAnalytics"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "overview,{\"totalResponses\":1247,\"completionRate\":87.5}"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Advanced analytics query",
+        "description": "Submit complex analytics queries with custom filters and parameters",
+        "operationId": "advancedAnalyticsQuery",
+        "tags": ["Analytics"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedAnalyticsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Advanced analytics results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardAnalytics"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llm/analyze": {
+      "post": {
+        "summary": "Analyze response with LLM",
+        "description": "Perform Jobs-to-be-Done (JTBD) analysis on survey responses using Large Language Models",
+        "operationId": "analyzeLLMResponse",
+        "tags": ["LLM Analysis"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LLMAnalysisRequest"
+              },
+              "example": {
+                "responseId": "uuid-response-id",
+                "responseText": "We struggle with data quality and need better integration tools",
+                "questionText": "What are your main challenges with current systems?",
+                "expectedForce": "pain_of_old",
+                "questionContext": "AI readiness assessment",
+                "organizationId": "uuid-org-id",
+                "surveyId": "uuid-survey-id"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "LLM analysis completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LLMAnalysisResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - LLM access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LLM service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "LLM service health check",
+        "description": "Check the status and health of LLM analysis services",
+        "operationId": "llmHealthCheck",
+        "tags": ["LLM Analysis"],
+        "responses": {
+          "200": {
+            "description": "LLM service status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LLMHealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/templates": {
+      "get": {
+        "summary": "List survey templates",
+        "description": "Retrieve available survey templates with filtering options",
+        "operationId": "getSurveyTemplates",
+        "tags": ["Templates"],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by template category",
+            "schema": {
+              "type": "string",
+              "enum": ["ai_readiness", "customer_feedback", "employee_engagement", "market_research"]
+            }
+          },
+          {
+            "name": "visibility",
+            "in": "query",
+            "description": "Filter by visibility level",
+            "schema": {
+              "type": "string",
+              "enum": ["private", "organization", "public", "marketplace"]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search templates by title or description",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of survey templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "templates": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SurveyTemplate"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create survey template",
+        "description": "Create a new survey template",
+        "operationId": "createSurveyTemplate",
+        "tags": ["Templates"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SurveyTemplate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/voice/upload": {
+      "post": {
+        "summary": "Upload voice recording",
+        "description": "Upload voice recording file for transcription and analysis",
+        "operationId": "uploadVoiceRecording",
+        "tags": ["Voice"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "audio": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Audio file (MP3, WAV, M4A, WebM)"
+                  },
+                  "responseId": {
+                    "type": "string",
+                    "description": "Associated survey response ID"
+                  },
+                  "questionId": {
+                    "type": "string",
+                    "description": "Associated question ID"
+                  }
+                },
+                "required": ["audio"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Voice recording uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file format or size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/voice/transcribe": {
+      "post": {
+        "summary": "Transcribe voice recording",
+        "description": "Convert voice recording to text using speech-to-text services",
+        "operationId": "transcribeVoiceRecording",
+        "tags": ["Voice"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recordingId": {
+                    "type": "string",
+                    "description": "ID of uploaded voice recording"
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Language code for transcription",
+                    "default": "en-US"
+                  }
+                },
+                "required": ["recordingId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transcription completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/{id}": {
+      "get": {
+        "summary": "Get organization details",
+        "description": "Retrieve detailed information about an organization",
+        "operationId": "getOrganization",
+        "tags": ["Organizations"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Organization ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied to organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token from Supabase authentication"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sb-access-token",
+        "description": "Session cookie authentication"
+      }
+    },
+    "schemas": {
+      "SignupRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "User password (minimum 8 characters)"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User's first name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User's last name"
+          },
+          "organizationName": {
+            "type": "string",
+            "description": "Name of user's organization"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PermissionResponse": {
+        "type": "object",
+        "properties": {
+          "hasPermission": {
+            "type": "boolean"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "org_admin", "system_admin"]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SurveySubmissionRequest": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "Existing session ID for updates"
+          },
+          "surveyId": {
+            "type": "string",
+            "description": "Survey ID for new responses"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SurveyAnswer"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["in_progress", "completed", "abandoned"],
+            "default": "in_progress"
+          },
+          "responseData": {
+            "type": "object",
+            "description": "Alternative format for response data"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "completionTime": {
+                "type": "number",
+                "description": "Time taken to complete (seconds)"
+              },
+              "voiceInputUsed": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "SurveySubmissionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "response": {
+            "$ref": "#/components/schemas/SurveyResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "SurveyResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "survey_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["in_progress", "completed", "abandoned"]
+          },
+          "response_data": {
+            "type": "object"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "analysis_status": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed"],
+            "nullable": true
+          }
+        }
+      },
+      "SurveyAnswer": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string"
+          },
+          "answer": {
+            "oneOf": [
+              {"type": "string"},
+              {"type": "number"},
+              {"type": "boolean"},
+              {"type": "array", "items": {"type": "string"}}
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Confidence level (0-100)"
+          },
+          "timeSpent": {
+            "type": "number",
+            "description": "Time spent on question (seconds)"
+          }
+        },
+        "required": ["questionId", "answer"]
+      },
+      "DashboardAnalytics": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "overview": {
+                "$ref": "#/components/schemas/OverviewMetrics"
+              },
+              "jtbd_trends": {
+                "$ref": "#/components/schemas/JTBDMetrics"
+              },
+              "voice_quality": {
+                "$ref": "#/components/schemas/VoiceMetrics"
+              },
+              "user_engagement": {
+                "$ref": "#/components/schemas/EngagementMetrics"
+              },
+              "real_time": {
+                "$ref": "#/components/schemas/RealTimeMetrics"
+              }
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "organizationId": {
+                "type": "string",
+                "nullable": true
+              },
+              "dateRange": {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  }
+                }
+              },
+              "period": {
+                "type": "string",
+                "enum": ["daily", "weekly", "monthly"]
+              },
+              "metrics": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "cacheTtl": {
+                "type": "number",
+                "description": "Cache TTL in seconds"
+              }
+            }
+          }
+        }
+      },
+      "OverviewMetrics": {
+        "type": "object",
+        "properties": {
+          "totalResponses": {
+            "type": "number"
+          },
+          "completionRate": {
+            "type": "number",
+            "format": "float",
+            "description": "Completion rate as percentage"
+          },
+          "averageTime": {
+            "type": "number",
+            "format": "float",
+            "description": "Average completion time in minutes"
+          },
+          "activeUsers": {
+            "type": "number"
+          },
+          "growth": {
+            "type": "object",
+            "properties": {
+              "responses": {
+                "type": "number",
+                "format": "float",
+                "description": "Growth percentage"
+              },
+              "completion": {
+                "type": "number",
+                "format": "float"
+              },
+              "users": {
+                "type": "number",
+                "format": "float"
+              }
+            }
+          }
+        }
+      },
+      "JTBDMetrics": {
+        "type": "object",
+        "properties": {
+          "forces": {
+            "type": "object",
+            "properties": {
+              "push": {
+                "type": "number",
+                "description": "Push force score"
+              },
+              "pull": {
+                "type": "number",
+                "description": "Pull force score"
+              },
+              "habit": {
+                "type": "number",
+                "description": "Habit force score"
+              },
+              "anxiety": {
+                "type": "number",
+                "description": "Anxiety force score"
+              }
+            }
+          },
+          "readinessScore": {
+            "type": "number",
+            "format": "float",
+            "description": "Overall AI readiness score"
+          },
+          "departmentBreakdown": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "VoiceMetrics": {
+        "type": "object",
+        "properties": {
+          "totalRecordings": {
+            "type": "number"
+          },
+          "averageDuration": {
+            "type": "number",
+            "format": "float",
+            "description": "Average duration in minutes"
+          },
+          "transcriptionAccuracy": {
+            "type": "number",
+            "format": "float",
+            "description": "Transcription accuracy percentage"
+          },
+          "qualityDistribution": {
+            "type": "object",
+            "properties": {
+              "excellent": {
+                "type": "number"
+              },
+              "good": {
+                "type": "number"
+              },
+              "fair": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "EngagementMetrics": {
+        "type": "object",
+        "properties": {
+          "dailyActive": {
+            "type": "number"
+          },
+          "weeklyActive": {
+            "type": "number"
+          },
+          "retentionRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "featureUsage": {
+            "type": "object",
+            "properties": {
+              "surveys": {
+                "type": "number"
+              },
+              "voice": {
+                "type": "number"
+              },
+              "analytics": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "RealTimeMetrics": {
+        "type": "object",
+        "properties": {
+          "currentUsers": {
+            "type": "number"
+          },
+          "activeSurveys": {
+            "type": "number"
+          },
+          "systemHealth": {
+            "type": "number",
+            "format": "float",
+            "description": "System health percentage"
+          },
+          "responseRate": {
+            "type": "number",
+            "format": "float",
+            "description": "Real-time response rate"
+          }
+        }
+      },
+      "AdvancedAnalyticsRequest": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dateRange": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["overview", "jtbd_trends", "voice_quality", "user_engagement", "real_time"]
+            },
+            "default": ["overview"]
+          },
+          "period": {
+            "type": "string",
+            "enum": ["daily", "weekly", "monthly"],
+            "default": "weekly"
+          },
+          "export": {
+            "type": "boolean",
+            "default": false
+          },
+          "format": {
+            "type": "string",
+            "enum": ["json", "csv"],
+            "default": "json"
+          }
+        }
+      },
+      "LLMAnalysisRequest": {
+        "type": "object",
+        "properties": {
+          "responseId": {
+            "type": "string",
+            "description": "Survey response ID"
+          },
+          "responseText": {
+            "type": "string",
+            "maxLength": 5000,
+            "description": "Text to analyze"
+          },
+          "questionText": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Original question text"
+          },
+          "expectedForce": {
+            "type": "string",
+            "enum": ["pain_of_old", "pull_of_new", "anchors_to_old", "anxiety_of_new", "demographic"],
+            "description": "Expected JTBD force type"
+          },
+          "questionContext": {
+            "type": "string",
+            "description": "Additional context for analysis"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "surveyId": {
+            "type": "string",
+            "description": "Survey ID"
+          }
+        },
+        "required": ["responseId", "responseText", "questionText", "expectedForce"]
+      },
+      "LLMAnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "analysisId": {
+            "type": "string",
+            "description": "Stored analysis ID"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "force": {
+                "type": "string",
+                "enum": ["pain_of_old", "pull_of_new", "anchors_to_old", "anxiety_of_new", "demographic"]
+              },
+              "intensity": {
+                "type": "number",
+                "format": "float",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Force intensity score (0-100)"
+              },
+              "confidence": {
+                "type": "number",
+                "format": "float",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Analysis confidence score (0-100)"
+              },
+              "themes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Identified themes in the response"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Analysis summary"
+              },
+              "reasoning": {
+                "type": "string",
+                "description": "Explanation of the analysis"
+              }
+            }
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "questionContext": {
+                "type": "string"
+              },
+              "employeeRole": {
+                "type": "string"
+              },
+              "employeeDepartment": {
+                "type": "string"
+              },
+              "organizationName": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "LLMHealthResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "example": "LLM Analysis API"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"]
+          },
+          "latency": {
+            "type": "number",
+            "description": "Response latency in milliseconds"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "apiKeys": {
+            "type": "object",
+            "properties": {
+              "openai": {
+                "type": "string",
+                "enum": ["configured", "missing"]
+              },
+              "anthropic": {
+                "type": "string",
+                "enum": ["configured", "missing"]
+              }
+            }
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SurveyTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["ai_readiness", "customer_feedback", "employee_engagement", "market_research"]
+          },
+          "version": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "published", "archived", "marketplace"]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["private", "organization", "public", "marketplace"]
+          },
+          "estimatedDuration": {
+            "type": "number",
+            "description": "Estimated completion time in minutes"
+          },
+          "difficultyLevel": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "usageCount": {
+            "type": "number"
+          },
+          "completionRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "category": {
+            "type": "string",
+            "enum": ["ai_readiness", "customer_feedback", "employee_engagement", "market_research"]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["private", "organization", "public"],
+            "default": "private"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["title", "category"]
+      },
+      "VoiceUploadResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "recordingId": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number",
+            "description": "File size in bytes"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Recording duration in seconds"
+          },
+          "format": {
+            "type": "string"
+          },
+          "uploadedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TranscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "transcription": {
+            "type": "string",
+            "description": "Transcribed text"
+          },
+          "confidence": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Transcription confidence score"
+          },
+          "language": {
+            "type": "string",
+            "description": "Detected language"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Audio duration in seconds"
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "industry": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/OrganizationSettings"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrganizationSettings": {
+        "type": "object",
+        "properties": {
+          "allowSelfRegistration": {
+            "type": "boolean"
+          },
+          "defaultRole": {
+            "type": "string",
+            "enum": ["user", "org_admin", "system_admin"]
+          },
+          "requireEmailVerification": {
+            "type": "boolean"
+          },
+          "dataRetentionDays": {
+            "type": "number"
+          },
+          "enableAuditLogs": {
+            "type": "boolean"
+          },
+          "enable2FA": {
+            "type": "boolean"
+          },
+          "enableSSO": {
+            "type": "boolean"
+          },
+          "ssoProvider": {
+            "type": "string"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "minimum": 1
+          },
+          "limit": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          },
+          "hasNext": {
+            "type": "boolean"
+          },
+          "hasPrevious": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Detailed error message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["error"]
+      },
+      "ValidationErrorResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints"
+    },
+    {
+      "name": "Survey",
+      "description": "Survey management and response submission"
+    },
+    {
+      "name": "Analytics",
+      "description": "Analytics and reporting endpoints"
+    },
+    {
+      "name": "LLM Analysis",
+      "description": "AI-powered analysis using Large Language Models"
+    },
+    {
+      "name": "Templates",
+      "description": "Survey template management"
+    },
+    {
+      "name": "Voice",
+      "description": "Voice recording and transcription"
+    },
+    {
+      "name": "Organizations",
+      "description": "Organization management"
+    }
+  ],
+  "x-rate-limit": {
+    "description": "API rate limiting",
+    "limits": {
+      "general": {
+        "requests": 1000,
+        "window": "1h",
+        "description": "General API rate limit"
+      },
+      "llm": {
+        "requests": 100,
+        "window": "1h",
+        "description": "LLM analysis rate limit"
+      },
+      "voice": {
+        "requests": 50,
+        "window": "1h",
+        "description": "Voice upload rate limit"
+      }
+    }
+  }
+}
