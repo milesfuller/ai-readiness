@@ -269,7 +269,7 @@ export const ActivityFilter = z.object({
   date_to: z.date().optional()
 });
 
-export const NotificationMethodSchema = z.enum(['email', 'sms', 'push', 'in_app']);
+export const NotificationMethodSchema = z.enum(['email', 'sms', 'push', 'in_app', 'webhook']);
 export const NotificationStatusSchema = z.enum(['sent', 'delivered', 'failed', 'pending']);
 export const ActivityAggregationPeriodSchema = z.enum(['hour', 'day', 'week', 'month']);
 

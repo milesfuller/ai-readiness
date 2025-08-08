@@ -820,7 +820,7 @@ export class ActivityLogService {
           await this.supabase
             .from('activity_subscriptions')
             .update({
-              trigger_count: (validatedSubscription.trigger_count as number) + 1,
+              trigger_count: ((validatedSubscription as any).trigger_count || 0) + 1,
               last_triggered: new Date(),
               updated_at: new Date()
             })
@@ -840,7 +840,7 @@ export class ActivityLogService {
     // This is a placeholder - implement actual notification sending logic
     // based on the notification method (email, webhook, push, etc.)
     
-    switch (notification.notification_method) {
+    switch ((notification as any).notification_method) {
       case 'email':
         // Implement email sending
         break;
