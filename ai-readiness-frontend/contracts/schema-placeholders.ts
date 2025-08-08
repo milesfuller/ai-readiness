@@ -201,20 +201,20 @@ export const getNextOnboardingStep = (progress: any) => {
 // ACTIVITY LOG SCHEMAS
 // ============================================================================
 
-export const ActivityAnalytics = z.object({
+export const ActivityAnalyticsSchema = z.object({
   id: z.string().uuid(),
   metrics: z.any(),
   created_at: z.date()
 });
 
-export const ActivitySubscription = z.object({
+export const ActivitySubscriptionSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   activity_types: z.array(z.string()),
   created_at: z.date()
 });
 
-export const ActivityNotification = z.object({
+export const ActivityNotificationSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   activity_id: z.string().uuid(),
@@ -222,17 +222,38 @@ export const ActivityNotification = z.object({
   created_at: z.date()
 });
 
-export const RetentionPolicy = z.object({
+export const RetentionPolicySchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   days: z.number(),
   created_at: z.date()
 });
 
-export const ActivityType = z.enum(['create', 'update', 'delete', 'view', 'share', 'export', 'import']);
-export const EntityType = z.enum(['survey', 'template', 'organization', 'user', 'report']);
-export const ActivitySeverity = z.enum(['low', 'medium', 'high', 'critical']);
-export const ActivityStatus = z.enum(['pending', 'completed', 'failed']);
+export const ActivityAnalytics = ActivityAnalyticsSchema;
+export const ActivitySubscription = ActivitySubscriptionSchema;
+export const ActivityNotification = ActivityNotificationSchema;
+export const RetentionPolicy = RetentionPolicySchema;
+
+export type ActivityAnalytics = z.infer<typeof ActivityAnalyticsSchema>;
+export type ActivitySubscription = z.infer<typeof ActivitySubscriptionSchema>;
+export type ActivityNotification = z.infer<typeof ActivityNotificationSchema>;
+export type RetentionPolicy = z.infer<typeof RetentionPolicySchema>;
+
+export const ActivityTypeSchema = z.enum(['create', 'update', 'delete', 'view', 'share', 'export', 'import']);
+export const EntityTypeSchema = z.enum(['survey', 'template', 'organization', 'user', 'report']);
+export const ActivitySeveritySchema = z.enum(['low', 'medium', 'high', 'critical']);
+export const ActivityStatusSchema = z.enum(['pending', 'completed', 'failed']);
+
+// Export both schemas and types
+export const ActivityType = ActivityTypeSchema;
+export const EntityType = EntityTypeSchema;
+export const ActivitySeverity = ActivitySeveritySchema;
+export const ActivityStatus = ActivityStatusSchema;
+
+export type ActivityType = z.infer<typeof ActivityTypeSchema>;
+export type EntityType = z.infer<typeof EntityTypeSchema>;
+export type ActivitySeverity = z.infer<typeof ActivitySeveritySchema>;
+export type ActivityStatus = z.infer<typeof ActivityStatusSchema>;
 
 export const ActivityContext = z.object({
   ip_address: z.string().optional(),
@@ -242,32 +263,39 @@ export const ActivityContext = z.object({
 });
 
 export const ActivityFilter = z.object({
-  activity_types: z.array(ActivityType).optional(),
-  entity_types: z.array(EntityType).optional(),
+  activity_types: z.array(ActivityTypeSchema).optional(),
+  entity_types: z.array(EntityTypeSchema).optional(),
   date_from: z.date().optional(),
   date_to: z.date().optional()
 });
 
-export const NotificationMethod = z.enum(['email', 'sms', 'push', 'in_app']);
-export const NotificationStatus = z.enum(['sent', 'delivered', 'failed', 'pending']);
-export const ActivityAggregationPeriod = z.enum(['hour', 'day', 'week', 'month']);
+export const NotificationMethodSchema = z.enum(['email', 'sms', 'push', 'in_app']);
+export const NotificationStatusSchema = z.enum(['sent', 'delivered', 'failed', 'pending']);
+export const ActivityAggregationPeriodSchema = z.enum(['hour', 'day', 'week', 'month']);
+
+export const NotificationMethod = NotificationMethodSchema;
+export const NotificationStatus = NotificationStatusSchema;
+export const ActivityAggregationPeriod = ActivityAggregationPeriodSchema;
+
+export type NotificationMethod = z.infer<typeof NotificationMethodSchema>;
+export type NotificationStatus = z.infer<typeof NotificationStatusSchema>;
+export type ActivityAggregationPeriod = z.infer<typeof ActivityAggregationPeriodSchema>;
 
 // Table schemas
 export const ActivityLogsTableSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
-  activity_type: ActivityType,
-  entity_type: EntityType,
+  activity_type: ActivityTypeSchema,
+  entity_type: EntityTypeSchema,
   entity_id: z.string(),
   description: z.string(),
   context: ActivityContext,
   created_at: z.date()
 });
 
-export const ActivityAnalyticsTableSchema = ActivityAnalytics;
-export const ActivitySubscriptionsTableSchema = ActivitySubscription;
-export const ActivityNotificationsTableSchema = ActivityNotification;
-export const RetentionPolicySchema = RetentionPolicy;
+export const ActivityAnalyticsTableSchema = ActivityAnalyticsSchema;
+export const ActivitySubscriptionsTableSchema = ActivitySubscriptionSchema;
+export const ActivityNotificationsTableSchema = ActivityNotificationSchema;
 
 // Helper functions
 export const validateActivityLog = (data: unknown) => ActivityLogsTableSchema.parse(data);
@@ -313,4 +341,4 @@ export const createActivityLogEntry = (params: CreateActivityLogParams) => {
 };
 
 // Use the ActivityLog type from main schema
-export { ActivityLog } from './schema';
+export type { ActivityLog } from './schema';

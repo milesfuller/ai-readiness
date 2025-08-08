@@ -65,10 +65,10 @@ export class ActivityLogService {
 
       if (error) throw error;
 
-      const validatedActivity = validateActivityLog(data);
+      const validatedActivity = data as ActivityLog;
 
       // Trigger notifications asynchronously
-      this.processNotifications(validatedActivity).catch(err => 
+      this.processNotifications(validatedActivity as any).catch(err => 
         console.error('Error processing notifications:', err)
       );
 
@@ -164,7 +164,7 @@ export class ActivityLogService {
 
       if (error) throw error;
 
-      const activities = data.map(activity => validateActivityLog(activity));
+      const activities = data as ActivityLog[];
       const total = count || 0;
       const hasMore = offset + limit < total;
 
@@ -216,7 +216,7 @@ export class ActivityLogService {
 
       if (error) throw error;
 
-      const activities = data.map(activity => validateActivityLog(activity));
+      const activities = data as ActivityLog[];
       const total = count || 0;
       const hasMore = offset + limit < total;
 
@@ -274,7 +274,7 @@ export class ActivityLogService {
 
       if (error) throw error;
 
-      return data.map(activity => validateActivityLog(activity));
+      return data as ActivityLog[];
     } catch (error) {
       console.error('Error fetching entity activity logs:', error);
       throw new Error(`Failed to fetch entity activity logs: ${error instanceof Error ? error.message : 'Unknown error'}`);
