@@ -112,10 +112,10 @@ async function processTranscriptionAsync(
       apiKey: process.env.OPENAI_API_KEY || '',
       model: options.model || 'whisper-1',
       language: options.language,
-      prompt: options.prompt,
-      temperature: options.temperature,
-      response_format: options.response_format,
-      timestamp_granularities: options.timestamp_granularities,
+      enableWordTimestamps: options.timestamp_granularities?.includes('word'),
+      enableSpeakerDiarization: false,
+      maxRetries: 3,
+      retryDelay: 1000,
     });
     const voiceService = createVoiceService(supabase, transcriptionService);
 
@@ -167,10 +167,10 @@ async function processTranscriptionSync(
     apiKey: process.env.OPENAI_API_KEY || '',
     model: options.model || 'whisper-1',
     language: options.language,
-    prompt: options.prompt,
-    temperature: options.temperature,
-    response_format: options.response_format,
-    timestamp_granularities: options.timestamp_granularities,
+    enableWordTimestamps: options.timestamp_granularities?.includes('word'),
+    enableSpeakerDiarization: false,
+    maxRetries: 3,
+    retryDelay: 1000,
   });
   const voiceService = createVoiceService(supabase, transcriptionService);
 
@@ -445,7 +445,7 @@ export const POST = withRateLimit(
   (request) => {
     // Use user ID for authenticated requests
     const userId = request.headers.get('x-user-id');
-    return userId ? `voice-transcribe:user:${userId}` : undefined;
+    return userId ? `voice-transcribe:user:${userId}` : 'voice-transcribe:anonymous';
   }
 )(handleTranscribe);
 
@@ -453,7 +453,7 @@ export const GET = withRateLimit(
   rateLimitConfigs.api,
   (request) => {
     const userId = request.headers.get('x-user-id');
-    return userId ? `voice-transcribe-status:user:${userId}` : undefined;
+    return userId ? `voice-transcribe-status:user:${userId}` : 'voice-transcribe-status:anonymous';
   }
 )(handleGetJobStatus);
 

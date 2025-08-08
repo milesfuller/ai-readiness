@@ -18,10 +18,10 @@ import {
   Grid,
   List
 } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { Input } from '../ui/Input';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 interface Recording {
   id: string;
@@ -317,7 +317,7 @@ export const RecordingsList: React.FC<RecordingsListProps> = ({
               <option value="all">All Quality</option>
               <option value="high">High (80+)</option>
               <option value="medium">Medium (60-79)</option>
-              <option value="low">Low (<60)</option>
+              <option value="low">Low (&lt;60)</option>
             </select>
           </div>
         </div>

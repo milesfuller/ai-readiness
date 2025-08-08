@@ -196,3 +196,121 @@ export const validateUserSession = (data: unknown) => UserSessionsTableSchema.pa
 export const getNextOnboardingStep = (progress: any) => {
   return progress.current_step + 1;
 };
+
+// ============================================================================
+// ACTIVITY LOG SCHEMAS
+// ============================================================================
+
+export const ActivityAnalytics = z.object({
+  id: z.string().uuid(),
+  metrics: z.any(),
+  created_at: z.date()
+});
+
+export const ActivitySubscription = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  activity_types: z.array(z.string()),
+  created_at: z.date()
+});
+
+export const ActivityNotification = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  activity_id: z.string().uuid(),
+  read: z.boolean(),
+  created_at: z.date()
+});
+
+export const RetentionPolicy = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  days: z.number(),
+  created_at: z.date()
+});
+
+export const ActivityType = z.enum(['create', 'update', 'delete', 'view', 'share', 'export', 'import']);
+export const EntityType = z.enum(['survey', 'template', 'organization', 'user', 'report']);
+export const ActivitySeverity = z.enum(['low', 'medium', 'high', 'critical']);
+export const ActivityStatus = z.enum(['pending', 'completed', 'failed']);
+
+export const ActivityContext = z.object({
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+  location: z.string().optional(),
+  metadata: z.any()
+});
+
+export const ActivityFilter = z.object({
+  activity_types: z.array(ActivityType).optional(),
+  entity_types: z.array(EntityType).optional(),
+  date_from: z.date().optional(),
+  date_to: z.date().optional()
+});
+
+export const NotificationMethod = z.enum(['email', 'sms', 'push', 'in_app']);
+export const NotificationStatus = z.enum(['sent', 'delivered', 'failed', 'pending']);
+export const ActivityAggregationPeriod = z.enum(['hour', 'day', 'week', 'month']);
+
+// Table schemas
+export const ActivityLogsTableSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  activity_type: ActivityType,
+  entity_type: EntityType,
+  entity_id: z.string(),
+  description: z.string(),
+  context: ActivityContext,
+  created_at: z.date()
+});
+
+export const ActivityAnalyticsTableSchema = ActivityAnalytics;
+export const ActivitySubscriptionsTableSchema = ActivitySubscription;
+export const ActivityNotificationsTableSchema = ActivityNotification;
+export const RetentionPolicySchema = RetentionPolicy;
+
+// Helper functions
+export const validateActivityLog = (data: unknown) => ActivityLogsTableSchema.parse(data);
+export const validateActivityAnalytics = (data: unknown) => ActivityAnalyticsTableSchema.parse(data);
+export const validateActivitySubscription = (data: unknown) => ActivitySubscriptionsTableSchema.parse(data);
+export const validateActivityNotification = (data: unknown) => ActivityNotificationsTableSchema.parse(data);
+
+export const shouldTriggerNotification = (activity: any, subscription: any) => {
+  return true; // Placeholder
+};
+
+// Helper types and functions
+export interface CreateActivityLogParams {
+  activityType: string;
+  entityType: string;
+  entityId: string;
+  userId?: string;
+  organizationId?: string;
+  description?: string;
+  severity?: 'low' | 'medium' | 'high' | 'critical';
+  metadata?: any;
+}
+
+export const createActivityLogEntry = (params: CreateActivityLogParams) => {
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+    activity_type: params.activityType,
+    entity_type: params.entityType,
+    entity_id: params.entityId,
+    user_id: params.userId || null,
+    organization_id: params.organizationId || null,
+    description: params.description || null,
+    severity: params.severity || 'low',
+    status: 'success' as const,
+    metadata: params.metadata || {},
+    context: {
+      timestamp: new Date().toISOString()
+    },
+    created_at: new Date(),
+    updated_at: new Date(),
+    occurred_at: new Date()
+  };
+};
+
+// Use the ActivityLog type from main schema
+export { ActivityLog } from './schema';

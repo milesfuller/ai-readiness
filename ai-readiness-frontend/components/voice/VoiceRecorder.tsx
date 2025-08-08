@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Play, Pause, Stop, Upload, Download } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
+import { Mic, MicOff, Play, Pause, Square, Upload, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface VoiceRecorderProps {
   onRecordingComplete?: (audioBlob: Blob, duration: number) => void;
@@ -335,7 +335,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
               onClick={stopRecording}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-3"
             >
-              <Stop className="w-5 h-5 mr-2" />
+              <Square className="w-5 h-5 mr-2" />
               Stop
             </Button>
           </>

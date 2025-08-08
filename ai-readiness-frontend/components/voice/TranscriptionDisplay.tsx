@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Edit3, Save, X, Volume2, VolumeX, Clock, AlertCircle } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface TranscriptionSegment {
   id: string;
@@ -85,6 +85,7 @@ export const TranscriptionDisplay: React.FC<TranscriptionDisplayProps> = ({
         audio.removeEventListener('pause', handlePause);
       };
     }
+    return undefined;
   }, [segments, selectedSegment]);
 
   const handleEditStart = (segment: TranscriptionSegment) => {
@@ -258,7 +259,7 @@ export const TranscriptionDisplay: React.FC<TranscriptionDisplayProps> = ({
           {segments.map((segment) => (
             <div
               key={segment.id}
-              ref={el => segmentRefs.current[segment.id] = el}
+              ref={el => {segmentRefs.current[segment.id] = el;}}
               className={`p-3 rounded-lg border transition-all duration-200 ${
                 selectedSegment === segment.id 
                   ? 'bg-blue-50 border-blue-300 dark:bg-blue-900 dark:border-blue-700' 

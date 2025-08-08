@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, CheckCircle, XCircle, Info, TrendingUp, Volume2, Mic, Signal } from 'lucide-react';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface QualityMetrics {
   overall: number; // 0-100

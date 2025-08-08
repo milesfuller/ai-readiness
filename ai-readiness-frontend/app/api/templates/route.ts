@@ -122,16 +122,7 @@ export async function POST(request: NextRequest) {
       introduction_text: introductionText,
       conclusion_text: conclusionText,
       settings: { ...defaultSettings, ...settings },
-      organization_id: organizationId || null,
-      marketplace_data: {
-        price: 0,
-        downloads: 0,
-        rating: 0,
-        reviews: 0,
-        featured: false,
-        license: 'standard'
-      },
-      question_groups: []
+      organization_id: organizationId || null
     }, user.id)
 
     return NextResponse.json(template, { status: 201 })

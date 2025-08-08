@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { ForceIndicator } from "./ForceIndicator"
 import { ForceScoreDisplay } from "./ForceScoreDisplay"
 
-interface JTBDQuestionCardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface JTBDQuestionCardProps {
   question: SurveyTemplateQuestion
   showForceInfo?: boolean
   showScore?: boolean
@@ -19,6 +19,8 @@ interface JTBDQuestionCardProps extends React.HTMLAttributes<HTMLDivElement> {
   selected?: boolean
   onSelect?: (questionId: string) => void
   animated?: boolean
+  className?: string
+  style?: React.CSSProperties
 }
 
 const JTBDQuestionCard = React.forwardRef<
@@ -36,7 +38,7 @@ const JTBDQuestionCard = React.forwardRef<
   selected = false,
   onSelect,
   animated = false,
-  ...props 
+  style
 }, ref) => {
   const handleSelect = () => {
     if (interactive && onSelect && question.id) {
@@ -79,7 +81,7 @@ const JTBDQuestionCard = React.forwardRef<
           className
         )}
         onClick={handleSelect}
-        {...props}
+        style={style}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-3">
@@ -135,7 +137,7 @@ const JTBDQuestionCard = React.forwardRef<
           className
         )}
         onClick={handleSelect}
-        {...props}
+        style={style}
       >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
@@ -279,7 +281,7 @@ const JTBDQuestionCard = React.forwardRef<
         className
       )}
       onClick={handleSelect}
-      {...props}
+      style={style}
     >
       <CardContent className="p-4">
         <div className="space-y-3">
@@ -347,7 +349,7 @@ const JTBDQuestionCard = React.forwardRef<
 JTBDQuestionCard.displayName = "JTBDQuestionCard"
 
 // Grid component for displaying multiple question cards
-interface JTBDQuestionGridProps extends React.HTMLAttributes<HTMLDivElement> {
+interface JTBDQuestionGridProps {
   questions: SurveyTemplateQuestion[]
   showForceInfo?: boolean
   showScore?: boolean
@@ -360,6 +362,8 @@ interface JTBDQuestionGridProps extends React.HTMLAttributes<HTMLDivElement> {
   animated?: boolean
   filterByForce?: JTBDForceType | null
   sortBy?: 'order' | 'force' | 'score'
+  className?: string
+  style?: React.CSSProperties
 }
 
 const JTBDQuestionGrid = React.forwardRef<
@@ -379,7 +383,7 @@ const JTBDQuestionGrid = React.forwardRef<
   animated = false,
   filterByForce,
   sortBy = 'order',
-  ...props
+  style
 }, ref) => {
   // Filter and sort questions
   let processedQuestions = [...questions]
@@ -420,7 +424,7 @@ const JTBDQuestionGrid = React.forwardRef<
     <div
       ref={ref}
       className={cn(gridClasses[variant], className)}
-      {...props}
+      style={style}
     >
       {processedQuestions.map((question, index) => (
         <JTBDQuestionCard

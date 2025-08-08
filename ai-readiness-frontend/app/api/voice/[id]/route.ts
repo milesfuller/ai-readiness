@@ -289,7 +289,7 @@ export const GET = withRateLimit(
   (request) => {
     // Use user ID for authenticated requests
     const userId = request.headers.get('x-user-id');
-    return userId ? `voice-get:user:${userId}` : undefined;
+    return userId ? `voice-get:user:${userId}` : 'voice-get:anonymous';
   }
 )(handleGet);
 

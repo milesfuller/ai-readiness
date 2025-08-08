@@ -123,7 +123,7 @@ export async function DELETE(
     }
 
     // Don't allow deletion of published marketplace templates
-    if (template.status === 'marketplace') {
+    if ((template as any).visibility === 'marketplace') {
       return NextResponse.json(
         { error: 'Cannot delete marketplace templates' },
         { status: 400 }

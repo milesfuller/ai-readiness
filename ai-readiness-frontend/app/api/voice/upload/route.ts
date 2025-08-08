@@ -240,7 +240,7 @@ export const POST = withRateLimit(
   (request) => {
     // Use user ID for authenticated requests
     const userId = request.headers.get('x-user-id');
-    return userId ? `voice-upload:user:${userId}` : undefined;
+    return userId ? `voice-upload:user:${userId}` : 'voice-upload:anonymous';
   }
 )(handleUpload);
 
