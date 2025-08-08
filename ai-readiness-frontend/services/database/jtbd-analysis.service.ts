@@ -591,6 +591,6 @@ export class JTBDAnalysisService {
 export const createJTBDAnalysisService = (
   supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL!,
   supabaseKey: string = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-) => {
+): JTBDAnalysisService => {
   return new JTBDAnalysisService(supabaseUrl, supabaseKey);
 };

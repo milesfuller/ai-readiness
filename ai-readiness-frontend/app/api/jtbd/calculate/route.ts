@@ -117,9 +117,13 @@ export async function POST(request: NextRequest) {
 
     // Check organization access for all responses
     const accessibleResponseIds = new Set(
-      dbResponses?.filter(response => 
-        canAccessOrganization(userRole, userOrgId, response.surveys.organization_id)
-      ).map(r => r.id) || []
+      dbResponses?.filter(response => {
+        const survey = response.surveys
+        if (survey && typeof survey === 'object' && 'organization_id' in survey) {
+          return canAccessOrganization(userRole, userOrgId, survey.organization_id as string)
+        }
+        return false
+      }).map(r => r.id) || []
     )
 
     const inaccessibleResponses = responseIds.filter(id => !accessibleResponseIds.has(id))
@@ -157,9 +161,10 @@ export async function POST(request: NextRequest) {
       try {
         // Get additional context from database
         const dbResponse = dbResponses?.find(r => r.id === responseData.responseId)
+        const surveys = Array.isArray(dbResponse?.surveys) ? dbResponse?.surveys[0] : dbResponse?.surveys
         const context = {
           questionContext: responseData.questionContext || 'AI readiness assessment',
-          organizationName: dbResponse?.surveys.title || 'Survey',
+          organizationName: surveys?.title || 'Survey',
           responseId: responseData.responseId,
           surveyId: dbResponse?.survey_id
         }

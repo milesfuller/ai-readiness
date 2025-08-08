@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check organization access - filter by user's accessible organizations
-    if (userRole !== 'admin') {
+    if (userRole !== 'system_admin') {
       if (userOrgId) {
         query = query.eq('surveys.organization_id', userOrgId)
       } else {
@@ -177,9 +177,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Check organization access for returned responses
-    const accessibleResponses = responses.filter(response => 
-      canAccessOrganization(userRole, userOrgId, response.surveys.organization_id)
-    )
+    const accessibleResponses = responses.filter(response => {
+      const survey = response.surveys
+      if (survey && typeof survey === 'object' && 'organization_id' in survey) {
+        return canAccessOrganization(userRole, userOrgId, survey.organization_id as string)
+      }
+      return false
+    })
 
     if (accessibleResponses.length === 0) {
       return addAPISecurityHeaders(

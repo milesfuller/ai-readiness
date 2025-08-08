@@ -149,7 +149,7 @@ export async function GET(
         analyzed_at,
         completion_time,
         metadata,
-        profiles:respondent_id (
+        profiles!respondent_id (
           first_name,
           last_name,
           job_title,
@@ -258,10 +258,10 @@ export async function GET(
           actionableInsights: analysisResult.actionableInsights,
           qualityIndicators: analysisResult.qualityIndicators,
           respondentInfo: includeRespondentDetails ? {
-            jobTitle: response.profiles?.job_title,
-            department: response.profiles?.department,
-            firstName: response.profiles?.first_name,
-            lastName: response.profiles?.last_name
+            jobTitle: response.profiles && typeof response.profiles === 'object' && 'job_title' in response.profiles ? response.profiles.job_title as string : undefined,
+            department: response.profiles && typeof response.profiles === 'object' && 'department' in response.profiles ? response.profiles.department as string : undefined,
+            firstName: response.profiles && typeof response.profiles === 'object' && 'first_name' in response.profiles ? response.profiles.first_name as string : undefined,
+            lastName: response.profiles && typeof response.profiles === 'object' && 'last_name' in response.profiles ? response.profiles.last_name as string : undefined
           } : null,
           rawAnalysis: includeRaw ? analysisResult : null
         }
@@ -479,10 +479,10 @@ async function generateOrganizationalInsights(
   const anchorScores = forceStrengths.anchors_to_old || []
   const anxietyScores = forceStrengths.anxiety_of_new || []
 
-  const avgPain = painScores.length > 0 ? painScores.reduce((a, b) => a + b, 0) / painScores.length : 0
-  const avgPull = pullScores.length > 0 ? pullScores.reduce((a, b) => a + b, 0) / pullScores.length : 0
-  const avgAnchors = anchorScores.length > 0 ? anchorScores.reduce((a, b) => a + b, 0) / anchorScores.length : 0
-  const avgAnxiety = anxietyScores.length > 0 ? anxietyScores.reduce((a, b) => a + b, 0) / anxietyScores.length : 0
+  const avgPain = painScores.length > 0 ? painScores.reduce((a: number, b: number) => a + b, 0) / painScores.length : 0
+  const avgPull = pullScores.length > 0 ? pullScores.reduce((a: number, b: number) => a + b, 0) / pullScores.length : 0
+  const avgAnchors = anchorScores.length > 0 ? anchorScores.reduce((a: number, b: number) => a + b, 0) / anchorScores.length : 0
+  const avgAnxiety = anxietyScores.length > 0 ? anxietyScores.reduce((a: number, b: number) => a + b, 0) / anxietyScores.length : 0
 
   // Calculate overall readiness using JTBD formula
   const readinessScore = Math.max(0, Math.min(100,

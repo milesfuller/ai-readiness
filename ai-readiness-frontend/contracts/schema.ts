@@ -450,6 +450,228 @@ export const Responses = z.object({
   answer: z.unknown(),
   answered_at: z.date().default(() => new Date()),
   time_spent: z.number().int().min(0).nullable(), // seconds
+  
+  // Voice Recording Support
+  has_voice_recording: z.boolean().default(false),
+  voice_recording_id: z.string().uuid().nullable().default(null),
+  
+  ...TimestampSchema.shape
+});
+
+// ============================================================================
+// VOICE RECORDING SYSTEM - Voice responses, transcription, quality metrics
+// ============================================================================
+
+export const TranscriptionStatus = z.enum([
+  'pending',
+  'processing', 
+  'completed',
+  'failed',
+  'cancelled'
+]);
+
+export type TranscriptionStatusType = z.infer<typeof TranscriptionStatus>;
+
+export const VoiceRecording = z.object({
+  id: z.string().uuid(),
+  
+  // Relationships
+  response_id: z.string().uuid(),
+  survey_id: z.string().uuid(),
+  session_id: z.string().uuid(),
+  question_id: z.string().uuid(),
+  user_id: z.string().uuid().nullable(),
+  
+  // Recording Details
+  recording_url: z.string().url(),
+  original_filename: z.string().max(255).nullable().default(null),
+  duration_seconds: z.number().min(0.1).max(1800), // 0.1 sec to 30 min
+  file_size_bytes: z.number().int().min(1).max(104857600), // 1 byte to 100MB
+  mime_type: z.string().regex(/^audio\/(mp3|wav|ogg|m4a|webm|aac)$/),
+  
+  // Audio Quality Metrics
+  quality_metrics: z.object({
+    sample_rate: z.number().min(8000).max(48000).nullable().default(null),
+    bit_rate: z.number().min(32).max(320).nullable().default(null), // kbps
+    channels: z.number().min(1).max(2).default(1), // mono/stereo
+    signal_to_noise_ratio: z.number().min(0).max(60).nullable().default(null), // dB
+    volume_level: z.number().min(0).max(1).nullable().default(null), // 0-1 normalized
+    clarity_score: z.number().min(0).max(10).nullable().default(null), // 0-10 quality score
+    background_noise_level: z.number().min(0).max(1).nullable().default(null) // 0-1 normalized
+  }).default({
+    sample_rate: null,
+    bit_rate: null,
+    channels: 1,
+    signal_to_noise_ratio: null,
+    volume_level: null,
+    clarity_score: null,
+    background_noise_level: null
+  }),
+  
+  // Transcription
+  transcription_status: TranscriptionStatus.default('pending'),
+  transcription_text: z.string().nullable().default(null),
+  transcription_confidence: z.number().min(0).max(1).nullable().default(null),
+  transcription_language: z.string().max(10).nullable().default(null), // ISO 639-1
+  transcription_engine: z.string().max(50).nullable().default(null), // 'whisper', 'azure', etc.
+  transcription_started_at: z.date().nullable().default(null),
+  transcription_completed_at: z.date().nullable().default(null),
+  transcription_error: z.string().nullable().default(null),
+  
+  // Processing Status
+  processing_status: z.enum([
+    'uploaded',
+    'validating',
+    'processing',
+    'transcribing',
+    'analyzing',
+    'completed',
+    'failed'
+  ]).default('uploaded'),
+  processing_started_at: z.date().nullable().default(null),
+  processing_completed_at: z.date().nullable().default(null),
+  processing_error: z.string().nullable().default(null),
+  
+  // Storage & Security
+  storage_provider: z.string().max(50).default('local'), // 'local', 's3', 'azure', 'gcp'
+  storage_region: z.string().max(50).nullable().default(null),
+  encryption_key_id: z.string().nullable().default(null),
+  is_encrypted: z.boolean().default(false),
+  
+  // Metadata
+  metadata: z.object({
+    device_type: z.string().nullable(),
+    browser: z.string().nullable(),
+    recording_environment: z.string().nullable(),
+    user_agent: z.string().nullable(),
+    microphone_permissions: z.boolean().nullable(),
+    recording_attempts: z.number().min(1).default(1),
+    compression_applied: z.boolean().default(false),
+    noise_reduction_applied: z.boolean().default(false)
+  }).default({
+    device_type: null,
+    browser: null,
+    recording_environment: null,
+    user_agent: null,
+    microphone_permissions: null,
+    recording_attempts: 1,
+    compression_applied: false,
+    noise_reduction_applied: false
+  }),
+  
+  // Compliance & Privacy
+  consent_given: z.boolean().default(false),
+  consent_timestamp: z.date().nullable().default(null),
+  retention_expires_at: z.date().nullable().default(null),
+  data_processed_at: z.date().nullable().default(null),
+  anonymized: z.boolean().default(false),
+  
+  ...TimestampSchema.shape,
+  ...SoftDeleteSchema.shape
+});
+
+export const TranscriptionSegment = z.object({
+  id: z.string().uuid(),
+  voice_recording_id: z.string().uuid(),
+  
+  // Segment Details
+  start_time_seconds: z.number().min(0),
+  end_time_seconds: z.number().min(0),
+  duration_seconds: z.number().min(0.01),
+  
+  // Transcription
+  text: z.string(),
+  confidence_score: z.number().min(0).max(1),
+  language: z.string().max(10).nullable().default(null),
+  
+  // Analysis
+  speaker_id: z.string().nullable().default(null), // For speaker identification
+  sentiment_score: z.number().min(-1).max(1).nullable().default(null), // -1 negative, 1 positive
+  emotion_detected: z.string().nullable().default(null), // 'happy', 'sad', 'neutral', etc.
+  keywords: z.array(z.string()).default([]),
+  topics: z.array(z.string()).default([]),
+  
+  // Technical
+  audio_features: z.object({
+    pitch_avg: z.number().nullable(),
+    pitch_variance: z.number().nullable(),
+    speaking_rate: z.number().nullable(), // words per minute
+    pause_count: z.number().int().min(0).default(0),
+    volume_variance: z.number().nullable()
+  }).nullable().default(null),
+  
+  ...TimestampSchema.shape
+});
+
+export const VoiceQualityMetrics = z.object({
+  id: z.string().uuid(),
+  voice_recording_id: z.string().uuid(),
+  
+  // Audio Quality Scores (0-10 scale)
+  overall_quality_score: z.number().min(0).max(10),
+  clarity_score: z.number().min(0).max(10),
+  completeness_score: z.number().min(0).max(10), // Did recording capture full answer?
+  audibility_score: z.number().min(0).max(10), // How well can it be heard?
+  
+  // Technical Quality
+  signal_quality: z.object({
+    signal_to_noise_ratio: z.number().min(0).max(60).nullable(),
+    dynamic_range: z.number().min(0).max(96).nullable(), // dB
+    frequency_response: z.object({
+      low_end: z.number().nullable(), // Hz
+      high_end: z.number().nullable(), // Hz
+      balance_score: z.number().min(0).max(10).nullable()
+    }).nullable(),
+    distortion_level: z.number().min(0).max(1).nullable(), // 0-1, lower is better
+    clipping_detected: z.boolean().default(false)
+  }).nullable(),
+  
+  // Environmental Factors
+  environment_analysis: z.object({
+    background_noise_level: z.number().min(0).max(1),
+    noise_type: z.string().nullable(), // 'traffic', 'office', 'fan', etc.
+    echo_detected: z.boolean().default(false),
+    echo_intensity: z.number().min(0).max(1).nullable(),
+    room_reverb: z.number().min(0).max(1).nullable()
+  }).nullable(),
+  
+  // Speech Quality
+  speech_analysis: z.object({
+    speaking_rate: z.number().min(50).max(400).nullable(), // words per minute
+    pause_analysis: z.object({
+      total_pauses: z.number().int().min(0),
+      avg_pause_duration: z.number().min(0).nullable(),
+      longest_pause: z.number().min(0).nullable(),
+      natural_flow_score: z.number().min(0).max(10).nullable()
+    }).nullable(),
+    articulation_score: z.number().min(0).max(10).nullable(),
+    pronunciation_clarity: z.number().min(0).max(10).nullable()
+  }).nullable(),
+  
+  // Content Analysis
+  content_metrics: z.object({
+    word_count: z.number().int().min(0),
+    sentence_count: z.number().int().min(0),
+    avg_sentence_length: z.number().min(0).nullable(),
+    vocabulary_complexity: z.number().min(0).max(10).nullable(),
+    coherence_score: z.number().min(0).max(10).nullable(),
+    completeness_indicators: z.array(z.string()).default([])
+  }).nullable(),
+  
+  // Confidence Indicators
+  reliability_metrics: z.object({
+    transcription_confidence: z.number().min(0).max(1),
+    consistency_score: z.number().min(0).max(10).nullable(),
+    data_completeness: z.number().min(0).max(1), // How much of recording was processable
+    processing_warnings: z.array(z.string()).default([]),
+    quality_flags: z.array(z.enum(['low_volume', 'high_noise', 'distorted', 'incomplete', 'excellent'])).default([])
+  }),
+  
+  // Analysis Metadata
+  analyzed_at: z.date().default(() => new Date()),
+  analysis_version: z.string().default('1.0'),
+  analysis_engine: z.string().max(50).nullable().default(null),
+  
   ...TimestampSchema.shape
 });
 
@@ -650,6 +872,11 @@ export type SurveySession = z.infer<typeof SurveySessions>;
 export type Response = z.infer<typeof Responses>;
 export type ResponseAnalysisJTBDType = z.infer<typeof ResponseAnalysisJTBD>;
 
+// Voice Recording Types
+export type VoiceRecordingType = z.infer<typeof VoiceRecording>;
+export type TranscriptionSegmentType = z.infer<typeof TranscriptionSegment>;
+export type VoiceQualityMetricsType = z.infer<typeof VoiceQualityMetrics>;
+
 // System Types
 export type ActivityLog = z.infer<typeof ActivityLogs>;
 export type AuditLog = z.infer<typeof AuditLogs>;
@@ -685,6 +912,11 @@ export const validate = {
   surveySession: (data: unknown) => SurveySessions.parse(data),
   response: (data: unknown) => Responses.parse(data),
   responseAnalysisJTBD: (data: unknown) => ResponseAnalysisJTBD.parse(data),
+  
+  // Voice Recording
+  voiceRecording: (data: unknown) => VoiceRecording.parse(data),
+  transcriptionSegment: (data: unknown) => TranscriptionSegment.parse(data),
+  voiceQualityMetrics: (data: unknown) => VoiceQualityMetrics.parse(data),
   
   // System
   activityLog: (data: unknown) => ActivityLogs.parse(data),
@@ -794,6 +1026,142 @@ export function validateJTBDAnalysis(analysis: unknown): analysis is ResponseAna
   return ResponseAnalysisJTBD.safeParse(analysis).success;
 }
 
+// ============================================================================
+// VOICE RECORDING HELPER FUNCTIONS - Voice recording validation and utilities
+// ============================================================================
+
+export function isValidAudioMimeType(mimeType: string): boolean {
+  const validTypes = ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/webm', 'audio/aac'];
+  return validTypes.includes(mimeType.toLowerCase());
+}
+
+export function validateRecordingDuration(durationSeconds: number): boolean {
+  return durationSeconds >= 0.1 && durationSeconds <= 1800; // 0.1 seconds to 30 minutes
+}
+
+export function validateFileSize(fileSizeBytes: number): boolean {
+  return fileSizeBytes >= 1 && fileSizeBytes <= 104857600; // 1 byte to 100MB
+}
+
+export function calculateQualityScore(metrics: VoiceQualityMetricsType): number {
+  const scores = [
+    metrics.overall_quality_score,
+    metrics.clarity_score,
+    metrics.completeness_score,
+    metrics.audibility_score
+  ];
+  
+  const validScores = scores.filter(score => score !== null && score !== undefined);
+  if (validScores.length === 0) return 0;
+  
+  return validScores.reduce((sum, score) => sum + score, 0) / validScores.length;
+}
+
+export function isTranscriptionComplete(recording: VoiceRecordingType): boolean {
+  return recording.transcription_status === 'completed' && 
+         recording.transcription_text !== null && 
+         recording.transcription_text.trim().length > 0;
+}
+
+export function getProcessingStatusOrder(): Array<VoiceRecordingType['processing_status']> {
+  return ['uploaded', 'validating', 'processing', 'transcribing', 'analyzing', 'completed', 'failed'];
+}
+
+export function isProcessingComplete(status: VoiceRecordingType['processing_status']): boolean {
+  return status === 'completed';
+}
+
+export function hasProcessingFailed(status: VoiceRecordingType['processing_status']): boolean {
+  return status === 'failed';
+}
+
+export function calculateTranscriptionAccuracy(segments: TranscriptionSegmentType[]): number {
+  if (segments.length === 0) return 0;
+  
+  const totalConfidence = segments.reduce((sum, segment) => sum + segment.confidence_score, 0);
+  return totalConfidence / segments.length;
+}
+
+export function validateVoiceRecordingUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Allow common storage providers and local development
+    const validProtocols = ['https:', 'http:']; // http: for local dev
+    const validHosts = [
+      'localhost',
+      '127.0.0.1',
+      // AWS S3
+      's3.amazonaws.com',
+      's3.us-east-1.amazonaws.com',
+      's3.us-west-2.amazonaws.com',
+      // Azure Blob Storage
+      'blob.core.windows.net',
+      // Google Cloud Storage
+      'storage.googleapis.com',
+      'storage.cloud.google.com'
+    ];
+    
+    return validProtocols.includes(parsed.protocol) && 
+           (validHosts.some(host => parsed.hostname.includes(host)) || 
+            parsed.hostname.endsWith('.s3.amazonaws.com') ||
+            parsed.hostname.endsWith('.blob.core.windows.net') ||
+            parsed.hostname.includes('storage.googleapis.com'));
+  } catch {
+    return false;
+  }
+}
+
+// Voice Recording Creation Helper
+export function createVoiceRecordingTemplate(responseId: string, surveyId: string, sessionId: string, questionId: string, userId?: string): Partial<VoiceRecordingType> {
+  return {
+    response_id: responseId,
+    survey_id: surveyId,
+    session_id: sessionId,
+    question_id: questionId,
+    user_id: userId || null,
+    transcription_status: 'pending',
+    processing_status: 'uploaded',
+    quality_metrics: {
+      sample_rate: null,
+      bit_rate: null,
+      channels: 1,
+      signal_to_noise_ratio: null,
+      volume_level: null,
+      clarity_score: null,
+      background_noise_level: null
+    },
+    metadata: {
+      device_type: null,
+      browser: null,
+      recording_environment: null,
+      user_agent: null,
+      microphone_permissions: null,
+      recording_attempts: 1,
+      compression_applied: false,
+      noise_reduction_applied: false
+    },
+    consent_given: false,
+    is_encrypted: false,
+    anonymized: false
+  };
+}
+
+// Additional JTBD-specific exports for services
+export const JTBDForceScores = z.object({
+  pain_of_old: z.number().min(0).max(10),
+  pull_of_new: z.number().min(0).max(10), 
+  anchors_to_old: z.number().min(0).max(10),
+  anxiety_of_new: z.number().min(0).max(10),
+  demographic: z.number().min(0).max(10)
+});
+
+export type JTBDForceScoresType = z.infer<typeof JTBDForceScores>;
+
+// Validate JTBD Force scores
+export function validateJTBDForceScores(scores: unknown): scores is JTBDForceScoresType {
+  return JTBDForceScores.safeParse(scores).success;
+}
+
 export function createJTBDAnalysisTemplate(surveyId: string, sessionId: string, userId?: string): Partial<ResponseAnalysisJTBDType> {
   return {
     survey_id: surveyId,
@@ -848,8 +1216,12 @@ export const DatabaseIndexes = {
   questions: ['survey_id', 'order_index'],
   survey_template_questions: ['template_id', 'order_index', 'question_key', 'jtbd_force'],
   survey_sessions: ['survey_id', 'user_id', 'started_at'],
-  responses: ['survey_id', 'session_id', 'question_id', 'user_id'],
+  responses: ['survey_id', 'session_id', 'question_id', 'user_id', 'has_voice_recording', 'voice_recording_id'],
   response_analysis_jtbd: ['survey_id', 'session_id', 'user_id', 'analysis_type', 'analyzed_at'],
+  
+  voice_recordings: ['response_id', 'survey_id', 'session_id', 'question_id', 'user_id', 'transcription_status', 'processing_status', 'created_at'],
+  transcription_segments: ['voice_recording_id', 'start_time_seconds', 'end_time_seconds'],
+  voice_quality_metrics: ['voice_recording_id', 'overall_quality_score', 'analyzed_at'],
   
   activity_logs: ['user_id', 'organization_id', 'entity_type', 'entity_id', 'activity_type', 'occurred_at'],
   audit_logs: ['user_id', 'entity_type', 'entity_id', 'created_at'],
@@ -921,6 +1293,20 @@ export const ForeignKeys = {
     session_id: 'survey_sessions(id) ON DELETE CASCADE',
     user_id: 'auth.users(id) ON DELETE SET NULL',
     analyzed_by: 'auth.users(id) ON DELETE SET NULL'
+  },
+  
+  voice_recordings: {
+    response_id: 'responses(id) ON DELETE CASCADE',
+    survey_id: 'surveys(id) ON DELETE CASCADE',
+    session_id: 'survey_sessions(id) ON DELETE CASCADE',
+    question_id: 'questions(id) ON DELETE CASCADE',
+    user_id: 'auth.users(id) ON DELETE SET NULL'
+  },
+  transcription_segments: {
+    voice_recording_id: 'voice_recordings(id) ON DELETE CASCADE'
+  },
+  voice_quality_metrics: {
+    voice_recording_id: 'voice_recordings(id) ON DELETE CASCADE'
   },
   
   activity_logs: {

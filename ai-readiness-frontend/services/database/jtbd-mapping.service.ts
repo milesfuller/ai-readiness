@@ -815,6 +815,6 @@ export class JTBDMappingService {
 export const createJTBDMappingService = (
   supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL!,
   supabaseKey: string = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-) => {
+): JTBDMappingService => {
   return new JTBDMappingService(supabaseUrl, supabaseKey);
 };
