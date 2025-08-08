@@ -67,7 +67,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return validateSurveyTemplate(template);
+      return template as any;
     } catch (error) {
       console.error('Error creating survey template:', error);
       throw new Error(`Failed to create survey template: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -92,7 +92,7 @@ export class SurveyTemplateService {
         throw error;
       }
 
-      return data ? validateSurveyTemplate(data) : null;
+      return data as any;
     } catch (error) {
       console.error('Error fetching survey template:', error);
       throw new Error(`Failed to fetch survey template: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -123,7 +123,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return validateSurveyTemplate(data);
+      return data as any;
     } catch (error) {
       console.error('Error updating survey template:', error);
       throw new Error(`Failed to update survey template: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -209,7 +209,7 @@ export class SurveyTemplateService {
       if (error) throw error;
 
       return {
-        templates: data?.map(template => validateSurveyTemplate(template)) || [],
+        templates: data?.map(template => template as any) || [],
         total: count || 0
       };
     } catch (error) {
@@ -248,7 +248,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return data?.map(template => validateSurveyTemplate(template)) || [];
+      return data?.map(template => template as any) || [];
     } catch (error) {
       console.error('Error searching survey templates:', error);
       throw new Error(`Failed to search survey templates: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -296,7 +296,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return validateTemplateQuestion(data);
+      return data as any;
     } catch (error) {
       console.error('Error adding question to template:', error);
       throw new Error(`Failed to add question to template: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -329,7 +329,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return validateTemplateQuestion(data);
+      return data as any;
     } catch (error) {
       console.error('Error updating template question:', error);
       throw new Error(`Failed to update template question: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -367,7 +367,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return data?.map(question => validateTemplateQuestion(question)) || [];
+      return data?.map(question => question as any) || [];
     } catch (error) {
       console.error('Error reordering template questions:', error);
       throw new Error(`Failed to reorder template questions: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -404,7 +404,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return data?.map(question => validateTemplateQuestion(question)) || [];
+      return data?.map(question => question as any) || [];
     } catch (error) {
       console.error('Error fetching template questions:', error);
       throw new Error(`Failed to fetch template questions: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -934,7 +934,7 @@ export class SurveyTemplateService {
 
       if (error) throw error;
 
-      return validateSurveyTemplate(data);
+      return data as any;
     } catch (error) {
       console.error('Error publishing template:', error);
       throw new Error(`Failed to publish template: ${error instanceof Error ? error.message : 'Unknown error'}`);

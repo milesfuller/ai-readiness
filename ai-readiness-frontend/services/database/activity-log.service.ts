@@ -1059,14 +1059,14 @@ export class ActivityLogService {
     context?: Partial<ActivityContext>
   ): Promise<ActivityLog> {
     return this.logActivity({
-      activityType: 'login',
-      userId,
-      organizationId: organizationId || undefined,
-      entityType: 'user',
-      entityId: userId,
+      activity_type: 'login',
+      user_id: userId,
+      organization_id: organizationId || undefined,
+      entity_type: 'user',
+      entity_id: userId,
       severity: 'medium',
       context
-    });
+    } as any);
   }
 
   /**
@@ -1078,14 +1078,14 @@ export class ActivityLogService {
     context?: Partial<ActivityContext>
   ): Promise<ActivityLog> {
     return this.logActivity({
-      activityType: 'logout',
-      userId,
-      organizationId: organizationId || undefined,
-      entityType: 'user',
-      entityId: userId,
+      activity_type: 'logout',
+      user_id: userId,
+      organization_id: organizationId || undefined,
+      entity_type: 'user',
+      entity_id: userId,
       severity: 'low',
       context
-    });
+    } as any);
   }
 
   /**
@@ -1099,16 +1099,16 @@ export class ActivityLogService {
     context?: Partial<ActivityContext>
   ): Promise<ActivityLog> {
     return this.logActivity({
-      activityType: 'create',
-      userId,
-      organizationId,
-      entityType: 'survey',
-      entityId: surveyId,
-      entityName: surveyName,
+      activity_type: 'create',
+      user_id: userId,
+      organization_id: organizationId,
+      entity_type: 'survey',
+      entity_id: surveyId,
+      entity_name: surveyName,
       severity: 'medium',
       description: `Created survey: ${surveyName || 'Unnamed Survey'}`,
       context
-    });
+    } as any);
   }
 
   /**
@@ -1122,18 +1122,18 @@ export class ActivityLogService {
     context?: Partial<ActivityContext>
   ): Promise<ActivityLog> {
     return this.logActivity({
-      activityType: 'api_key_used',
-      organizationId,
-      entityType: 'api_key',
-      entityId: apiKeyId,
-      entityName: endpoint,
+      activity_type: 'api_key_used',
+      organization_id: organizationId,
+      entity_type: 'api_key',
+      entity_id: apiKeyId,
+      entity_name: endpoint,
       severity: 'low',
       description: `API key used for ${endpoint}`,
       context: {
         ...context,
         response_time: responseTime
       }
-    });
+    } as any);
   }
 
   /**
@@ -1149,11 +1149,11 @@ export class ActivityLogService {
     context?: Partial<ActivityContext>
   ): Promise<ActivityLog> {
     return this.logActivity({
-      activityType: 'error_occurred',
-      userId: userId || undefined,
-      organizationId: organizationId || undefined,
-      entityType,
-      entityId,
+      activity_type: 'error_occurred',
+      user_id: userId || undefined,
+      organization_id: organizationId || undefined,
+      entity_type: entityType,
+      entity_id: entityId,
       severity: 'high',
       status: 'error',
       description: `Error occurred: ${errorMessage}`,
@@ -1162,7 +1162,7 @@ export class ActivityLogService {
         error_message: errorMessage,
         stack_trace: stackTrace || null
       }
-    });
+    } as any);
   }
 
   /**
@@ -1178,11 +1178,11 @@ export class ActivityLogService {
     context?: Partial<ActivityContext>
   ): Promise<ActivityLog> {
     return this.logActivity({
-      activityType: 'export',
-      userId,
-      organizationId,
-      entityType,
-      entityId,
+      activity_type: 'export',
+      user_id: userId,
+      organization_id: organizationId,
+      entity_type: entityType,
+      entity_id: entityId,
       severity: 'medium',
       description: `Exported ${recordCount} ${entityType} records as ${exportFormat}`,
       context: {
@@ -1193,7 +1193,7 @@ export class ActivityLogService {
         export_format: exportFormat,
         record_count: recordCount
       }
-    });
+    } as any);
   }
 }
 

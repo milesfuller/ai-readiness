@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const invitationService = createInvitationService()
     const hasPending = await invitationService.hasPendingInvitation(
       email, 
-      'organization', 
+      'standard', 
       organizationId
     )
     

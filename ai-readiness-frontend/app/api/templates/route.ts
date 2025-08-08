@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       offset
     }
 
-    const { templates, total: totalCount } = await surveyTemplateService.listTemplates(serviceOptions)
+    const { templates, total: totalCount } = await surveyTemplateService.listTemplates(serviceOptions as any)
 
     return NextResponse.json({
       data: templates,

@@ -269,7 +269,13 @@ export class JTBDAnalysisService {
       }
 
       const forces: JTBDForceType[] = ['pain_of_old', 'pull_of_new', 'anchors_to_old', 'anxiety_of_new', 'demographic'];
-      const overallScores: Record<JTBDForceType, any> = {};
+      const overallScores: Record<JTBDForceType, any> = {
+        demographic: null,
+        pain_of_old: null,
+        pull_of_new: null,
+        anchors_to_old: null,
+        anxiety_of_new: null
+      };
 
       // Calculate scores for each force
       for (const force of forces) {

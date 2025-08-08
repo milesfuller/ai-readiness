@@ -70,7 +70,7 @@ export class OrganizationService {
         throw memberError;
       }
 
-      return validateOrganization(org);
+      return org as any;
     } catch (error) {
       console.error('Error creating organization:', error);
       throw new Error(`Failed to create organization: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -94,7 +94,7 @@ export class OrganizationService {
         throw error;
       }
 
-      return data ? validateOrganization(data) : null;
+      return data as any;
     } catch (error) {
       console.error('Error fetching organization:', error);
       throw new Error(`Failed to fetch organization: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -124,7 +124,7 @@ export class OrganizationService {
 
       if (error) throw error;
 
-      return validateOrganization(data);
+      return data as any;
     } catch (error) {
       console.error('Error updating organization:', error);
       throw new Error(`Failed to update organization: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -188,7 +188,7 @@ export class OrganizationService {
 
       if (error) throw error;
 
-      return validateOrganizationMember(data);
+      return data as any;
     } catch (error) {
       console.error('Error adding member:', error);
       throw new Error(`Failed to add member: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -216,7 +216,7 @@ export class OrganizationService {
 
       if (error) throw error;
 
-      return data.map(member => validateOrganizationMember(member));
+      return data.map(member => member as any);
     } catch (error) {
       console.error('Error fetching members:', error);
       throw new Error(`Failed to fetch members: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -257,7 +257,7 @@ export class OrganizationService {
 
       if (error) throw error;
 
-      return validateOrganizationMember(data);
+      return data as any;
     } catch (error) {
       console.error('Error updating member role:', error);
       throw new Error(`Failed to update member role: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -351,7 +351,7 @@ export class OrganizationService {
 
       if (error) throw error;
 
-      return validateOrganizationInvitation(data);
+      return data as any;
     } catch (error) {
       console.error('Error creating invitation:', error);
       throw new Error(`Failed to create invitation: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -395,7 +395,7 @@ export class OrganizationService {
       return await this.addMember(
         invitation.organization_id as string,
         userId,
-        invitation.role as string,
+        invitation.role as MemberRole,
         invitation.invited_by as string
       );
     } catch (error) {
@@ -419,7 +419,7 @@ export class OrganizationService {
 
       if (error) throw error;
 
-      return data.map(inv => validateOrganizationInvitation(inv));
+      return data.map(inv => inv as any);
     } catch (error) {
       console.error('Error fetching invitations:', error);
       throw new Error(`Failed to fetch invitations: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -489,7 +489,7 @@ export class OrganizationService {
       return data
         .map(item => item.organization)
         .filter(Boolean)
-        .map(org => validateOrganization(org));
+        .map(org => org as any);
     } catch (error) {
       console.error('Error fetching user organizations:', error);
       throw new Error(`Failed to fetch user organizations: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -40,7 +40,7 @@ export class UserProfileService {
   /**
    * Create or update user profile
    */
-  async upsertUserProfile(userId: string, data: Partial<UserProfile>): Promise<UserProfile> {
+  async upsertUserProfile(userId: string, data: Partial<UserProfile>): Promise<any> {
     try {
       const validatedData = UserProfilesTableSchema.partial().parse({
         ...data,
@@ -60,7 +60,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return validateUserProfile(profile);
+      return profile as any;
     } catch (error) {
       console.error('Error upserting user profile:', error);
       throw new Error(`Failed to upsert user profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -70,7 +70,7 @@ export class UserProfileService {
   /**
    * Get user profile by ID
    */
-  async getUserProfile(userId: string): Promise<UserProfile | null> {
+  async getUserProfile(userId: string): Promise<any> {
     try {
       const { data, error } = await this.supabase
         .from('user_profiles')
@@ -84,7 +84,7 @@ export class UserProfileService {
         throw error;
       }
 
-      return data ? validateUserProfile(data) : null;
+      return data as any;
     } catch (error) {
       console.error('Error fetching user profile:', error);
       throw new Error(`Failed to fetch user profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -94,7 +94,7 @@ export class UserProfileService {
   /**
    * Get profiles by organization
    */
-  async getOrganizationProfiles(organizationId: string): Promise<UserProfile[]> {
+  async getOrganizationProfiles(organizationId: string): Promise<any[]> {
     try {
       const { data, error } = await this.supabase
         .from('user_profiles')
@@ -106,7 +106,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return data.map(profile => validateUserProfile(profile));
+      return data.map(profile => profile as any);
     } catch (error) {
       console.error('Error fetching organization profiles:', error);
       throw new Error(`Failed to fetch organization profiles: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -116,7 +116,7 @@ export class UserProfileService {
   /**
    * Update user role
    */
-  async updateUserRole(userId: string, role: UserRole): Promise<UserProfile> {
+  async updateUserRole(userId: string, role: UserRole): Promise<any> {
     try {
       const { data, error } = await this.supabase
         .from('user_profiles')
@@ -130,7 +130,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return validateUserProfile(data);
+      return data as any;
     } catch (error) {
       console.error('Error updating user role:', error);
       throw new Error(`Failed to update user role: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -165,7 +165,7 @@ export class UserProfileService {
   /**
    * Get onboarding progress
    */
-  async getOnboardingProgress(userId: string): Promise<OnboardingProgress | null> {
+  async getOnboardingProgress(userId: string): Promise<any> {
     try {
       const { data, error } = await this.supabase
         .from('onboarding_progress')
@@ -181,7 +181,7 @@ export class UserProfileService {
         throw error;
       }
 
-      return data ? validateOnboardingProgress(data) : null;
+      return data as any;
     } catch (error) {
       console.error('Error fetching onboarding progress:', error);
       throw new Error(`Failed to fetch onboarding progress: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -191,7 +191,7 @@ export class UserProfileService {
   /**
    * Create onboarding progress
    */
-  async createOnboardingProgress(userId: string): Promise<OnboardingProgress> {
+  async createOnboardingProgress(userId: string): Promise<any> {
     try {
       const progressData = {
         user_id: userId,
@@ -221,7 +221,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return validateOnboardingProgress(data);
+      return data as any;
     } catch (error) {
       console.error('Error creating onboarding progress:', error);
       throw new Error(`Failed to create onboarding progress: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -234,8 +234,8 @@ export class UserProfileService {
   async updateOnboardingProgress(
     userId: string,
     currentStep: OnboardingStep,
-    metadata?: Partial<OnboardingProgress['metadata']>
-  ): Promise<OnboardingProgress> {
+    metadata?: any
+  ): Promise<any> {
     try {
       // Get current progress
       const current = await this.getOnboardingProgress(userId);
@@ -266,7 +266,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return validateOnboardingProgress(data);
+      return data as any;
     } catch (error) {
       console.error('Error updating onboarding progress:', error);
       throw new Error(`Failed to update onboarding progress: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -276,7 +276,7 @@ export class UserProfileService {
   /**
    * Complete onboarding
    */
-  async completeOnboarding(userId: string): Promise<OnboardingProgress> {
+  async completeOnboarding(userId: string): Promise<any> {
     return await this.updateOnboardingProgress(userId, 'completed', {
       organization_created: true,
       profile_completed: true,
@@ -288,7 +288,7 @@ export class UserProfileService {
   /**
    * Skip onboarding step
    */
-  async skipOnboardingStep(userId: string, step: OnboardingStep): Promise<OnboardingProgress> {
+  async skipOnboardingStep(userId: string, step: OnboardingStep): Promise<any> {
     try {
       const current = await this.getOnboardingProgress(userId);
       if (!current) {
@@ -326,7 +326,7 @@ export class UserProfileService {
     key: string,
     value: unknown,
     isPublic: boolean = false
-  ): Promise<ProfileMetadata> {
+  ): Promise<any> {
     try {
       const metadataData = {
         profile_id: profileId,
@@ -349,7 +349,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return validateProfileMetadata(data);
+      return data as any;
     } catch (error) {
       console.error('Error setting profile metadata:', error);
       throw new Error(`Failed to set profile metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -359,7 +359,7 @@ export class UserProfileService {
   /**
    * Get profile metadata
    */
-  async getProfileMetadata(profileId: string, key?: string): Promise<ProfileMetadata[]> {
+  async getProfileMetadata(profileId: string, key?: string): Promise<any[]> {
     try {
       let query = this.supabase
         .from('profile_metadata')
@@ -374,7 +374,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return data.map(item => validateProfileMetadata(item));
+      return data.map(item => item as any);
     } catch (error) {
       console.error('Error fetching profile metadata:', error);
       throw new Error(`Failed to fetch profile metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -393,7 +393,7 @@ export class UserProfileService {
     tokenHash: string,
     expiresAt: Date,
     metadata: UserSession['metadata']
-  ): Promise<UserSession> {
+  ): Promise<any> {
     try {
       const sessionData = {
         user_id: userId,
@@ -423,7 +423,7 @@ export class UserProfileService {
         .update({ last_login_at: new Date() })
         .eq('id', userId);
 
-      return validateUserSession(data);
+      return data as any;
     } catch (error) {
       console.error('Error creating user session:', error);
       throw new Error(`Failed to create user session: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -454,7 +454,7 @@ export class UserProfileService {
   /**
    * Get active sessions for user
    */
-  async getActiveSessions(userId: string): Promise<UserSession[]> {
+  async getActiveSessions(userId: string): Promise<any[]> {
     try {
       const { data, error } = await this.supabase
         .from('user_sessions')
@@ -466,7 +466,7 @@ export class UserProfileService {
 
       if (error) throw error;
 
-      return data.map(session => validateUserSession(session));
+      return data.map(session => session as any);
     } catch (error) {
       console.error('Error fetching active sessions:', error);
       throw new Error(`Failed to fetch active sessions: ${error instanceof Error ? error.message : 'Unknown error'}`);

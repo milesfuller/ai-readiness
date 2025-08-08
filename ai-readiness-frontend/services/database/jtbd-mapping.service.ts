@@ -677,11 +677,11 @@ export class JTBDMappingService {
    */
   private generateValidationRules(force: JTBDForceType, questionText: string) {
     const baseRules = {
-      required_keywords: [],
-      expected_sentiment: null,
+      required_keywords: [] as string[],
+      expected_sentiment: null as 'positive' | 'negative' | 'neutral' | null,
       min_response_length: 20,
       max_response_length: 2000,
-      domain_specific_rules: []
+      domain_specific_rules: [] as string[]
     };
 
     switch (force) {
