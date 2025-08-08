@@ -851,7 +851,7 @@ export class ActivityLogService {
         // Implement push notification
         break;
       default:
-        throw new Error(`Unsupported notification method: ${notification.notification_method}`);
+        throw new Error(`Unsupported notification method: ${(notification as any).notification_method}`);
     }
 
     // For now, just mark as sent
@@ -865,8 +865,8 @@ export class ActivityLogService {
     notification: ActivityNotification,
     error: Error
   ): Promise<void> {
-    const newAttempts = notification.attempts + 1;
-    const isMaxAttemptsReached = newAttempts >= notification.max_attempts;
+    const newAttempts = (notification as any).attempts + 1;
+    const isMaxAttemptsReached = newAttempts >= (notification as any).max_attempts;
 
     await this.supabase
       .from('activity_notifications')
@@ -876,7 +876,7 @@ export class ActivityLogService {
         error_message: error.message,
         updated_at: new Date(),
         // Schedule retry for later if not max attempts
-        scheduled_at: isMaxAttemptsReached ? notification.scheduled_at : new Date(Date.now() + (newAttempts * 60000)) // Exponential backoff
+        scheduled_at: isMaxAttemptsReached ? (notification as any).scheduled_at : new Date(Date.now() + (newAttempts * 60000)) // Exponential backoff
       })
       .eq('id', notification.id);
   }
@@ -886,7 +886,7 @@ export class ActivityLogService {
    */
   private async applyRetentionPolicy(policy: RetentionPolicy): Promise<number> {
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - policy.retention_days);
+    cutoffDate.setDate(cutoffDate.getDate() - ((policy as any).retention_days || policy.days));
 
     let query = this.supabase
       .from('activity_logs')
@@ -894,10 +894,10 @@ export class ActivityLogService {
       .lt('occurred_at', cutoffDate.toISOString());
 
     // Apply filters from the policy
-    const { filters } = policy;
+    const filters = (policy as any).filters || {};
 
-    if (policy.organization_id) {
-      query = query.eq('organization_id', policy.organization_id);
+    if ((policy as any).organization_id) {
+      query = query.eq('organization_id', (policy as any).organization_id);
     }
 
     if (filters.activity_types && filters.activity_types.length > 0) {
@@ -1028,7 +1028,7 @@ export class ActivityLogService {
       errorsByType[activity.activity_type] = (errorsByType[activity.activity_type] || 0) + 1;
 
       // Count error messages
-      const errorMessage = activity.context.error_message;
+      const errorMessage = (activity as any).context?.error_message;
       if (errorMessage) {
         errorMessages.set(errorMessage, (errorMessages.get(errorMessage) || 0) + 1);
       }

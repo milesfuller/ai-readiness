@@ -255,12 +255,15 @@ export type EntityType = z.infer<typeof EntityTypeSchema>;
 export type ActivitySeverity = z.infer<typeof ActivitySeveritySchema>;
 export type ActivityStatus = z.infer<typeof ActivityStatusSchema>;
 
-export const ActivityContext = z.object({
+export const ActivityContextSchema = z.object({
   ip_address: z.string().optional(),
   user_agent: z.string().optional(),
   location: z.string().optional(),
   metadata: z.any()
 });
+
+export const ActivityContext = ActivityContextSchema;
+export type ActivityContext = z.infer<typeof ActivityContextSchema>;
 
 export const ActivityFilter = z.object({
   activity_types: z.array(ActivityTypeSchema).optional(),
@@ -271,7 +274,7 @@ export const ActivityFilter = z.object({
 
 export const NotificationMethodSchema = z.enum(['email', 'sms', 'push', 'in_app', 'webhook']);
 export const NotificationStatusSchema = z.enum(['sent', 'delivered', 'failed', 'pending']);
-export const ActivityAggregationPeriodSchema = z.enum(['hour', 'day', 'week', 'month']);
+export const ActivityAggregationPeriodSchema = z.enum(['hour', 'day', 'week', 'month', 'quarter', 'year']);
 
 export const NotificationMethod = NotificationMethodSchema;
 export const NotificationStatus = NotificationStatusSchema;
@@ -289,7 +292,7 @@ export const ActivityLogsTableSchema = z.object({
   entity_type: EntityTypeSchema,
   entity_id: z.string(),
   description: z.string(),
-  context: ActivityContext,
+  context: ActivityContextSchema,
   created_at: z.date()
 });
 
