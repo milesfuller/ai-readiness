@@ -1,68 +1,82 @@
-# Development Validation Agents
+# Claude Code Agents Directory Structure
 
-This directory contains standalone validation tools and agent definitions for various development tasks.
+This directory contains sub-agent definitions organized by type and purpose. Each agent has specific capabilities, tool restrictions, and naming conventions that trigger automatic delegation.
 
-## Available Agents
+## Directory Structure
 
-### nextjs-vercel-specialist
-
-A standalone validation tool for Next.js projects deploying to Vercel. Handles:
-- Server/Client component boundary validation
-- React Server Components best practices
-- Vercel deployment optimization
-- Rate limit error handling (429)
-- TypeScript and ESLint validation
-- Environment variable configuration
-
-**Usage:**
-```bash
-# Validate any Next.js project (requires Node.js only)
-node nextjs-vercel-specialist.js [project-path]
-
-# Examples:
-node nextjs-vercel-specialist.js .
-node nextjs-vercel-specialist.js ./my-nextjs-app
-node nextjs-vercel-specialist.js ../another-project
-
-# Integrate into package.json
-"scripts": {
-  "validate-deployment": "node path/to/nextjs-vercel-specialist.js .",
-  "pre-deploy": "npm run validate-deployment && npm run build"
-}
+```
+.claude/agents/
+├── README.md                    # This file
+├── _templates/                  # Agent templates
+│   ├── base-agent.yaml
+│   └── agent-types.md
+├── development/                 # Development agents
+│   ├── backend/
+│   ├── frontend/
+│   ├── fullstack/
+│   └── api/
+├── testing/                     # Testing agents
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── performance/
+├── architecture/                # Architecture agents
+│   ├── system-design/
+│   ├── database/
+│   ├── cloud/
+│   └── security/
+├── devops/                      # DevOps agents
+│   ├── ci-cd/
+│   ├── infrastructure/
+│   ├── monitoring/
+│   └── deployment/
+├── documentation/               # Documentation agents
+│   ├── api-docs/
+│   ├── user-guides/
+│   ├── technical/
+│   └── readme/
+├── analysis/                    # Analysis agents
+│   ├── code-review/
+│   ├── performance/
+│   ├── security/
+│   └── refactoring/
+├── data/                        # Data agents
+│   ├── etl/
+│   ├── analytics/
+│   ├── ml/
+│   └── visualization/
+└── specialized/                 # Specialized agents
+    ├── mobile/
+    ├── embedded/
+    ├── blockchain/
+    └── ai-ml/
 ```
 
-**Common Issues Detected:**
-- Missing 'use client' directives
-- Server components importing client utilities
-- Client components importing server utilities (next/headers)
-- Functions passed as props to Client Components
-- Console.log statements in production
-- Missing NEXT_PUBLIC_ prefixes for client-side env vars
-- TypeScript errors that will fail build
+## Naming Conventions
 
-**Rate Limit Handling:**
-When Vercel returns 429 "Rate limit exceeded":
-1. Wait for the retry time (usually 50-60 seconds)
-2. Use preview deployments first: `vercel`
-3. Only deploy to production after testing: `vercel --prod`
-4. Consider using GitHub integration for automatic deployments
-5. Run the validator in CI/CD pipelines before deployment
+Agent files follow this naming pattern:
+`[type]-[specialization]-[capability].agent.yaml`
 
-## Adding New Validation Tools
+Examples:
+- `dev-backend-api.agent.yaml`
+- `test-unit-jest.agent.yaml`
+- `arch-cloud-aws.agent.yaml`
+- `docs-api-openapi.agent.yaml`
 
-To add a new validation tool:
-1. Create `tool-name.md` with documentation and best practices
-2. Create `tool-name.js` with validation logic (Node.js only, no external deps)
-3. Update this README with usage instructions
-4. Test with multiple projects to ensure generic compatibility
+## Automatic Delegation Triggers
 
-## Tool Standards
+Claude Code automatically delegates to agents based on:
+1. **Keywords in user request**: "test", "deploy", "document", "review"
+2. **File patterns**: `*.test.js` → testing agent, `*.tf` → infrastructure agent
+3. **Task complexity**: Multi-step tasks spawn coordinator agents
+4. **Domain detection**: Database queries → data agent, API endpoints → backend agent
 
-All validation tools should:
-- Be completely standalone (Node.js built-ins only)
-- Work with any project of their type (framework/language agnostic)
-- Provide clear, actionable error messages and fixes
-- Skip test/development files when validating production code
-- Handle edge cases gracefully with helpful error messages
-- Include deployment and troubleshooting guidance
-- Exit with proper status codes (0 = success, 1 = errors found)
+## Tool Restrictions
+
+Each agent type has specific tool access:
+- **Development agents**: Full file system access, code execution
+- **Testing agents**: Test runners, coverage tools, limited write access
+- **Architecture agents**: Read-only access, diagram generation
+- **Documentation agents**: Markdown tools, read access, limited write to docs/
+- **DevOps agents**: Infrastructure tools, deployment scripts, environment access
+- **Analysis agents**: Read-only access, static analysis tools
