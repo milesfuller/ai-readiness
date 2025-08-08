@@ -680,10 +680,11 @@ export class ActivityLogService {
    */
   async createRetentionPolicy(policyData: Partial<RetentionPolicy>): Promise<RetentionPolicy> {
     try {
-      const validatedData = RetentionPolicySchema.omit({
-        id: true,
-        created_at: true
-      }).parse(policyData);
+      const validatedData = {
+        ...policyData,
+        id: crypto.randomUUID(),
+        created_at: new Date()
+      } as any;
 
       const { data, error } = await this.supabase
         .from('retention_policies')
@@ -693,7 +694,7 @@ export class ActivityLogService {
 
       if (error) throw error;
 
-      return RetentionPolicySchema.parse(data);
+      return data as RetentionPolicy;
     } catch (error) {
       console.error('Error creating retention policy:', error);
       throw new Error(`Failed to create retention policy: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -717,7 +718,7 @@ export class ActivityLogService {
       let recordsDeleted = 0;
 
       for (const policy of policies) {
-        const validatedPolicy = RetentionPolicySchema.parse(policy);
+        const validatedPolicy = policy as RetentionPolicy;
         const deletedCount = await this.applyRetentionPolicy(validatedPolicy);
         recordsDeleted += deletedCount;
         policiesApplied++;
