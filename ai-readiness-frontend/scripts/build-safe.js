@@ -12,16 +12,39 @@ const fs = require('fs');
 // Set environment variables for build
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
+// Check if we're in preview/staging environment
+const isPreviewOrStaging = process.env.VERCEL_ENV === 'preview' || 
+                          process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging' ||
+                          process.env.NEXT_PUBLIC_IS_PREVIEW === 'true';
+
+// Use staging variables if available in preview environment
+const supabaseUrl = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+  ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+  : (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy-build.supabase.co');
+
+const supabaseAnonKey = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+  : (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-build-anon-key');
+
+const supabaseServiceKey = isPreviewOrStaging && process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY
+  ? process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY
+  : (process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-build-service-key');
+
 // Ensure fallback values for missing API keys
 const buildEnv = {
   ...process.env,
   // Provide safe fallback values for missing API keys
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || 'dummy-key-for-build',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || 'dummy-key-for-build',
-  // Provide safe fallback values for Supabase
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy-build.supabase.co',
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-build-anon-key',
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-build-service-key',
+  // Use the selected Supabase values (staging or production)
+  NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
+  SUPABASE_SERVICE_ROLE_KEY: supabaseServiceKey,
+  // Pass through staging variables if they exist
+  STAGING_NEXT_PUBLIC_SUPABASE_URL: process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL,
+  STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  STAGING_SUPABASE_SERVICE_ROLE_KEY: process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY,
+  STAGING_DATABASE_URL: process.env.STAGING_DATABASE_URL,
   // Disable telemetry during build
   NEXT_TELEMETRY_DISABLED: '1',
   // Set build flag
@@ -29,6 +52,8 @@ const buildEnv = {
 };
 
 console.log('🚀 Starting safe build process...');
+console.log(`📊 Environment: ${isPreviewOrStaging ? 'Staging/Preview' : 'Production'}`);
+console.log(`🔧 Database: ${supabaseUrl.replace(/https:\/\/(.{8}).*\.supabase\.co/, 'https://$1******.supabase.co')}`);
 
 // Check if .env.local exists and warn if API keys are missing
 const envLocalPath = path.join(process.cwd(), '.env.local');

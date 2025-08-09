@@ -31,14 +31,30 @@ class DatabaseMigrator {
   private results: MigrationResult[] = []
 
   constructor() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    // Use staging variables if in preview/staging environment
+    const isPreviewOrStaging = process.env.VERCEL_ENV === 'preview' || 
+                               process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging' ||
+                               process.env.NEXT_PUBLIC_IS_PREVIEW === 'true'
+    
+    const supabaseUrl = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+      ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+      : process.env.NEXT_PUBLIC_SUPABASE_URL
+      
+    const supabaseKey = isPreviewOrStaging && process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY
+      ? process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY
+      : (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
     if (!supabaseUrl || !supabaseKey) {
       console.warn('⚠️ Supabase credentials not found, migrations will be skipped')
+      console.warn('Environment:', {
+        isPreviewOrStaging,
+        vercelEnv: process.env.VERCEL_ENV,
+        hasStaging: !!process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+      })
       return
     }
 
+    console.log('🔧 Migration database:', supabaseUrl.replace(/https:\/\/(.{8}).*\.supabase\.co/, 'https://$1******.supabase.co'))
     this.supabase = createClient(supabaseUrl, supabaseKey)
   }
 
