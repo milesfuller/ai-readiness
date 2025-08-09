@@ -9,23 +9,24 @@ export const userResolvers: Partial<Resolvers> = {
   },
   User: {
     // User field resolvers
-    organization: async (parent: any, _, context: any) => {
+    organization: async (parent: any, _: any, context: any) => {
       if (!parent.organizationId) return null
       return context.dataSources.organizationLoader.load(parent.organizationId)
-    },
-    sessions: async (parent: any, _, context: any) => {
-      const { data } = await context.supabase
-        .from('survey_sessions')
-        .select('*')
-        .eq('user_id', parent.id)
-      return data || []
-    },
-    responses: async (parent: any, _, context: any) => {
-      const { data } = await context.supabase
-        .from('survey_responses')
-        .select('*')
-        .eq('user_id', parent.id)
-      return data || []
     }
+    // Commented out until added to schema
+    // sessions: async (parent: any, _: any, context: any) => {
+    //   const { data } = await context.supabase
+    //     .from('survey_sessions')
+    //     .select('*')
+    //     .eq('user_id', parent.id)
+    //   return data || []
+    // },
+    // responses: async (parent: any, _: any, context: any) => {
+    //   const { data } = await context.supabase
+    //     .from('survey_responses')
+    //     .select('*')
+    //     .eq('user_id', parent.id)
+    //   return data || []
+    // }
   }
 }

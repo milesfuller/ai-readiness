@@ -1,5 +1,6 @@
 import { gql } from 'graphql-tag'
-import { DateTimeResolver, JSONResolver, DateTimeTypeDefinition, JSONTypeDefinition } from 'graphql-scalars'
+import { DateTimeResolver, JSONResolver, DateTimeTypeDefinition } from 'graphql-scalars'
+// @ts-ignore - GraphQL upload types not available
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs'
 
 /**

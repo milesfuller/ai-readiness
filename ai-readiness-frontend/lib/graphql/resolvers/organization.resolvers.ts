@@ -143,9 +143,9 @@ export const organizationResolvers = {
       
       try {
         return await services.organizationService.create(input)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error creating organization:', error)
-        if (error.code === '23505') {
+        if (error?.code === '23505') {
           throw new ValidationError('An organization with this name already exists')
         }
         throw new Error('Failed to create organization')

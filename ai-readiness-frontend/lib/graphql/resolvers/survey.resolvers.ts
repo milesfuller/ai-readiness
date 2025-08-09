@@ -1,7 +1,14 @@
 import { GraphQLContext } from '../context'
-import { CreateSurveyInput, UpdateSurveyInput, SurveyStatus, SurveyVisibility } from '../types/generated'
+// Comment out types that don't exist in generated yet
+// import { CreateSurveyInput, UpdateSurveyInput, SurveyStatus, SurveyVisibility } from '../types/generated'
 import { AuthenticationError, ForbiddenError, ValidationError } from '../errors'
 import { withFilter } from 'graphql-subscriptions'
+
+// Define types locally until generated types are available
+type SurveyStatus = 'DRAFT' | 'PUBLISHED' | 'PAUSED' | 'ARCHIVED'
+type SurveyVisibility = 'PUBLIC' | 'PRIVATE' | 'ORGANIZATION'
+type CreateSurveyInput = any
+type UpdateSurveyInput = any
 
 /**
  * Survey-specific GraphQL resolvers
@@ -102,7 +109,7 @@ export const surveyResolvers = {
       }
       
       // Validate questions
-      input.questions.forEach((question, index) => {
+      input.questions.forEach((question: any, index: number) => {
         if (!question.title?.trim()) {
           throw new ValidationError(`Question ${index + 1} title is required`)
         }
@@ -124,7 +131,7 @@ export const surveyResolvers = {
           ...input,
           createdById: user!.id,
           organizationId: user!.organizationId!,
-          status: input.publishImmediately ? SurveyStatus.PUBLISHED : SurveyStatus.DRAFT
+          status: input.publishImmediately ? 'PUBLISHED' : 'DRAFT'
         })
         
         // Publish real-time notification
@@ -170,7 +177,7 @@ export const surveyResolvers = {
       }
       
       // Prevent editing published surveys without proper permissions
-      if (existingSurvey.status === SurveyStatus.PUBLISHED && 
+      if (existingSurvey.status === 'PUBLISHED' && 
           !user!.permissions?.includes('surveys:edit_published')) {
         throw new ForbiddenError('Cannot edit published surveys')
       }
@@ -222,7 +229,7 @@ export const surveyResolvers = {
         throw new ForbiddenError('You do not have permission to publish this survey')
       }
       
-      if (survey.status !== SurveyStatus.DRAFT && survey.status !== SurveyStatus.PAUSED) {
+      if (survey.status !== 'DRAFT' && survey.status !== 'PAUSED') {
         throw new ValidationError('Only draft or paused surveys can be published')
       }
       
@@ -279,7 +286,7 @@ export const surveyResolvers = {
         throw new ForbiddenError('You do not have permission to pause this survey')
       }
       
-      if (survey.status !== SurveyStatus.PUBLISHED) {
+      if (survey.status !== 'PUBLISHED') {
         throw new ValidationError('Only published surveys can be paused')
       }
       
@@ -430,12 +437,12 @@ export const surveyResolvers = {
 export const surveySubscriptions = {
   surveyUpdated: {
     subscribe: withFilter(
-      (parent: any, args: any, context: GraphQLContext) => {
+      (parent: any, args: any, context: any) => {
         const { requireAuth, pubsub } = context
         requireAuth()
         return pubsub!.asyncIterator(['SURVEY_UPDATED'])
       },
-      (payload: any, variables: any, context: GraphQLContext) => {
+      (payload: any, variables: any, context: any) => {
         // Only send updates to users in the same organization
         return payload.organizationId === context.user?.organizationId
       }
@@ -444,12 +451,12 @@ export const surveySubscriptions = {
   
   surveyPublished: {
     subscribe: withFilter(
-      (parent: any, args: any, context: GraphQLContext) => {
+      (parent: any, args: any, context: any) => {
         const { requireAuth, pubsub } = context
         requireAuth()
         return pubsub!.asyncIterator(['SURVEY_PUBLISHED'])
       },
-      (payload: any, variables: any, context: GraphQLContext) => {
+      (payload: any, variables: any, context: any) => {
         return payload.organizationId === context.user?.organizationId
       }
     )

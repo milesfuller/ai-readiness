@@ -59,23 +59,24 @@ export const responseResolvers: Partial<Resolvers> = {
       if (error) throw error
       return data
     }
-  },
-  Response: {
-    survey: async (parent: any, _, context: any) => {
-      return context.dataSources.surveyLoader.load(parent.surveyId)
-    },
-    session: async (parent: any, _, context: any) => {
-      if (!parent.sessionId) return null
-      const { data } = await context.supabase
-        .from('survey_sessions')
-        .select('*')
-        .eq('id', parent.sessionId)
-        .single()
-      return data
-    },
-    user: async (parent: any, _, context: any) => {
-      if (!parent.userId) return null
-      return context.dataSources.userLoader.load(parent.userId)
-    }
   }
+  // Commented out Response type resolver as it's not in generated types
+  // Response: {
+  //   survey: async (parent: any, _, context: any) => {
+  //     return context.dataSources.surveyLoader.load(parent.surveyId)
+  //   },
+  //   session: async (parent: any, _, context: any) => {
+  //     if (!parent.sessionId) return null
+  //     const { data } = await context.supabase
+  //       .from('survey_sessions')
+  //       .select('*')
+  //       .eq('id', parent.sessionId)
+  //       .single()
+  //     return data
+  //   },
+  //   user: async (parent: any, _, context: any) => {
+  //     if (!parent.userId) return null
+  //     return context.dataSources.userLoader.load(parent.userId)
+  //   }
+  // }
 }

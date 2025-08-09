@@ -100,7 +100,7 @@ export class UserService extends BaseService {
       
       return data
     } catch (error) {
-      this.handleError(error, 'findMany')
+      return this.handleError(error, 'findMany')
     }
   }
   
@@ -118,7 +118,7 @@ export class UserService extends BaseService {
       if (error) throw error
       return data
     } catch (error) {
-      this.handleError(error, 'findByOrganization')
+      return this.handleError(error, 'findByOrganization')
     }
   }
   
@@ -132,7 +132,7 @@ export class UserService extends BaseService {
       if (error) throw error
       return count || 0
     } catch (error) {
-      this.handleError(error, 'countByOrganization')
+      return this.handleError(error, 'countByOrganization')
     }
   }
   
@@ -152,7 +152,7 @@ export class UserService extends BaseService {
       
       return data
     } catch (error) {
-      this.handleError(error, 'updateRole')
+      return this.handleError(error, 'updateRole')
     }
   }
 }
@@ -178,7 +178,7 @@ export class OrganizationService extends BaseService {
       if (error) throw error
       return data
     } catch (error) {
-      this.handleError(error, 'findMany')
+      return this.handleError(error, 'findMany')
     }
   }
   
@@ -198,7 +198,7 @@ export class OrganizationService extends BaseService {
       if (error) throw error
       return data
     } catch (error) {
-      this.handleError(error, 'create')
+      return this.handleError(error, 'create')
     }
   }
   
@@ -221,7 +221,7 @@ export class OrganizationService extends BaseService {
       
       return data
     } catch (error) {
-      this.handleError(error, 'updateSettings')
+      return this.handleError(error, 'updateSettings')
     }
   }
   
@@ -239,7 +239,7 @@ export class OrganizationService extends BaseService {
       
       return true
     } catch (error) {
-      this.handleError(error, 'delete')
+      return this.handleError(error, 'delete')
     }
   }
 }
@@ -269,7 +269,7 @@ export class SurveyService extends BaseService {
             if (key === 'search') {
               query = query.or(`title.ilike.%${value}%,description.ilike.%${value}%`)
             } else if (key === 'tags') {
-              query = query.contains('tags', value)
+              query = query.contains('tags', value as any)
             } else {
               query = query.eq(key.replace(/([A-Z])/g, '_$1').toLowerCase(), value)
             }
@@ -282,7 +282,7 @@ export class SurveyService extends BaseService {
       
       return data
     } catch (error) {
-      this.handleError(error, 'findMany')
+      return this.handleError(error, 'findMany')
     }
   }
   
@@ -336,7 +336,7 @@ export class SurveyService extends BaseService {
       
       return survey
     } catch (error) {
-      this.handleError(error, 'create')
+      return this.handleError(error, 'create')
     }
   }
   
@@ -359,7 +359,7 @@ export class SurveyService extends BaseService {
       
       return data
     } catch (error) {
-      this.handleError(error, 'update')
+      return this.handleError(error, 'update')
     }
   }
   
@@ -383,7 +383,7 @@ export class SurveyService extends BaseService {
       
       return data
     } catch (error) {
-      this.handleError(error, 'publish')
+      return this.handleError(error, 'publish')
     }
   }
   
@@ -404,7 +404,7 @@ export class SurveyService extends BaseService {
       this.dataSources.surveyLoader.clear(surveyId)
       return data
     } catch (error) {
-      this.handleError(error, 'pause')
+      return this.handleError(error, 'pause')
     }
   }
   
@@ -426,7 +426,7 @@ export class SurveyService extends BaseService {
       this.dataSources.surveyLoader.clear(surveyId)
       return data
     } catch (error) {
-      this.handleError(error, 'archive')
+      return this.handleError(error, 'archive')
     }
   }
   
@@ -468,8 +468,7 @@ export class SurveyService extends BaseService {
         errors
       }
     } catch (error) {
-      this.handleError(error, 'validateForPublishing')
-      return { valid: false, errors: ['Validation failed'] }
+      return this.handleError(error, 'validateForPublishing')
     }
   }
   
@@ -481,7 +480,7 @@ export class SurveyService extends BaseService {
       
       return await this.dataSources.surveyLoader.load(surveyId)
     } catch (error) {
-      this.handleError(error, 'findByShareUrl')
+      return this.handleError(error, 'findByShareUrl')
     }
   }
   
@@ -505,7 +504,7 @@ export class SurveyService extends BaseService {
       if (error) throw error
       return count || 0
     } catch (error) {
-      this.handleError(error, 'countByOrganization')
+      return this.handleError(error, 'countByOrganization')
     }
   }
   
@@ -519,7 +518,7 @@ export class SurveyService extends BaseService {
       if (error) throw error
       return count || 0
     } catch (error) {
-      this.handleError(error, 'countByCreator')
+      return this.handleError(error, 'countByCreator')
     }
   }
   
@@ -540,7 +539,7 @@ export class SurveyService extends BaseService {
       
       return await this.create(duplicateData)
     } catch (error) {
-      this.handleError(error, 'duplicate')
+      return this.handleError(error, 'duplicate')
     }
   }
   
@@ -558,7 +557,7 @@ export class SurveyService extends BaseService {
       
       return true
     } catch (error) {
-      this.handleError(error, 'delete')
+      return this.handleError(error, 'delete')
     }
   }
 }

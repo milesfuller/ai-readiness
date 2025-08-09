@@ -3,7 +3,7 @@ import { Resolvers } from '../types/generated'
 export const subscriptionResolvers: Partial<Resolvers> = {
   Subscription: {
     responseSubmitted: {
-      subscribe: async function* (_, args: any, context: any) {
+      subscribe: async function* (_: any, args: any, context: any) {
         // Placeholder for real-time response updates
         // Would use GraphQL subscriptions with WebSocket or SSE
         yield { responseSubmitted: null }
@@ -11,35 +11,35 @@ export const subscriptionResolvers: Partial<Resolvers> = {
     },
     
     sessionUpdated: {
-      subscribe: async function* (_, args: any, context: any) {
+      subscribe: async function* (_: any, args: any, context: any) {
         // Placeholder for session updates
         yield { sessionUpdated: null }
       }
     },
     
     analysisCompleted: {
-      subscribe: async function* (_, args: any, context: any) {
+      subscribe: async function* (_: any, args: any, context: any) {
         // Placeholder for analysis completion notifications
         yield { analysisCompleted: null }
       }
     },
     
     surveyAnalysisCompleted: {
-      subscribe: async function* (_, args: any, context: any) {
+      subscribe: async function* (_: any, args: any, context: any) {
         // Placeholder for survey analysis updates
         yield { surveyAnalysisCompleted: null }
       }
     },
     
     systemNotification: {
-      subscribe: async function* (_, args: any, context: any) {
+      subscribe: async function* (_: any, args: any, context: any) {
         // Placeholder for system-wide notifications
         yield { systemNotification: null }
       }
     },
     
     organizationNotification: {
-      subscribe: async function* (_, args: any, context: any) {
+      subscribe: async function* (_: any, args: any, context: any) {
         // Placeholder for organization notifications
         yield { organizationNotification: null }
       }
