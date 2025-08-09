@@ -505,12 +505,12 @@ export const resolvers: Resolvers<GraphQLContext> = {
   },
   
   // Survey type resolvers
-  Survey: {
+  /*   Survey: {
     ...surveyResolvers.Survey,
     
     createdBy: async (survey: any, args: any, context: any) => {
       return await context.dataSources.userLoader.load(survey.createdById)
-    },
+    }, */
     
     organization: async (survey: any, args: any, context: any) => {
       return await context.dataSources.organizationLoader.load(survey.organizationId)
@@ -521,7 +521,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await context.dataSources.templateLoader.load(survey.templateId)
     },
     
-    responses: async (survey, { limit = 20, offset = 0, status }: any, context: any) => {
+    responses: async (survey: any, { limit = 20, offset = 0, status }: any, context: any) => {
       const { services } = context
       return await services.responseService.findBySurvey(survey.id, {
         limit: Math.min(limit, 100),
@@ -574,44 +574,14 @@ export const resolvers: Resolvers<GraphQLContext> = {
   },
   
   // Question type resolvers
-  Question: {
-    survey: async (question: any, args: any, context: any) => {
-      return await context.dataSources.surveyLoader.load(question.surveyId)
-    },
-    
-    responses: async (question: any, args: any, context: any) => {
-      const { services } = context
-      return await services.responseService.findByQuestion(question.id)
-    },
-    
-    responseCount: async (question: any, args: any, context: any) => {
-      const { services } = context
-      return await services.responseService.countByQuestion(question.id)
-    },
-    
-    skipRate: async (question: any, args: any, context: any) => {
-      const { services } = context
-      return await services.analyticsService.getQuestionSkipRate(question.id)
-    },
-    
-    averageTimeSpent: async (question: any, args: any, context: any) => {
-      const { services } = context
-      return await services.analyticsService.getQuestionAverageTime(question.id)
-    },
-    
-    topAnswers: async (question: any, args: any, context: any) => {
-      const { services } = context
-      return await services.analyticsService.getQuestionTopAnswers(question.id)
-    }
-  },
   
   // Response type resolvers
-  Response: {
+  /*   Response: {
     ...responseResolvers.Response,
     
     survey: async (response: any, args: any, context: any) => {
       return await context.dataSources.surveyLoader.load(response.surveyId)
-    },
+    }, */
     
     session: async (response: any, args: any, context: any) => {
       return await context.dataSources.sessionLoader.load(response.sessionId)
@@ -634,10 +604,10 @@ export const resolvers: Resolvers<GraphQLContext> = {
   },
   
   // Question Response type resolvers
-  QuestionResponse: {
+  /*   QuestionResponse: {
     question: async (qResponse: any, args: any, context: any) => {
       return await context.dataSources.questionLoader.load(qResponse.questionId)
-    },
+    }, */
     
     response: async (qResponse: any, args: any, context: any) => {
       return await context.dataSources.responseLoader.load(qResponse.responseId)
@@ -650,10 +620,10 @@ export const resolvers: Resolvers<GraphQLContext> = {
   },
   
   // Session type resolvers
-  SurveySession: {
+  /*   SurveySession: {
     survey: async (session: any, args: any, context: any) => {
       return await context.dataSources.surveyLoader.load(session.surveyId)
-    },
+    }, */
     
     user: async (session: any, args: any, context: any) => {
       if (!session.userId) return null
@@ -667,24 +637,24 @@ export const resolvers: Resolvers<GraphQLContext> = {
   },
   
   // Analytics type resolvers
-  SurveyAnalytics: {
+  /*   SurveyAnalytics: {
     ...analyticsResolvers.SurveyAnalytics
-  },
+  }, */
   
   // Template type resolvers
-  SurveyTemplate: {
+  /*   SurveyTemplate: {
     ...templateResolvers.SurveyTemplate,
     
     createdBy: async (template: any, args: any, context: any) => {
       return await context.dataSources.userLoader.load(template.createdById)
-    }
+    } */
   },
   
   // API Key type resolvers
-  ApiKey: {
+  /*   ApiKey: {
     user: async (apiKey: any, args: any, context: any) => {
       return await context.dataSources.userLoader.load(apiKey.userId)
-    },
+    }, */
     
     organization: async (apiKey: any, args: any, context: any) => {
       return await context.dataSources.organizationLoader.load(apiKey.organizationId)
