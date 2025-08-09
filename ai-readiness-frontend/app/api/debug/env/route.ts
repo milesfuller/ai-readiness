@@ -102,11 +102,13 @@ export async function GET(request: NextRequest) {
       envInfo.warnings.push('⚠️ Preview/Staging may be using production database URL!')
     }
     
-    // Check for proper staging URL pattern
-    if (!config.database.url?.includes('staging') && 
-        !config.database.url?.includes('localhost') &&
-        !config.database.url?.includes('preview')) {
-      envInfo.warnings.push('⚠️ Preview/Staging should use staging database URL')
+    // Only warn if we're NOT using staging variables (the URL pattern check is not reliable)
+    if (!usingStaging.url && !usingStaging.anonKey) {
+      if (!config.database.url?.includes('staging') && 
+          !config.database.url?.includes('localhost') &&
+          !config.database.url?.includes('preview')) {
+        envInfo.warnings.push('⚠️ Preview/Staging should use staging database URL')
+      }
     }
   }
   
@@ -127,8 +129,9 @@ export async function GET(request: NextRequest) {
     }
   }
   
-  // Check for migration security
-  if (!process.env.MIGRATION_ADMIN_TOKEN) {
+  // Check for migration security (only important if not using dummy values)
+  if (!process.env.MIGRATION_ADMIN_TOKEN && 
+      !config.database.url?.includes('dummy-build')) {
     envInfo.warnings.push('⚠️ MIGRATION_ADMIN_TOKEN is not configured - migrations API is unprotected')
   }
   
