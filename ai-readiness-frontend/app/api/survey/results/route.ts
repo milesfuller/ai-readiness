@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    let surveyResponse = null
+    let surveyResponse: any = null
 
     if (responseId) {
       // Get response by ID
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
     const analysis = analyzeSurveyResponses(surveyResponse.answers)
 
     // Get or create LLM analysis
-    let llmAnalysis = null
+    let llmAnalysis: any = null
     const { data: existingAnalysis } = await supabase
       .from('llm_analyses')
       .select('*')

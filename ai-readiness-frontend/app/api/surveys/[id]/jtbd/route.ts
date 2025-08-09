@@ -207,7 +207,7 @@ export async function GET(
     }
 
     // Process JTBD analysis data
-    const analysisData = []
+    const analysisData: any[] = []
     const forceDistribution: Record<JTBDForceType, number> = {
       pain_of_old: 0,
       pull_of_new: 0,
@@ -680,7 +680,7 @@ function generateSegmentation(analysisData: any[], includeRespondentDetails: boo
 }
 
 function generateSurveyRecommendations(aggregatedAnalysis: Record<JTBDForceType, any>, totalResponses: number): string[] {
-  const recommendations = []
+  const recommendations: string[] = []
 
   // Overall data recommendations
   if (totalResponses < 20) {
@@ -724,7 +724,7 @@ function generateSurveyRecommendations(aggregatedAnalysis: Record<JTBDForceType,
 }
 
 function generateKeyFindings(forceStrengths: Record<string, number[]>, totalResponses: number): string[] {
-  const findings = []
+  const findings: string[] = []
   
   // Find strongest and weakest forces
   const forceAverages = Object.entries(forceStrengths).map(([force, scores]) => ({
@@ -745,7 +745,7 @@ function generateKeyFindings(forceStrengths: Record<string, number[]>, totalResp
 }
 
 function identifyRiskFactors(forceStrengths: Record<string, number[]>): string[] {
-  const risks = []
+  const risks: string[] = []
   
   const anchorScores = forceStrengths.anchors_to_old || []
   const anxietyScores = forceStrengths.anxiety_of_new || []
@@ -764,7 +764,7 @@ function identifyRiskFactors(forceStrengths: Record<string, number[]>): string[]
 }
 
 function identifyOpportunities(forceStrengths: Record<string, number[]>): string[] {
-  const opportunities = []
+  const opportunities: string[] = []
   
   const painScores = forceStrengths.pain_of_old || []
   const pullScores = forceStrengths.pull_of_new || []
@@ -783,7 +783,7 @@ function identifyOpportunities(forceStrengths: Record<string, number[]>): string
 }
 
 function generateNextSteps(readinessScore: number, forceStrengths: Record<string, number[]>): string[] {
-  const steps = []
+  const steps: string[] = []
 
   if (readinessScore >= 70) {
     steps.push('Begin AI pilot program selection and planning')

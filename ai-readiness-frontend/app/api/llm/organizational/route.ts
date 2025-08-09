@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     // Generate organizational analysis using LLM
     const organizationalAnalysis = await llmService.generateOrganizationalAnalysis(
-      results,
+      results as any,
       organizationContext
     );
 

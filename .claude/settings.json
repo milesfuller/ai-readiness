@@ -124,7 +124,7 @@
           },
           {
             "type": "command",
-            "command": "bash .claude/helpers/github-checkpoint-hooks.sh session-end"
+            "command": "bash ../.claude/helpers/github-checkpoint-hooks.sh session-end"
           }
         ]
       }

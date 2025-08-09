@@ -220,7 +220,7 @@ function getMetricGrade(value: number, thresholds: number[]): string {
  * Identify the primary quality issue
  */
 function getPrimaryIssue(metrics: any): string {
-  const issues = [];
+  const issues: any[] = [];
   
   if (metrics.snr < 15) issues.push({ type: 'noise', severity: 20 - metrics.snr });
   if (metrics.volume < 0.3 || metrics.volume > 0.9) issues.push({ type: 'volume', severity: Math.abs(0.6 - metrics.volume) * 2 });

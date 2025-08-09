@@ -618,7 +618,7 @@ export async function PATCH(request: NextRequest) {
     if (updateData.job_title !== undefined) profileUpdates.job_title = updateData.job_title
     if (updateData.preferences) profileUpdates.preferences = updateData.preferences
 
-    const results = []
+    const results: any[] = []
 
     // Update auth.users if needed
     if (Object.keys(authUpdates).length > 0) {
