@@ -84,14 +84,14 @@ export const templateResolvers: Partial<Resolvers<GraphQLContext>> = {
   },
   
   SurveyTemplate: {
-    createdBy: async (parent: SurveyTemplate, _, context: GraphQLContext) => {
+    createdBy: async (parent: SurveyTemplate, _: any, context: GraphQLContext) => {
       if (!parent.createdBy) return null
       return context.dataSources.userLoader.load(parent.createdBy)
     },
     
-    organization: async (parent: SurveyTemplate, _, context: GraphQLContext) => {
+    organization: async (parent: SurveyTemplate, _: any, context: GraphQLContext) => {
       if (!parent.organizationId) return null
       return context.dataSources.organizationLoader.load(parent.organizationId)
     }
-  }
+  } as any
 }

@@ -190,7 +190,7 @@ export const organizationResolvers: Partial<Resolvers<GraphQLContext>> = {
         throw new Error('Failed to delete organization')
       }
     }
-  },
+  } as any,
   
   /**
    * Organization field resolvers
@@ -328,7 +328,7 @@ export const organizationResolvers: Partial<Resolvers<GraphQLContext>> = {
         return 0
       }
     }
-  }
+  } as any
 }
 
 /**

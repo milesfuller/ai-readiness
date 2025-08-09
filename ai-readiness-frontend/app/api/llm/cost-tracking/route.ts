@@ -388,7 +388,7 @@ function groupUsageBySurvey(logs: any[]) {
 }
 
 async function checkUsageAlerts(supabase: any, organizationId: string, logs: any[]) {
-  const alerts = [];
+  const alerts: any[] = [];
 
   // Get current month usage
   const now = new Date();

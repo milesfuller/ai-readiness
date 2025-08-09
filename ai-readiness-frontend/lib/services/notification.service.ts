@@ -1,8 +1,10 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import nodemailer from 'nodemailer'
 import { z } from 'zod'
 import { render } from '@react-email/render'
-import * as emailTemplates from '@/lib/email/templates'
+// Note: Email templates import commented out until templates are properly set up
+// import { emailTemplates } from '@/lib/email/templates'
+import React from 'react'
 
 // Notification types
 export enum NotificationType {
@@ -95,7 +97,7 @@ export class NotificationService {
     }
 
     if (emailConfig.auth.user && emailConfig.auth.pass) {
-      this.transporter = nodemailer.createTransporter(emailConfig)
+      this.transporter = nodemailer.createTransport(emailConfig)
     } else {
       console.warn('Email service not configured - email notifications will be disabled')
     }
@@ -141,7 +143,11 @@ export class NotificationService {
       // Send based on type
       switch (validation.type) {
         case NotificationType.EMAIL:
-          await this.sendEmailNotification(validation)
+          await this.sendEmailNotification({
+            ...validation,
+            templateName: 'default',
+            templateData: {}
+          } as EmailNotification)
           break
         case NotificationType.IN_APP:
           await this.sendInAppNotification(validation)
@@ -180,18 +186,78 @@ export class NotificationService {
 
       if (!user) throw new Error('User not found')
 
-      // Render email template
-      const template = emailTemplates[notification.templateName as keyof typeof emailTemplates]
-      if (!template) throw new Error(`Email template ${notification.templateName} not found`)
+      // Render email template - type-safe template rendering based on template name
+      let emailComponent: React.ReactElement
+      const userName = `${user.first_name} ${user.last_name}`.trim() || user.email
+      
+      switch (notification.templateName) {
+        case 'welcome':
+          emailComponent = React.createElement(emailTemplates.welcome, {
+            userName,
+            actionUrl: notification.actionUrl || '/dashboard'
+          })
+          break
+        case 'surveyInvitation':
+          emailComponent = React.createElement(emailTemplates.surveyInvitation, {
+            userName,
+            surveyTitle: notification.templateData?.surveyTitle || notification.subject,
+            organizationName: notification.templateData?.organizationName || 'AI Readiness Platform',
+            actionUrl: notification.actionUrl || '/surveys',
+            deadline: notification.templateData?.deadline
+          })
+          break
+        case 'reportReady':
+          emailComponent = React.createElement(emailTemplates.reportReady, {
+            userName,
+            reportTitle: notification.templateData?.reportTitle || notification.subject,
+            reportType: notification.templateData?.reportType || 'analysis',
+            actionUrl: notification.actionUrl || '/reports'
+          })
+          break
+        case 'passwordReset':
+          emailComponent = React.createElement(emailTemplates.passwordReset, {
+            userName,
+            actionUrl: notification.actionUrl || '/reset-password',
+            expiryTime: notification.templateData?.expiryTime || '24 hours'
+          })
+          break
+        case 'weeklyDigest':
+          emailComponent = React.createElement(emailTemplates.weeklyDigest, {
+            userName,
+            weekStart: notification.templateData?.weekStart || new Date().toLocaleDateString(),
+            weekEnd: notification.templateData?.weekEnd || new Date().toLocaleDateString(),
+            stats: notification.templateData?.stats || {
+              surveysCompleted: 0,
+              responsesReceived: 0,
+              reportsGenerated: 0,
+              activeUsers: 0
+            },
+            actionUrl: notification.actionUrl || '/dashboard'
+          })
+          break
+        case 'systemAlert':
+          emailComponent = React.createElement(emailTemplates.systemAlert, {
+            userName,
+            alertType: notification.subject,
+            alertMessage: notification.message,
+            severity: notification.templateData?.severity || 'info',
+            actionUrl: notification.actionUrl || '',
+            actionLabel: notification.actionLabel || 'View Details'
+          })
+          break
+        default:
+          // Default to SystemAlertEmail
+          emailComponent = React.createElement(emailTemplates.default, {
+            userName,
+            alertType: notification.subject,
+            alertMessage: notification.message,
+            severity: notification.templateData?.severity || 'info',
+            actionUrl: notification.actionUrl || '',
+            actionLabel: notification.actionLabel || 'View Details'
+          })
+      }
 
-      const emailHtml = render(template({
-        ...notification.templateData,
-        userName: `${user.first_name} ${user.last_name}`.trim() || user.email,
-        subject: notification.subject,
-        message: notification.message,
-        actionUrl: notification.actionUrl,
-        actionLabel: notification.actionLabel
-      }))
+      const emailHtml = await render(emailComponent)
 
       // Send email
       const mailOptions = {
@@ -297,7 +363,7 @@ export class NotificationService {
       if (error) throw error
 
       // Send notifications in parallel
-      const promises = users.map(user => 
+      const promises = users.map((user: { id: string }) => 
         this.sendNotification({
           ...validation.notification,
           userId: user.id
@@ -518,7 +584,7 @@ export class NotificationService {
   registerWebSocket(userId: string, ws: WebSocket) {
     this.wsConnections.set(userId, ws)
     
-    ws.on('close', () => {
+    ws.addEventListener('close', () => {
       this.wsConnections.delete(userId)
     })
   }

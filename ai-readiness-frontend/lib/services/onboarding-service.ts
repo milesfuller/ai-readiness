@@ -1,7 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { OnboardingState, OnboardingProgress, Organization, UserProfile } from '@/lib/types'
+import type { OnboardingState, OnboardingProgress, Organization, UserProfile } from '@/lib/types'
 
 export class OnboardingService {
   private supabase = createClient()

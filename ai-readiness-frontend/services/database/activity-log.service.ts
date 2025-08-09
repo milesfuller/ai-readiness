@@ -886,7 +886,7 @@ export class ActivityLogService {
    */
   private async applyRetentionPolicy(policy: RetentionPolicy): Promise<number> {
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - ((policy as any).retention_days || policy.days));
+    cutoffDate.setDate(cutoffDate.getDate() - policy.duration_days);
 
     let query = this.supabase
       .from('activity_logs')

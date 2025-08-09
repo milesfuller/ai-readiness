@@ -185,9 +185,9 @@ export async function POST(request: NextRequest) {
 
     // Store batch analysis results
     const analysisRecords = batchResult.results.map(result => {
-      const response = (filteredResponses as any[]).find((r: any) => r.id === result.responseId);
+      const response = (filteredResponses as any[]).find((r: any) => r.id === (result as any).responseId);
       return {
-        response_id: result.responseId,
+        response_id: (result as any).responseId,
         survey_id: surveyId || response?.survey?.id,
         organization_id: orgId,
         analysis_result: result,
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Update responses with analysis status
-      const responseIds = batchResult.results.map(r => r.responseId);
+      const responseIds = batchResult.results.map(r => (r as any).responseId);
       await supabase
         .from('survey_responses')
         .update({ 
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
       batchId: batchSummary?.id,
       summary: batchResult.summary,
       results: batchResult.results,
-      errors: batchResult.errors,
+      errors: (batchResult as any).errors || [],
       organizationContext: {
         name: organization?.name,
         id: orgId

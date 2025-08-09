@@ -1,18 +1,66 @@
 // LLM Service for JTBD Analysis Integration
-import {
-  LLMConfig,
-  LLMProvider,
-  JTBDAnalysisResult,
-  ExtendedJTBDAnalysisResult,
-  BatchAnalysisRequest,
-  BatchAnalysisResult,
-  OrganizationalAnalysis,
-  APIUsageLog,
-  ValidationResult,
-  LLMError,
-  CostTrackingOptions,
-  JTBDForceType
-} from '../types/llm';
+// Note: Types temporarily defined inline until LLM types are properly set up
+import { JTBDForceType } from '@/contracts/schema'
+
+type LLMProvider = 'openai' | 'anthropic' | 'azure' | 'google' | 'local'
+
+interface LLMConfig {
+  provider: LLMProvider
+  model: string
+  temperature: number
+  maxTokens: number
+  timeout: number
+  retries: number
+}
+
+interface JTBDAnalysisResult {
+  forces: Record<JTBDForceType, number>
+  confidence: number
+  reasoning: string
+}
+
+interface ExtendedJTBDAnalysisResult extends JTBDAnalysisResult {
+  recommendations: string[]
+  keyInsights: string[]
+}
+
+interface BatchAnalysisRequest {
+  responses: any[]
+  options?: any
+}
+
+interface BatchAnalysisResult {
+  results: JTBDAnalysisResult[]
+  summary: any
+}
+
+interface OrganizationalAnalysis {
+  overallForces: Record<JTBDForceType, number>
+  trends: any
+}
+
+interface APIUsageLog {
+  id: string
+  provider: LLMProvider
+  tokens: number
+  cost: number
+  timestamp: string
+}
+
+interface ValidationResult {
+  isValid: boolean
+  errors: string[]
+}
+
+interface LLMError {
+  code: string
+  message: string
+}
+
+interface CostTrackingOptions {
+  enableTracking: boolean
+  costPerToken?: number
+}
 
 // Default LLM configurations
 const DEFAULT_CONFIGS: Record<LLMProvider, LLMConfig> = {

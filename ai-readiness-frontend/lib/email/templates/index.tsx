@@ -478,3 +478,17 @@ export const WeeklyDigestEmail = ({
     </Tailwind>
   </Html>
 )
+
+// Export all templates
+export const emailTemplates = {
+  welcome: WelcomeEmail,
+  surveyInvitation: SurveyInvitationEmail,
+  reportReady: ReportReadyEmail,
+  passwordReset: PasswordResetEmail,
+  systemAlert: SystemAlertEmail,
+  weeklyDigest: WeeklyDigestEmail,
+  default: SystemAlertEmail // Use SystemAlertEmail as default for generic notifications
+}
+
+// Default export for easier importing
+export default emailTemplates

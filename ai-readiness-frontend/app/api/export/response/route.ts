@@ -190,7 +190,7 @@ async function generatePDFExport(response: any, analytics: any, options: any) {
 }
 
 function generateCSVExport(response: any, analytics: any, options: any) {
-  const csvRows = []
+  const csvRows: string[] = []
   
   // Headers
   const headers = [

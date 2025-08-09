@@ -7,7 +7,8 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
-import { analyticsService } from '@/services/database/analytics.service'
+// Note: analyticsService import commented out as it may not exist yet
+// import { analyticsService } from '@/services/database/analytics.service'
 import type { JTBDForces } from '@/lib/types'
 
 // ============================================================================

@@ -868,6 +868,96 @@ export type OrganizationInvitation = z.infer<typeof OrganizationInvitations>;
 export type Invitation = z.infer<typeof Invitations>;
 export type EmailTrackingType = z.infer<typeof EmailTracking>;
 
+// Additional Invitation Types
+export type InvitationTemplate = z.infer<typeof InvitationTemplatesTableSchema>;
+export type InvitationBatch = z.infer<typeof InvitationBatchesTableSchema>;
+export type InvitationSettings = z.infer<typeof InvitationSettingsTableSchema>;
+export type InvitationAnalytics = z.infer<typeof InvitationAnalyticsTableSchema>;
+
+// Invitation Enum Types
+export const InvitationTypeSchema = z.enum([
+  'organization',
+  'survey',
+  'collaboration', 
+  'beta',
+  'event',
+  'interview',
+  'demo',
+  'trial',
+  'referral',
+  'custom'
+]);
+
+export const InvitationStatusSchema = z.enum([
+  'pending',
+  'sent', 
+  'delivered',
+  'opened',
+  'clicked',
+  'accepted',
+  'rejected',
+  'expired',
+  'cancelled',
+  'bounced'
+]);
+
+export const InvitationPrioritySchema = z.enum(['low', 'normal', 'high', 'urgent']);
+
+export const InvitationDeliveryMethodSchema = z.enum(['email', 'sms', 'push', 'in_app', 'webhook']);
+
+export const EmailEventTypeSchema = z.enum([
+  'queued',
+  'sent',
+  'delivered', 
+  'opened',
+  'clicked',
+  'bounced',
+  'failed',
+  'complained',
+  'unsubscribed'
+]);
+
+export const TemplateTypeSchema = z.enum(['organization', 'survey', 'general']);
+
+export const BatchStatusSchema = z.enum(['draft', 'scheduled', 'sending', 'completed', 'failed']);
+
+export const AnalyticsPeriodSchema = z.enum(['hour', 'day', 'week', 'month', 'year']);
+
+export type InvitationType = z.infer<typeof InvitationTypeSchema>;
+export type InvitationStatus = z.infer<typeof InvitationStatusSchema>; 
+export type InvitationPriority = z.infer<typeof InvitationPrioritySchema>;
+export type InvitationDeliveryMethod = z.infer<typeof InvitationDeliveryMethodSchema>;
+export type EmailEventType = z.infer<typeof EmailEventTypeSchema>;
+export type TemplateType = z.infer<typeof TemplateTypeSchema>;
+export type BatchStatus = z.infer<typeof BatchStatusSchema>;
+export type AnalyticsPeriod = z.infer<typeof AnalyticsPeriodSchema>;
+
+// Additional schema exports
+export type SurveyTemplateVersion = z.infer<typeof SurveyTemplateVersionsTableSchema>;
+export type TemplateShare = z.infer<typeof TemplateSharesTableSchema>;
+export type TemplateAnalytics = z.infer<typeof TemplateAnalyticsTableSchema>;
+export type TemplateReview = z.infer<typeof TemplateReviewsTableSchema>;
+export type ProfileMetadata = z.infer<typeof ProfileMetadataTableSchema>;
+
+// Enum schemas for services
+export const TemplateVisibilitySchema = z.enum(['private', 'organization', 'public', 'marketplace']);
+export const TemplateCategorySchema = z.enum(['leadership', 'technical', 'cultural', 'operational', 'strategic', 'innovation', 'readiness', 'custom']);
+export const TemplateStatusSchema = z.enum(['draft', 'published', 'archived', 'deprecated']);
+export const ShareTypeSchema = z.enum(['read', 'write', 'admin']);
+export const MemberRoleSchema = z.enum(['member', 'admin', 'owner']);
+export const UserRoleSchema = z.enum(['user', 'admin', 'org_admin', 'system_admin']);
+export const OnboardingStepSchema = z.enum(['welcome', 'profile_setup', 'organization_setup', 'team_invite', 'first_survey', 'completed']);
+export const QuestionTypeSchema = z.enum(['text', 'textarea', 'number', 'radio', 'checkbox', 'select', 'scale', 'date', 'time', 'file']);
+
+export type TemplateVisibility = z.infer<typeof TemplateVisibilitySchema>;
+export type TemplateCategory = z.infer<typeof TemplateCategorySchema>;
+export type TemplateStatus = z.infer<typeof TemplateStatusSchema>;
+export type ShareType = z.infer<typeof ShareTypeSchema>;
+export type MemberRole = z.infer<typeof MemberRoleSchema>;
+export type UserRole = z.infer<typeof UserRoleSchema>;
+export type OnboardingStep = z.infer<typeof OnboardingStepSchema>;
+export type QuestionType = z.infer<typeof QuestionTypeSchema>;
+
 // Survey Types
 export type Survey = z.infer<typeof Surveys>;
 export type SurveyTemplate = z.infer<typeof SurveyTemplates>;
@@ -900,14 +990,18 @@ export const validate = {
   userSession: (data: unknown) => UserSessions.parse(data),
   onboardingProgress: (data: unknown) => OnboardingProgress.parse(data),
   
-  // Organizations
-  organization: (data: unknown) => Organizations.parse(data),
-  organizationMember: (data: unknown) => OrganizationMembers.parse(data),
-  organizationInvitation: (data: unknown) => OrganizationInvitations.parse(data),
+  // Organizations (additional specific validations)
+  organizationData: (data: unknown) => Organizations.parse(data),
+  memberData: (data: unknown) => OrganizationMembers.parse(data),
+  orgInvitationData: (data: unknown) => OrganizationInvitations.parse(data),
   
   // Invitations
   invitation: (data: unknown) => Invitations.parse(data),
   emailTracking: (data: unknown) => EmailTracking.parse(data),
+  invitationTemplate: (data: unknown) => InvitationTemplatesTableSchema.parse(data),
+  invitationBatch: (data: unknown) => InvitationBatchesTableSchema.parse(data),
+  invitationSettings: (data: unknown) => InvitationSettingsTableSchema.parse(data),
+  invitationAnalytics: (data: unknown) => InvitationAnalyticsTableSchema.parse(data),
   
   // Surveys
   survey: (data: unknown) => Surveys.parse(data),
@@ -1380,11 +1474,58 @@ export const ActivityNotificationsTableSchema = z.object({
 });
 
 export const RetentionPolicySchema = z.object({
+  id: z.string().uuid(),
   duration_days: z.number().int().positive(),
-  archive_enabled: z.boolean()
+  archive_enabled: z.boolean(),
+  last_applied: z.date().nullable().default(null),
+  ...TimestampSchema.shape
 });
 
+// Activity enums and types
+export const ActivityTypeSchema = z.enum(['create', 'update', 'delete', 'view', 'share', 'export', 'import']);
+export const EntityTypeSchema = z.enum(['survey', 'template', 'organization', 'user', 'report']);
+export const ActivitySeveritySchema = z.enum(['low', 'medium', 'high', 'critical']);
+export const ActivityStatusSchema = z.enum(['pending', 'in_progress', 'completed', 'failed']);
+export const NotificationMethodSchema = z.enum(['email', 'in_app', 'webhook', 'sms']);
+export const NotificationStatusSchema = z.enum(['pending', 'sent', 'delivered', 'failed']);
+export const ActivityAggregationPeriodSchema = z.enum(['hour', 'day', 'week', 'month', 'quarter', 'year']);
+
+// Export types
+export type RetentionPolicy = z.infer<typeof RetentionPolicySchema>;
+export type ActivityType = z.infer<typeof ActivityTypeSchema>;
+export type EntityType = z.infer<typeof EntityTypeSchema>;
+export type ActivitySeverity = z.infer<typeof ActivitySeveritySchema>;
+export type ActivityStatus = z.infer<typeof ActivityStatusSchema>;
+export type NotificationMethod = z.infer<typeof NotificationMethodSchema>;
+export type NotificationStatus = z.infer<typeof NotificationStatusSchema>;
+export type ActivityAggregationPeriod = z.infer<typeof ActivityAggregationPeriodSchema>;
+
+// Context and Filter schemas
+export const ActivityContextSchema = z.object({
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+  location: z.string().optional(),
+  metadata: z.any()
+});
+
+export const ActivityFilterSchema = z.object({
+  activity_types: z.array(ActivityTypeSchema).optional(),
+  entity_types: z.array(EntityTypeSchema).optional(),
+  date_from: z.date().optional(),
+  date_to: z.date().optional(),
+  user_ids: z.array(z.string().uuid()).optional(),
+  organization_ids: z.array(z.string().uuid()).optional()
+});
+
+export type ActivityContext = z.infer<typeof ActivityContextSchema>;
+export type ActivityFilter = z.infer<typeof ActivityFilterSchema>;
+
 // Helper functions for activity logs
+// Additional Activity types (ActivityLog already exists above)
+export type ActivityAnalytics = z.infer<typeof ActivityAnalyticsTableSchema>;
+export type ActivitySubscription = z.infer<typeof ActivitySubscriptionsTableSchema>;
+export type ActivityNotification = z.infer<typeof ActivityNotificationsTableSchema>;
+
 export const validateActivityLog = (data: unknown) => ActivityLogsTableSchema.parse(data);
 export const validateActivityAnalytics = (data: unknown) => ActivityAnalyticsTableSchema.parse(data);
 export const validateActivitySubscription = (data: unknown) => ActivitySubscriptionsTableSchema.parse(data);
@@ -1535,6 +1676,10 @@ export const OnboardingProgressTableSchema = OnboardingProgress;
 export const UserSessionsTableSchema = UserSessions; // Fix reference to use UserSessions instead of Sessions
 export const SurveyTemplateQuestionsTableSchema = SurveyTemplateQuestions;
 
+// Additional schema exports needed by services
+export const OrganizationMembersTableSchema = OrganizationMembers;
+export const OrganizationInvitationsTableSchema = OrganizationInvitations;
+
 // Add missing function that contracts expect
 export const validateDatabaseRow = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
   return schema.parse(data);
@@ -1604,6 +1749,17 @@ export const InvitationBatchesTableSchema = z.object({
   sent_count: z.number().default(0),
   accepted_count: z.number().default(0),
   created_by: z.string().uuid(),
+  status: z.enum(['draft', 'scheduled', 'sending', 'completed', 'failed']).default('draft'),
+  type: InvitationTypeSchema.nullable().default(null),
+  template_id: z.string().uuid().nullable().default(null),
+  recipients_data: z.array(z.any()).default([]),
+  send_rate: z.number().nullable().default(null),
+  metadata: z.record(z.unknown()).default({}),
+  scheduled_at: z.date().nullable().default(null),
+  target_id: z.string().uuid().nullable().default(null),
+  processed_count: z.number().default(0),
+  success_count: z.number().default(0),
+  failed_count: z.number().default(0),
   created_at: z.date()
 });
 
@@ -1624,6 +1780,8 @@ export const InvitationSettingsTableSchema = z.object({
   auto_expire_days: z.number().default(7),
   max_batch_size: z.number().default(100),
   allow_resend: z.boolean().default(true),
+  metadata: z.record(z.unknown()).default({}),
+  default_sender_email: z.string().email().nullable().default(null),
   created_at: z.date(),
   updated_at: z.date()
 });
@@ -1645,11 +1803,11 @@ export function generateInvitationToken(): string {
 }
 
 /**
- * Create default expiry date (7 days from now)
+ * Create default expiry date (7 days from now by default)
  */
-export function createDefaultExpiry(): Date {
+export function createDefaultExpiry(days: number = 7): Date {
   const date = new Date();
-  date.setDate(date.getDate() + 7);
+  date.setDate(date.getDate() + days);
   return date;
 }
 
@@ -1664,17 +1822,106 @@ export function canInvitationBeAccepted(invitation: any): boolean {
 }
 
 /**
+ * Check if invitation is expired
+ */
+export function isInvitationExpired(invitation: any): boolean {
+  if (!invitation.expires_at) return false;
+  return new Date(invitation.expires_at) < new Date();
+}
+
+/**
+ * Check if invitation is active
+ */
+export function isInvitationActive(invitation: any): boolean {
+  if (!invitation) return false;
+  return invitation.status !== 'cancelled' && 
+         invitation.status !== 'expired' && 
+         !isInvitationExpired(invitation);
+}
+
+/**
+ * Check if invitation should receive reminder
+ */
+export function shouldSendReminder(invitation: any): boolean {
+  if (!invitation) return false;
+  if (invitation.status !== 'pending' && invitation.status !== 'sent') return false;
+  if (isInvitationExpired(invitation)) return false;
+  return true;
+}
+
+/**
  * Validate invitation template
  */
 export function validateInvitationTemplate(template: unknown) {
   return InvitationTemplatesTableSchema.parse(template);
 }
 
+// Additional validation functions
+export function validateInvitation(data: unknown) {
+  return Invitations.parse(data);
+}
+
+export function validateEmailTracking(data: unknown) {
+  return EmailTracking.parse(data);
+}
+
+export function validateInvitationBatch(data: unknown) {
+  return InvitationBatchesTableSchema.parse(data);
+}
+
+export function validateInvitationSettings(data: unknown) {
+  return InvitationSettingsTableSchema.parse(data);
+}
+
+export function validateInvitationAnalytics(data: unknown) {
+  return InvitationAnalyticsTableSchema.parse(data);
+}
+
+// Organization validation functions
+export function validateOrganization(data: unknown) {
+  return Organizations.parse(data);
+}
+
+export function validateOrganizationMember(data: unknown) {
+  return OrganizationMembers.parse(data);
+}
+
+export function validateOrganizationInvitation(data: unknown) {
+  return OrganizationInvitations.parse(data);
+}
+
+// User validation functions
+export function validateUserProfile(data: unknown) {
+  return UserProfiles.parse(data);
+}
+
+export function validateOnboardingProgress(data: unknown) {
+  return OnboardingProgress.parse(data);
+}
+
+export function validateProfileMetadata(data: unknown) {
+  return ProfileMetadataTableSchema.parse(data);
+}
+
+export function validateUserSession(data: unknown) {
+  return UserSessions.parse(data);
+}
+
+// Template validation functions  
+export function validateSurveyTemplate(data: unknown) {
+  return SurveyTemplates.parse(data);
+}
+
+export function validateTemplateQuestion(data: unknown) {
+  return SurveyTemplateQuestions.parse(data);
+}
+
 /**
  * Validate template variables
  */
-export function validateTemplateVariables(variables: any): boolean {
-  if (!variables || typeof variables !== 'object') return false;
+export function validateTemplateVariables(template: string, variables?: any): boolean {
+  if (!template || typeof template !== 'string') return false;
+  if (variables && typeof variables !== 'object') return false;
   return true;
 }
 
@@ -1692,16 +1939,6 @@ export function renderTemplate(template: string, variables: Record<string, strin
 /**
  * Validate invitation batch
  */
-export function validateInvitationBatch(batch: unknown) {
-  return InvitationBatchesTableSchema.parse(batch);
-}
-
-/**
- * Validate invitation settings
- */
-export function validateInvitationSettings(settings: unknown) {
-  return InvitationSettingsTableSchema.parse(settings);
-}
 
 /**
  * Validate template version
@@ -1741,4 +1978,12 @@ export function getNextOnboardingStep(currentStep: string): string {
     return 'completed';
   }
   return steps[currentIndex + 1];
+}
+
+/**
+ * Check if onboarding is complete
+ */
+export function isOnboardingComplete(progress: any): boolean {
+  if (!progress) return false;
+  return progress.current_step === 'completed';
 }

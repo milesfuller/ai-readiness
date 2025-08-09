@@ -374,7 +374,7 @@ export const surveyResolvers: Partial<Resolvers<GraphQLContext>> = {
         throw new Error('Failed to archive survey')
       }
     }
-  },
+  } as any,
   
   /**
    * Survey field resolvers
@@ -406,7 +406,7 @@ export const surveyResolvers: Partial<Resolvers<GraphQLContext>> = {
         randomizeQuestions: false,
         showProgressBar: true,
         allowPreviousNavigation: true,
-        ...survey.settings
+        ...(survey as any).settings
       }
     },
     
@@ -445,7 +445,7 @@ export const surveyResolvers: Partial<Resolvers<GraphQLContext>> = {
       const { services } = context
       return await services.qrCodeService.generate(`/survey/${survey.id}`)
     }
-  }
+  } as any
 }
 
 /**

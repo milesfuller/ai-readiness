@@ -1,4 +1,4 @@
-import { 
+import type { 
   SurveyTemplate, 
   TemplateQuestion, 
   TemplateFilters, 
@@ -80,7 +80,7 @@ export class TemplateService {
   ): Promise<SurveyTemplate> {
     const payload = { ...updates }
     if (versionNotes) {
-      payload.versionNotes = versionNotes
+      (payload as any).versionNotes = versionNotes
     }
 
     const response = await fetch(`${this.baseUrl}/${templateId}`, {

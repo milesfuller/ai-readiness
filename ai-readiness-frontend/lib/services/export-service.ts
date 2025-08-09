@@ -1,5 +1,7 @@
-import { supabase } from '@/lib/supabase'
-import { ExportOptions, Survey, SurveyResponse, User, Organization, Analytics, JTBDForces } from '@/lib/types'
+import { createClient } from '@/lib/supabase/client'
+import type { ExportOptions, Survey, SurveyResponse, User, Organization, Analytics, JTBDForces } from '@/lib/types'
+
+const supabase = createClient()
 import jsPDF from 'jspdf'
 import Papa from 'papaparse'
 
@@ -46,7 +48,7 @@ export class ExportService {
 
   async initializeUser() {
     try {
-      // Use the existing supabase client
+      // Use the supabase client
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: profile } = await supabase

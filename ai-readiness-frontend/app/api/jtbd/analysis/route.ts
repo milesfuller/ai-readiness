@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Process and analyze responses
-    const analysisResults = []
+    const analysisResults: any[] = []
     const forceDistribution: Record<JTBDForceType, number> = {
       pain_of_old: 0,
       pull_of_new: 0,

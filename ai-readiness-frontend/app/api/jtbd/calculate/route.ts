@@ -5,8 +5,8 @@ import { z } from 'zod'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { llmService } from '@/lib/services/llm-service'
-import { JTBDForceType } from '@/lib/types/llm'
 import { UserRole } from '@/lib/types'
+import { JTBDForceType, JTBDForce } from '@/contracts/schema'
 import { hasPermission, PERMISSIONS, canAccessOrganization } from '@/lib/auth/rbac'
 import { addAPISecurityHeaders } from '@/lib/security/middleware'
 
@@ -16,7 +16,7 @@ const CalculationRequestSchema = z.object({
     responseId: z.string().uuid(),
     questionText: z.string().min(1).max(1000),
     responseText: z.string().min(1).max(5000),
-    expectedForce: z.enum(['pain_of_old', 'pull_of_new', 'anchors_to_old', 'anxiety_of_new', 'demographic']),
+    expectedForce: JTBDForce,
     questionContext: z.string().optional(),
     weight: z.number().min(0.1).max(5.0).default(1.0)
   })).min(1).max(20),
@@ -154,8 +154,17 @@ export async function POST(request: NextRequest) {
 
     // Process responses through LLM service
     const analysisStartTime = Date.now()
-    const analysisResults = []
-    const processingErrors = []
+    const analysisResults: Array<{
+      responseId: string;
+      expectedForce: JTBDForceType;
+      weight: number;
+      analysis: any;
+      processingTime: number;
+    }> = []
+    const processingErrors: Array<{
+      responseId: string;
+      error: string;
+    }> = []
 
     for (const responseData of responses) {
       try {
@@ -434,7 +443,7 @@ function calculateConfidenceMetrics(analysisResults: any[], options: any): any {
  * Generate recommendations based on JTBD force analysis
  */
 function generateRecommendations(forceScores: Record<JTBDForceType, any>, readinessScore: number): string[] {
-  const recommendations = []
+  const recommendations: string[] = []
 
   if (readinessScore >= 75) {
     recommendations.push('High readiness detected - proceed with AI implementation')
@@ -485,7 +494,7 @@ function calculateChangeReadiness(forceScores: Record<JTBDForceType, any>): numb
 }
 
 function identifyCriticalFactors(forceScores: Record<JTBDForceType, any>): string[] {
-  const factors = []
+  const factors: string[] = []
   const threshold = 60
 
   if (forceScores.pain_of_old.normalizedScore > threshold) factors.push('High current pain')

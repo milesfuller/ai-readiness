@@ -1,9 +1,4 @@
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import { 
-  User as DatabaseUser, 
-  Organization as DatabaseOrganization, 
-  Survey as DatabaseSurvey
-} from '../types';
 import { GraphQLContext } from './context';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
