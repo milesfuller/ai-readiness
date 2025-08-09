@@ -1,14 +1,31 @@
 import { GraphQLContext } from '../context'
-// Comment out types that don't exist in generated yet
-// import { CreateSurveyInput, UpdateSurveyInput, SurveyStatus, SurveyVisibility } from '../types/generated'
+import { 
+  Resolvers,
+  Survey,
+  SurveyStatus,
+  User
+} from '../types/generated'
 import { AuthenticationError, ForbiddenError, ValidationError } from '../errors'
 import { withFilter } from 'graphql-subscriptions'
 
-// Define types locally until generated types are available
-type SurveyStatus = 'DRAFT' | 'PUBLISHED' | 'PAUSED' | 'ARCHIVED'
-type SurveyVisibility = 'PUBLIC' | 'PRIVATE' | 'ORGANIZATION'
-type CreateSurveyInput = any
-type UpdateSurveyInput = any
+// Define input types locally since they're not in generated types
+interface CreateSurveyInput {
+  title: string;
+  description?: string;
+  questions: any[];
+  publishImmediately?: boolean;
+}
+
+interface UpdateSurveyInput {
+  title?: string;
+  description?: string;
+  questions?: any[];
+}
+
+enum SurveyVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE'
+}
 
 /**
  * Survey-specific GraphQL resolvers
@@ -20,7 +37,7 @@ type UpdateSurveyInput = any
  * - Real-time updates
  */
 
-export const surveyResolvers = {
+export const surveyResolvers: Partial<Resolvers<GraphQLContext>> = {
   Query: {
     /**
      * Get multiple surveys with filtering and pagination
@@ -131,7 +148,7 @@ export const surveyResolvers = {
           ...input,
           createdById: user!.id,
           organizationId: user!.organizationId!,
-          status: input.publishImmediately ? 'PUBLISHED' : 'DRAFT'
+          status: input.publishImmediately ? SurveyStatus.Published : SurveyStatus.Draft
         })
         
         // Publish real-time notification
@@ -177,7 +194,7 @@ export const surveyResolvers = {
       }
       
       // Prevent editing published surveys without proper permissions
-      if (existingSurvey.status === 'PUBLISHED' && 
+      if (existingSurvey.status === SurveyStatus.Published && 
           !user!.permissions?.includes('surveys:edit_published')) {
         throw new ForbiddenError('Cannot edit published surveys')
       }
@@ -229,7 +246,7 @@ export const surveyResolvers = {
         throw new ForbiddenError('You do not have permission to publish this survey')
       }
       
-      if (survey.status !== 'DRAFT' && survey.status !== 'PAUSED') {
+      if (survey.status !== SurveyStatus.Draft && survey.status !== SurveyStatus.Paused) {
         throw new ValidationError('Only draft or paused surveys can be published')
       }
       
@@ -286,7 +303,7 @@ export const surveyResolvers = {
         throw new ForbiddenError('You do not have permission to pause this survey')
       }
       
-      if (survey.status !== 'PUBLISHED') {
+      if (survey.status !== SurveyStatus.Published) {
         throw new ValidationError('Only published surveys can be paused')
       }
       
@@ -366,7 +383,7 @@ export const surveyResolvers = {
     /**
      * Get survey questions with proper ordering
      */
-    questions: async (survey: any, args: any, context: GraphQLContext) => {
+    questions: async (survey: Survey, args: any, context: GraphQLContext) => {
       const { services } = context
       return await services.questionService.findBySurvey(survey.id, {
         orderBy: 'order',
@@ -377,7 +394,7 @@ export const surveyResolvers = {
     /**
      * Get survey settings with defaults
      */
-    settings: async (survey: any, args: any, context: GraphQLContext) => {
+    settings: async (survey: Survey, args: any, context: GraphQLContext) => {
       // Return survey settings with defaults
       return {
         allowAnonymous: true,

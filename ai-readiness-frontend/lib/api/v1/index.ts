@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { checkApiKeyAuth } from '../auth/api-auth'
-import { enhancedRateLimiter as rateLimiter } from '../rate-limiting/index'
+import { enhancedRateLimiter as rateLimiter } from '../rate-limiting'
 import { WebhookManager } from '../webhooks/webhook-manager'
 
 // API Response schemas

@@ -25,14 +25,17 @@ import {
 } from 'lucide-react'
 import { 
   Role, 
-  Permission, 
-  PermissionCategory,
-  PermissionAction,
   RBACService, 
   ROLE_PERMISSIONS,
   PERMISSIONS 
 } from '@/lib/auth/rbac'
-import { useToast } from '@/components/ui/use-toast'
+
+import { useToast } from '@/lib/hooks/use-toast'
+
+// Define local types for permissions
+type Permission = string
+type PermissionCategory = 'system' | 'organization' | 'user' | 'survey' | 'report' | 'analytics'
+type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage'
 
 interface PermissionCell {
   role: Role
@@ -52,7 +55,7 @@ export function PermissionsMatrix() {
 
   const allPermissions = Object.values(PERMISSIONS)
   const allRoles = Object.values(Role)
-  const categories = Object.values(PermissionCategory)
+  const categories: PermissionCategory[] = ['system', 'organization', 'user', 'survey', 'report', 'analytics']
 
   useEffect(() => {
     loadPermissions()

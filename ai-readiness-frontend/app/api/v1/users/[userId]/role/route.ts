@@ -38,7 +38,7 @@ export async function PUT(
     }
 
     // Check if user has permission to manage roles
-    if (!RBACService.canManageRole(currentUser.role as Role, Role.USER)) {
+    if (!RBACService.isRoleEqualOrHigher(currentUser.role, 'org_admin')) {
       return NextResponse.json(
         { error: 'Insufficient permissions to manage roles' },
         { status: 403 }
@@ -74,7 +74,7 @@ export async function PUT(
     }
 
     // Check if current user can manage the target user's role
-    if (!RBACService.canManageRole(currentUser.role as Role, targetUser.role as Role)) {
+    if (!RBACService.isRoleEqualOrHigher(currentUser.role as Role, targetUser.role as Role)) {
       return NextResponse.json(
         { error: 'Cannot manage user with equal or higher role' },
         { status: 403 }
@@ -82,7 +82,7 @@ export async function PUT(
     }
 
     // Check if current user can assign the new role
-    if (!RBACService.canManageRole(currentUser.role as Role, newRole)) {
+    if (!RBACService.isRoleEqualOrHigher(currentUser.role as Role, newRole)) {
       return NextResponse.json(
         { error: 'Cannot assign role higher than your own' },
         { status: 403 }
@@ -136,7 +136,7 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       user: updatedUser,
-      message: `User role updated to ${RBACService.getRoleDisplayName(newRole)}`
+      message: `User role updated to ${newRole}`
     })
 
   } catch (error) {
@@ -181,7 +181,7 @@ export async function GET(
     }
 
     // Get all permissions for the role
-    const rolePermissions = RBACService.getPermissions(userData.role as Role)
+    const rolePermissions = RBACService.getRolePermissions(userData.role)
     const allPermissions = [...new Set([
       ...rolePermissions,
       ...(userData.permissions || [])

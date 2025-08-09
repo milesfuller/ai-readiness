@@ -1,6 +1,7 @@
-import { Resolvers } from '../types/generated'
+import { Resolvers, UserResolvers, User, Organization } from '../types/generated'
+import { GraphQLContext } from '../context'
 
-export const userResolvers: Partial<Resolvers> = {
+export const userResolvers: Partial<Resolvers<GraphQLContext>> = {
   Query: {
     // User queries will be implemented here
   },
@@ -9,7 +10,7 @@ export const userResolvers: Partial<Resolvers> = {
   },
   User: {
     // User field resolvers
-    organization: async (parent: any, _: any, context: any) => {
+    organization: async (parent: User, _, context: GraphQLContext) => {
       if (!parent.organizationId) return null
       return context.dataSources.organizationLoader.load(parent.organizationId)
     }

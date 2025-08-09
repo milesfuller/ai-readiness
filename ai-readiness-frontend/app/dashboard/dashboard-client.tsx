@@ -1,7 +1,9 @@
 'use client'
 
 import { MainLayout } from '@/components/layout/main-layout'
-import { Button, Card, CardHeader, CardTitle, CardContent, StatsCard, CircularProgress, Progress } from '@/components/ui'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent, StatsCard } from '@/components/ui/card'
+import { CircularProgress, Progress } from '@/components/ui/progress'
 // Removed AnimatedCounter whimsy component
 import { Brain, Users, TrendingUp, Clock, CheckCircle2, BarChart3, Sparkles, Trophy, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'

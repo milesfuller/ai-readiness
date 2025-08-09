@@ -162,3 +162,8 @@ export function createServerClient() {
 
 // Alias for backwards compatibility
 export const createServerClientWithAuth = createClient
+
+/**
+ * Export missing createServerSupabaseClient function for compatibility
+ */
+export { createClient as createServerSupabaseClient }

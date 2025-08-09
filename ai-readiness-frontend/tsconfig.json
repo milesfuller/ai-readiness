@@ -64,10 +64,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "types": [
-      "jest",
-      "node",
-      "@testing-library/jest-dom"
-    ]
+      "node"
+    ],
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": [
     "next-env.d.ts",

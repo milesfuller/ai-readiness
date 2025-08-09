@@ -62,7 +62,7 @@ interface GenerationStatus {
 // MAIN COMPONENT
 // ============================================================================
 
-export const ReportGenerator: React.FC = () => {
+export const ReportGenerator: React.FC = React.memo(() => {
   const { toast } = useToast()
   
   // State management
@@ -601,4 +601,4 @@ export const ReportGenerator: React.FC = () => {
       </Tabs>
     </div>
   )
-}
+})

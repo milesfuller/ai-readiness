@@ -1,5 +1,6 @@
 import { GraphQLContext } from '../context'
 import { AuthenticationError, ForbiddenError, ValidationError } from '../errors'
+import { Resolvers, Organization, User } from '../types/generated'
 
 /**
  * Organization-specific GraphQL resolvers
@@ -11,7 +12,7 @@ import { AuthenticationError, ForbiddenError, ValidationError } from '../errors'
  * - Settings and preferences
  */
 
-export const organizationResolvers = {
+export const organizationResolvers: Partial<Resolvers<GraphQLContext>> = {
   Query: {
     /**
      * Get organization by ID (defaults to current user's org)
@@ -198,7 +199,7 @@ export const organizationResolvers = {
     /**
      * Get organization members
      */
-    members: async (organization: any, args: any, context: GraphQLContext) => {
+    members: async (organization: Organization, args: any, context: GraphQLContext) => {
       const { user, requireAuth, services } = context
       requireAuth()
       
@@ -225,7 +226,7 @@ export const organizationResolvers = {
     /**
      * Get organization surveys
      */
-    surveys: async (organization: any, args: any, context: GraphQLContext) => {
+    surveys: async (organization: Organization, args: any, context: GraphQLContext) => {
       const { user, requireAuth, services } = context
       requireAuth()
       

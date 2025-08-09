@@ -1,21 +1,40 @@
 import React from 'react'
-import {
-  Body,
-  Button,
-  Container,
-  Column,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Row,
-  Section,
-  Text,
-  Tailwind,
-} from '@react-email/components'
+
+// Temporarily disabled - missing @react-email/components package
+// import {
+//   Body,
+//   Button,
+//   Container,
+//   Column,
+//   Head,
+//   Heading,
+//   Hr,
+//   Html,
+//   Img,
+//   Link,
+//   Preview,
+//   Row,
+//   Section,
+//   Text,
+//   Tailwind,
+// } from '@react-email/components'
+
+// Placeholder components until react-email is properly installed
+const Body = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const Button = ({ children, ...props }: any) => <button {...props}>{children}</button>;
+const Container = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const Column = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const Head = ({ children, ...props }: any) => <head {...props}>{children}</head>;
+const Heading = ({ children, ...props }: any) => <h1 {...props}>{children}</h1>;
+const Hr = (props: any) => <hr {...props} />;
+const Html = ({ children, ...props }: any) => <html {...props}>{children}</html>;
+const Img = (props: any) => <img {...props} />;
+const Link = ({ children, ...props }: any) => <a {...props}>{children}</a>;
+const Preview = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const Row = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const Section = ({ children, ...props }: any) => <section {...props}>{children}</section>;
+const Text = ({ children, ...props }: any) => <p {...props}>{children}</p>;
+const Tailwind = ({ children, ...props }: any) => <div {...props}>{children}</div>;
 
 // Base email template styles
 const baseStyles = {

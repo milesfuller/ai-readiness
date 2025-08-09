@@ -32,7 +32,7 @@ import {
   Volume2,
   VolumeX
 } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/lib/hooks/use-toast'
 import { NotificationType, NotificationCategory, NotificationPriority } from '@/lib/services/notification.service'
 
 interface NotificationPreferences {

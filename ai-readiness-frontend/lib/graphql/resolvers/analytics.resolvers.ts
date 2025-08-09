@@ -1,8 +1,9 @@
-import { Resolvers } from '../types/generated'
+import { Resolvers, QueryResolvers, SurveyAnalyticsResolvers, SurveyAnalytics, Survey } from '../types/generated'
+import { GraphQLContext } from '../context'
 
-export const analyticsResolvers: Partial<Resolvers> = {
+export const analyticsResolvers: Partial<Resolvers<GraphQLContext>> = {
   Query: {
-    surveyAnalytics: async (_: any, args: any, context: any) => {
+    surveyAnalytics: async (_: any, args: { surveyId: string; refresh?: boolean }, context: GraphQLContext) => {
       context.requireAuth()
       
       // Check if cached analytics exist
@@ -51,7 +52,7 @@ export const analyticsResolvers: Partial<Resolvers> = {
       return analytics
     },
     
-    dashboardAnalytics: async (_: any, args: any, context: any) => {
+    dashboardAnalytics: async (_: any, args: {}, context: GraphQLContext) => {
       const user = context.requireAuth()
       
       // Get organization stats
@@ -81,7 +82,7 @@ export const analyticsResolvers: Partial<Resolvers> = {
   },
   
   SurveyAnalytics: {
-    survey: async (parent: any, _: any, context: any) => {
+    survey: async (parent: SurveyAnalytics, _: any, context: GraphQLContext) => {
       return context.dataSources.surveyLoader.load(parent.surveyId)
     }
   }

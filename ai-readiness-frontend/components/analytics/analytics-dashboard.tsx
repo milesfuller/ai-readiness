@@ -29,7 +29,7 @@ interface AnalyticsDashboardProps {
   className?: string
 }
 
-export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
+const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = React.memo(({
   analytics,
   organizationId,
   surveyId,
@@ -324,6 +324,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </Tabs>
     </div>
   )
-}
+})
 
+AnalyticsDashboard.displayName = 'AnalyticsDashboard'
+
+export { AnalyticsDashboard }
 export default AnalyticsDashboard

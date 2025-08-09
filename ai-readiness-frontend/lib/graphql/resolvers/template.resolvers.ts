@@ -1,8 +1,9 @@
-import { Resolvers } from '../types/generated'
+import { Resolvers, QueryResolvers, MutationResolvers, SurveyTemplateResolvers, SurveyTemplate, User, Organization } from '../types/generated'
+import { GraphQLContext } from '../context'
 
-export const templateResolvers: Partial<Resolvers> = {
+export const templateResolvers: Partial<Resolvers<GraphQLContext>> = {
   Query: {
-    surveyTemplates: async (_: any, args: any, context: any) => {
+    surveyTemplates: async (_, args: { category?: string; isPublic?: boolean }, context: GraphQLContext) => {
       context.requireAuth()
       
       const query = context.supabase
@@ -23,7 +24,7 @@ export const templateResolvers: Partial<Resolvers> = {
       return data || []
     },
     
-    surveyTemplate: async (_: any, args: any, context: any) => {
+    surveyTemplate: async (_, args: { id: string }, context: GraphQLContext) => {
       context.requireAuth()
       
       const { data, error } = await context.supabase
@@ -38,7 +39,7 @@ export const templateResolvers: Partial<Resolvers> = {
   },
   
   Mutation: {
-    createTemplate: async (_: any, args: any, context: any) => {
+    createTemplate: async (_, args: { input: any }, context: GraphQLContext) => {
       const user = context.requireAuth()
       
       const { data, error } = await context.supabase
@@ -55,7 +56,7 @@ export const templateResolvers: Partial<Resolvers> = {
       return data
     },
     
-    updateTemplate: async (_: any, args: any, context: any) => {
+    updateTemplate: async (_, args: { id: string; input: any }, context: GraphQLContext) => {
       context.requireAuth()
       
       const { data, error } = await context.supabase
@@ -69,7 +70,7 @@ export const templateResolvers: Partial<Resolvers> = {
       return data
     },
     
-    deleteTemplate: async (_: any, args: any, context: any) => {
+    deleteTemplate: async (_, args: { id: string }, context: GraphQLContext) => {
       context.requireAuth()
       
       const { error } = await context.supabase
@@ -83,12 +84,12 @@ export const templateResolvers: Partial<Resolvers> = {
   },
   
   SurveyTemplate: {
-    createdBy: async (parent: any, _: any, context: any) => {
+    createdBy: async (parent: SurveyTemplate, _, context: GraphQLContext) => {
       if (!parent.createdBy) return null
       return context.dataSources.userLoader.load(parent.createdBy)
     },
     
-    organization: async (parent: any, _: any, context: any) => {
+    organization: async (parent: SurveyTemplate, _, context: GraphQLContext) => {
       if (!parent.organizationId) return null
       return context.dataSources.organizationLoader.load(parent.organizationId)
     }

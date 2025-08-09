@@ -35,6 +35,11 @@ export const Users = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   encrypted_password: z.string().min(6),
+  name: z.string().nullable().default(null),
+  role: z.enum(['user', 'admin', 'org_admin', 'system_admin']).default('user'),
+  is_active: z.boolean().default(true),
+  last_login_at: z.date().nullable().default(null),
+  email_verified_at: z.date().nullable().default(null),
   ...TimestampSchema.shape,
   ...SoftDeleteSchema.shape
 });
@@ -1199,35 +1204,35 @@ export function createJTBDAnalysisTemplate(surveyId: string, sessionId: string, 
 // ============================================================================
 
 export const DatabaseIndexes = {
-  users: ['email', 'created_at'],
-  user_profiles: ['user_id', 'organization_id', 'email'],
-  user_sessions: ['user_id', 'token_hash', 'expires_at'],
-  onboarding_progress: ['user_id', 'current_step'],
+  Users: ['email', 'created_at'],
+  UserProfiles: ['user_id', 'organization_id', 'email'],
+  UserSessions: ['user_id', 'token_hash', 'expires_at'],
+  OnboardingProgress: ['user_id', 'current_step'],
   
-  organizations: ['name', 'domain', 'created_at'],
-  organization_members: ['organization_id', 'user_id', 'role'],
-  organization_invitations: ['organization_id', 'email', 'token', 'status'],
+  Organizations: ['name', 'domain', 'created_at'],
+  OrganizationMembers: ['organization_id', 'user_id', 'role'],
+  OrganizationInvitations: ['organization_id', 'email', 'token', 'status'],
   
-  invitations: ['email', 'token', 'type', 'status', 'expires_at'],
-  email_tracking: ['invitation_id', 'email', 'status'],
+  Invitations: ['email', 'token', 'type', 'status', 'expires_at'],
+  EmailTracking: ['invitation_id', 'email', 'status'],
   
-  surveys: ['organization_id', 'created_by', 'status'],
-  survey_templates: ['organization_id', 'category', 'status', 'visibility'],
-  questions: ['survey_id', 'order_index'],
-  survey_template_questions: ['template_id', 'order_index', 'question_key', 'jtbd_force'],
-  survey_sessions: ['survey_id', 'user_id', 'started_at'],
-  responses: ['survey_id', 'session_id', 'question_id', 'user_id', 'has_voice_recording', 'voice_recording_id'],
-  response_analysis_jtbd: ['survey_id', 'session_id', 'user_id', 'analysis_type', 'analyzed_at'],
+  Surveys: ['organization_id', 'created_by', 'status'],
+  SurveyTemplates: ['organization_id', 'category', 'status', 'visibility'],
+  Questions: ['survey_id', 'order_index'],
+  SurveyTemplateQuestions: ['template_id', 'order_index', 'question_key', 'jtbd_force'],
+  SurveySessions: ['survey_id', 'user_id', 'started_at'],
+  Responses: ['survey_id', 'session_id', 'question_id', 'user_id', 'has_voice_recording', 'voice_recording_id'],
+  ResponseAnalysisJTBD: ['survey_id', 'session_id', 'user_id', 'analysis_type', 'analyzed_at'],
   
-  voice_recordings: ['response_id', 'survey_id', 'session_id', 'question_id', 'user_id', 'transcription_status', 'processing_status', 'created_at'],
-  transcription_segments: ['voice_recording_id', 'start_time_seconds', 'end_time_seconds'],
-  voice_quality_metrics: ['voice_recording_id', 'overall_quality_score', 'analyzed_at'],
+  VoiceRecordings: ['response_id', 'survey_id', 'session_id', 'question_id', 'user_id', 'transcription_status', 'processing_status', 'created_at'],
+  TranscriptionSegments: ['voice_recording_id', 'start_time_seconds', 'end_time_seconds'],
+  VoiceQualityMetrics: ['voice_recording_id', 'overall_quality_score', 'analyzed_at'],
   
-  activity_logs: ['user_id', 'organization_id', 'entity_type', 'entity_id', 'activity_type', 'occurred_at'],
-  audit_logs: ['user_id', 'entity_type', 'entity_id', 'created_at'],
-  file_uploads: ['uploaded_by', 'organization_id', 'created_at'],
-  webhook_subscriptions: ['organization_id', 'is_active'],
-  export_jobs: ['organization_id', 'requested_by', 'status', 'created_at']
+  ActivityLogs: ['user_id', 'organization_id', 'entity_type', 'entity_id', 'activity_type', 'occurred_at'],
+  AuditLogs: ['user_id', 'entity_type', 'entity_id', 'created_at'],
+  FileUploads: ['uploaded_by', 'organization_id', 'created_at'],
+  WebhookSubscriptions: ['organization_id', 'is_active'],
+  ExportJobs: ['organization_id', 'requested_by', 'status', 'created_at']
 };
 
 // ============================================================================
@@ -1235,97 +1240,97 @@ export const DatabaseIndexes = {
 // ============================================================================
 
 export const ForeignKeys = {
-  user_profiles: { 
-    id: 'auth.users(id) ON DELETE CASCADE',
-    organization_id: 'organizations(id) ON DELETE SET NULL'
+  UserProfiles: { 
+    id: 'Users(id) ON DELETE CASCADE',
+    organization_id: 'Organizations(id) ON DELETE SET NULL'
   },
-  user_sessions: { 
-    user_id: 'auth.users(id) ON DELETE CASCADE' 
+  UserSessions: { 
+    user_id: 'Users(id) ON DELETE CASCADE' 
   },
-  onboarding_progress: { 
-    user_id: 'auth.users(id) ON DELETE CASCADE' 
-  },
-  
-  organization_members: {
-    organization_id: 'organizations(id) ON DELETE CASCADE',
-    user_id: 'auth.users(id) ON DELETE CASCADE',
-    invited_by: 'auth.users(id) ON DELETE SET NULL'
-  },
-  organization_invitations: {
-    organization_id: 'organizations(id) ON DELETE CASCADE',
-    invited_by: 'auth.users(id) ON DELETE RESTRICT'
+  OnboardingProgress: { 
+    user_id: 'Users(id) ON DELETE CASCADE' 
   },
   
-  invitations: {
-    sender_id: 'auth.users(id) ON DELETE RESTRICT',
-    template_id: 'invitation_templates(id) ON DELETE SET NULL'
+  OrganizationMembers: {
+    organization_id: 'Organizations(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE CASCADE',
+    invited_by: 'Users(id) ON DELETE SET NULL'
   },
-  email_tracking: {
-    invitation_id: 'invitations(id) ON DELETE CASCADE'
-  },
-  
-  surveys: {
-    organization_id: 'organizations(id) ON DELETE CASCADE',
-    created_by: 'auth.users(id) ON DELETE RESTRICT'
-  },
-  survey_templates: {
-    organization_id: 'organizations(id) ON DELETE SET NULL',
-    created_by: 'auth.users(id) ON DELETE RESTRICT'
-  },
-  questions: {
-    survey_id: 'surveys(id) ON DELETE CASCADE'
-  },
-  survey_template_questions: {
-    template_id: 'survey_templates(id) ON DELETE CASCADE'
-  },
-  survey_sessions: {
-    survey_id: 'surveys(id) ON DELETE CASCADE',
-    user_id: 'auth.users(id) ON DELETE SET NULL'
-  },
-  responses: {
-    survey_id: 'surveys(id) ON DELETE CASCADE',
-    session_id: 'survey_sessions(id) ON DELETE CASCADE',
-    question_id: 'questions(id) ON DELETE CASCADE',
-    user_id: 'auth.users(id) ON DELETE SET NULL'
-  },
-  response_analysis_jtbd: {
-    survey_id: 'surveys(id) ON DELETE CASCADE',
-    session_id: 'survey_sessions(id) ON DELETE CASCADE',
-    user_id: 'auth.users(id) ON DELETE SET NULL',
-    analyzed_by: 'auth.users(id) ON DELETE SET NULL'
+  OrganizationInvitations: {
+    organization_id: 'Organizations(id) ON DELETE CASCADE',
+    invited_by: 'Users(id) ON DELETE RESTRICT'
   },
   
-  voice_recordings: {
-    response_id: 'responses(id) ON DELETE CASCADE',
-    survey_id: 'surveys(id) ON DELETE CASCADE',
-    session_id: 'survey_sessions(id) ON DELETE CASCADE',
-    question_id: 'questions(id) ON DELETE CASCADE',
-    user_id: 'auth.users(id) ON DELETE SET NULL'
+  Invitations: {
+    sender_id: 'Users(id) ON DELETE RESTRICT',
+    template_id: 'InvitationTemplates(id) ON DELETE SET NULL'
   },
-  transcription_segments: {
-    voice_recording_id: 'voice_recordings(id) ON DELETE CASCADE'
-  },
-  voice_quality_metrics: {
-    voice_recording_id: 'voice_recordings(id) ON DELETE CASCADE'
+  EmailTracking: {
+    invitation_id: 'Invitations(id) ON DELETE CASCADE'
   },
   
-  activity_logs: {
-    user_id: 'auth.users(id) ON DELETE SET NULL',
-    organization_id: 'organizations(id) ON DELETE SET NULL'
+  Surveys: {
+    organization_id: 'Organizations(id) ON DELETE CASCADE',
+    created_by: 'Users(id) ON DELETE RESTRICT'
   },
-  audit_logs: {
-    user_id: 'auth.users(id) ON DELETE SET NULL'
+  SurveyTemplates: {
+    organization_id: 'Organizations(id) ON DELETE SET NULL',
+    created_by: 'Users(id) ON DELETE RESTRICT'
   },
-  file_uploads: {
-    uploaded_by: 'auth.users(id) ON DELETE RESTRICT',
-    organization_id: 'organizations(id) ON DELETE SET NULL'
+  Questions: {
+    survey_id: 'Surveys(id) ON DELETE CASCADE'
   },
-  webhook_subscriptions: {
-    organization_id: 'organizations(id) ON DELETE CASCADE'
+  SurveyTemplateQuestions: {
+    template_id: 'SurveyTemplates(id) ON DELETE CASCADE'
   },
-  export_jobs: {
-    requested_by: 'auth.users(id) ON DELETE RESTRICT',
-    organization_id: 'organizations(id) ON DELETE CASCADE'
+  SurveySessions: {
+    survey_id: 'Surveys(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE SET NULL'
+  },
+  Responses: {
+    survey_id: 'Surveys(id) ON DELETE CASCADE',
+    session_id: 'SurveySessions(id) ON DELETE CASCADE',
+    question_id: 'Questions(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE SET NULL'
+  },
+  ResponseAnalysisJTBD: {
+    survey_id: 'Surveys(id) ON DELETE CASCADE',
+    session_id: 'SurveySessions(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE SET NULL',
+    analyzed_by: 'Users(id) ON DELETE SET NULL'
+  },
+  
+  VoiceRecordings: {
+    response_id: 'Responses(id) ON DELETE CASCADE',
+    survey_id: 'Surveys(id) ON DELETE CASCADE',
+    session_id: 'SurveySessions(id) ON DELETE CASCADE',
+    question_id: 'Questions(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE SET NULL'
+  },
+  TranscriptionSegments: {
+    voice_recording_id: 'VoiceRecordings(id) ON DELETE CASCADE'
+  },
+  VoiceQualityMetrics: {
+    voice_recording_id: 'VoiceRecordings(id) ON DELETE CASCADE'
+  },
+  
+  ActivityLogs: {
+    user_id: 'Users(id) ON DELETE SET NULL',
+    organization_id: 'Organizations(id) ON DELETE SET NULL'
+  },
+  AuditLogs: {
+    user_id: 'Users(id) ON DELETE SET NULL'
+  },
+  FileUploads: {
+    uploaded_by: 'Users(id) ON DELETE RESTRICT',
+    organization_id: 'Organizations(id) ON DELETE SET NULL'
+  },
+  WebhookSubscriptions: {
+    organization_id: 'Organizations(id) ON DELETE CASCADE'
+  },
+  ExportJobs: {
+    requested_by: 'Users(id) ON DELETE RESTRICT',
+    organization_id: 'Organizations(id) ON DELETE CASCADE'
   }
 };
 
@@ -1410,4 +1415,330 @@ export type CreateActivityLogParams = z.infer<typeof ActivityLogsTableSchema>;
 // ============================================================================
 
 // Re-export all placeholder schemas for missing services
-export * from './schema-placeholders';
+// export * from './schema-placeholders'; // Commented out - file doesn't exist
+
+// ============================================================================
+// UTILITY FUNCTIONS AND VALIDATORS
+// ============================================================================
+
+// Table Schema exports for backward compatibility
+export const UsersTableSchema = Users;
+export const SurveysTableSchema = Surveys;
+export const OrganizationsTableSchema = Organizations;
+export const QuestionsTableSchema = Questions;
+export const ResponsesTableSchema = Responses;
+// Missing table schemas - using placeholders until implemented
+export const AnalyticsTableSchema = AuditLogs; // TODO: Replace with actual Analytics schema
+export const ReportsTableSchema = AuditLogs; // TODO: Replace with actual Reports schema  
+export const NotificationsTableSchema = AuditLogs; // TODO: Replace with actual Notifications schema
+export const ApiKeysTableSchema = AuditLogs; // TODO: Replace with actual ApiKeys schema
+export const AuditLogsTableSchema = AuditLogs;
+
+// All table schemas collection
+export const AllTableSchemas = {
+  Users,
+  UserProfiles,
+  Sessions: UserSessions, // Use UserSessions for Sessions
+  Organizations,
+  OrganizationMembers,
+  OrganizationInvitations,
+  Surveys,
+  SurveyTemplates,
+  Questions,
+  QuestionOptions: Questions, // TODO: Replace with actual QuestionOptions schema
+  Responses,
+  ResponseAnswers: ResponseAnalysisJTBD, // TODO: Replace with actual ResponseAnswers schema
+  SurveyVersions: SurveySessions, // TODO: Replace with actual SurveyVersions schema
+  Analytics: AuditLogs, // TODO: Replace with actual Analytics schema
+  Reports: AuditLogs, // TODO: Replace with actual Reports schema
+  Notifications: AuditLogs, // TODO: Replace with actual Notifications schema
+  ApiKeys: AuditLogs, // TODO: Replace with actual ApiKeys schema
+  AuditLogs,
+  SupabaseUsers: Users, // TODO: Replace with actual SupabaseUsers schema
+  PublicUsers: Users, // TODO: Replace with actual PublicUsers schema
+  Files: FileUploads, // Use FileUploads for Files
+  Webhooks: WebhookSubscriptions, // Use WebhookSubscriptions for Webhooks
+  ScheduledJobs: ExportJobs, // Use ExportJobs for ScheduledJobs
+  // Activity schemas
+  ActivityLogs: ActivityLogsTableSchema,
+  ActivityAnalytics: ActivityAnalyticsTableSchema,
+  ActivitySubscriptions: ActivitySubscriptionsTableSchema,
+  ActivityNotifications: ActivityNotificationsTableSchema
+};
+
+// Foreign Key Constraints - SQL format for migrations
+export const ForeignKeyConstraints = {
+  UserProfiles: { 
+    user_id: 'Users(id) ON DELETE CASCADE',
+    organization_id: 'Organizations(id) ON DELETE SET NULL'
+  },
+  OrganizationMembers: { 
+    organization_id: 'Organizations(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE CASCADE'
+  },
+  Surveys: {
+    organization_id: 'Organizations(id) ON DELETE CASCADE',
+    created_by: 'Users(id) ON DELETE RESTRICT'
+  },
+  Questions: { survey_id: 'Surveys(id) ON DELETE CASCADE' },
+  Responses: {
+    survey_id: 'Surveys(id) ON DELETE CASCADE',
+    user_id: 'Users(id) ON DELETE SET NULL',
+    session_id: 'SurveySessions(id) ON DELETE CASCADE',
+    question_id: 'Questions(id) ON DELETE CASCADE'
+  },
+  ResponseAnswers: {
+    response_id: 'Responses(id) ON DELETE CASCADE',
+    question_id: 'Questions(id) ON DELETE CASCADE'
+  }
+};
+
+// Note: DatabaseIndexes is already defined above, using that one
+
+// Validation utilities
+export function validateTableSchema<T>(schema: z.ZodSchema<T>, data: unknown): T {
+  return schema.parse(data);
+}
+
+export function isValidUUID(value: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(value);
+}
+
+export function isValidEmail(value: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(value);
+}
+
+export function isValidJSON(value: string): boolean {
+  try {
+    JSON.parse(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// API Version constant
+export const API_VERSION = '1.0.0';
+
+// ============================================================================
+// ADDITIONAL MISSING EXPORTS FOR SERVICES
+// ============================================================================
+
+// Re-export schemas with expected names
+export const InvitationsTableSchema = Invitations;
+export const SurveyTemplatesTableSchema = SurveyTemplates;
+export const EmailTrackingTableSchema = EmailTracking;
+export const UserProfilesTableSchema = UserProfiles;
+export const OnboardingProgressTableSchema = OnboardingProgress;
+export const UserSessionsTableSchema = UserSessions; // Fix reference to use UserSessions instead of Sessions
+export const SurveyTemplateQuestionsTableSchema = SurveyTemplateQuestions;
+
+// Add missing function that contracts expect
+export const validateDatabaseRow = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
+  return schema.parse(data);
+};
+
+// Create missing schemas that services expect
+export const InvitationTemplatesTableSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  subject: z.string(),
+  body: z.string(),
+  variables: z.array(z.string()),
+  is_active: z.boolean().default(true),
+  created_at: z.date(),
+  updated_at: z.date()
+});
+
+export const ProfileMetadataTableSchema = z.object({
+  user_id: z.string().uuid(),
+  key: z.string(),
+  value: z.any(),
+  created_at: z.date(),
+  updated_at: z.date()
+});
+
+export const SurveyTemplateVersionsTableSchema = z.object({
+  id: z.string().uuid(),
+  template_id: z.string().uuid(),
+  version: z.number(),
+  changes: z.any(),
+  created_by: z.string().uuid(),
+  created_at: z.date()
+});
+
+export const TemplateSharesTableSchema = z.object({
+  id: z.string().uuid(),
+  template_id: z.string().uuid(),
+  shared_with: z.string().uuid().nullable(),
+  shared_with_org: z.string().uuid().nullable(),
+  permissions: z.array(z.string()),
+  created_at: z.date()
+});
+
+export const TemplateAnalyticsTableSchema = z.object({
+  id: z.string().uuid(),
+  template_id: z.string().uuid(),
+  views: z.number().default(0),
+  uses: z.number().default(0),
+  rating: z.number().nullable(),
+  created_at: z.date(),
+  updated_at: z.date()
+});
+
+export const TemplateReviewsTableSchema = z.object({
+  id: z.string().uuid(),
+  template_id: z.string().uuid(),
+  reviewer_id: z.string().uuid(),
+  rating: z.number().min(1).max(5),
+  comment: z.string().nullable(),
+  created_at: z.date()
+});
+
+export const InvitationBatchesTableSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  total_count: z.number(),
+  sent_count: z.number().default(0),
+  accepted_count: z.number().default(0),
+  created_by: z.string().uuid(),
+  created_at: z.date()
+});
+
+export const InvitationAnalyticsTableSchema = z.object({
+  id: z.string().uuid(),
+  invitation_id: z.string().uuid().nullable(),
+  batch_id: z.string().uuid().nullable(),
+  open_count: z.number().default(0),
+  click_count: z.number().default(0),
+  accept_rate: z.number().nullable(),
+  created_at: z.date(),
+  updated_at: z.date()
+});
+
+export const InvitationSettingsTableSchema = z.object({
+  id: z.string().uuid(),
+  organization_id: z.string().uuid(),
+  auto_expire_days: z.number().default(7),
+  max_batch_size: z.number().default(100),
+  allow_resend: z.boolean().default(true),
+  created_at: z.date(),
+  updated_at: z.date()
+});
+
+// ============================================================================
+// HELPER FUNCTIONS FOR SERVICES
+// ============================================================================
+
+/**
+ * Generate a secure random invitation token
+ */
+export function generateInvitationToken(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+/**
+ * Create default expiry date (7 days from now)
+ */
+export function createDefaultExpiry(): Date {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date;
+}
+
+/**
+ * Check if invitation can be accepted
+ */
+export function canInvitationBeAccepted(invitation: any): boolean {
+  if (!invitation) return false;
+  if (invitation.status !== 'pending') return false;
+  if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) return false;
+  return true;
+}
+
+/**
+ * Validate invitation template
+ */
+export function validateInvitationTemplate(template: unknown) {
+  return InvitationTemplatesTableSchema.parse(template);
+}
+
+/**
+ * Validate template variables
+ */
+export function validateTemplateVariables(variables: any): boolean {
+  if (!variables || typeof variables !== 'object') return false;
+  return true;
+}
+
+/**
+ * Render template with variables
+ */
+export function renderTemplate(template: string, variables: Record<string, string>): string {
+  let rendered = template;
+  Object.entries(variables).forEach(([key, value]) => {
+    rendered = rendered.replace(new RegExp(`{{${key}}}`, 'g'), value);
+  });
+  return rendered;
+}
+
+/**
+ * Validate invitation batch
+ */
+export function validateInvitationBatch(batch: unknown) {
+  return InvitationBatchesTableSchema.parse(batch);
+}
+
+/**
+ * Validate invitation settings
+ */
+export function validateInvitationSettings(settings: unknown) {
+  return InvitationSettingsTableSchema.parse(settings);
+}
+
+/**
+ * Validate template version
+ */
+export function validateTemplateVersion(version: unknown) {
+  return SurveyTemplateVersionsTableSchema.parse(version);
+}
+
+/**
+ * Validate template share
+ */
+export function validateTemplateShare(share: unknown) {
+  return TemplateSharesTableSchema.parse(share);
+}
+
+/**
+ * Validate template analytics
+ */
+export function validateTemplateAnalytics(analytics: unknown) {
+  return TemplateAnalyticsTableSchema.parse(analytics);
+}
+
+/**
+ * Validate template review
+ */
+export function validateTemplateReview(review: unknown) {
+  return TemplateReviewsTableSchema.parse(review);
+}
+
+/**
+ * Get next onboarding step
+ */
+export function getNextOnboardingStep(currentStep: string): string {
+  const steps = ['profile', 'organization', 'preferences', 'survey', 'completed'];
+  const currentIndex = steps.indexOf(currentStep);
+  if (currentIndex === -1 || currentIndex === steps.length - 1) {
+    return 'completed';
+  }
+  return steps[currentIndex + 1];
+}

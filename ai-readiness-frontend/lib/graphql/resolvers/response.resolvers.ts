@@ -1,8 +1,9 @@
-import { Resolvers } from '../types/generated'
+import { Resolvers, QueryResolvers, MutationResolvers, SurveyResponse } from '../types/generated'
+import { GraphQLContext } from '../context'
 
-export const responseResolvers: Partial<Resolvers> = {
+export const responseResolvers: Partial<Resolvers<GraphQLContext>> = {
   Query: {
-    responses: async (_: any, args: any, context: any) => {
+    responses: async (_, args: { surveyId?: string; sessionId?: string }, context: GraphQLContext) => {
       context.requireAuth()
       
       const query = context.supabase
@@ -24,7 +25,7 @@ export const responseResolvers: Partial<Resolvers> = {
     }
   },
   Mutation: {
-    submitResponse: async (_: any, args: any, context: any) => {
+    submitResponse: async (_, args: { input: { surveyId: string; sessionId?: string; answers: any; completed?: boolean } }, context: GraphQLContext) => {
       const user = context.requireAuth()
       
       const { data, error } = await context.supabase
@@ -43,7 +44,7 @@ export const responseResolvers: Partial<Resolvers> = {
       return data
     },
     
-    updateResponse: async (_: any, args: any, context: any) => {
+    updateResponse: async (_, args: { id: string; input: { answers: any; completed?: boolean } }, context: GraphQLContext) => {
       context.requireAuth()
       
       const { data, error } = await context.supabase

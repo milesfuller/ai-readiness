@@ -202,12 +202,82 @@ export type Resolvers<ContextType = any> = {
   SurveyTemplate?: SurveyTemplateResolvers<ContextType>;
 };
 
-export type QueryResolvers<ContextType = any> = any;
-export type MutationResolvers<ContextType = any> = any;
-export type SubscriptionResolvers<ContextType = any> = any;
-export type UserResolvers<ContextType = any> = any;
-export type OrganizationResolvers<ContextType = any> = any;
-export type SurveyResolvers<ContextType = any> = any;
-export type SurveyResponseResolvers<ContextType = any> = any;
-export type SurveyAnalyticsResolvers<ContextType = any> = any;
-export type SurveyTemplateResolvers<ContextType = any> = any;
+export type QueryResolvers<ContextType = any> = {
+  me?: (parent: any, args: any, context: ContextType) => Promise<Maybe<User>>;
+  user?: (parent: any, args: { id: string }, context: ContextType) => Promise<Maybe<User>>;
+  users?: (parent: any, args: { pagination?: any; filters?: any }, context: ContextType) => Promise<Maybe<Array<User>>>;
+  organization?: (parent: any, args: { id?: string }, context: ContextType) => Promise<Maybe<Organization>>;
+  organizations?: (parent: any, args: { pagination?: any }, context: ContextType) => Promise<Maybe<Array<Organization>>>;
+  survey?: (parent: any, args: { id: string }, context: ContextType) => Promise<Maybe<Survey>>;
+  surveys?: (parent: any, args: any, context: ContextType) => Promise<Maybe<Array<Survey>>>;
+  responses?: (parent: any, args: { surveyId?: string; sessionId?: string }, context: ContextType) => Promise<Maybe<Array<SurveyResponse>>>;
+  surveyAnalytics?: (parent: any, args: { surveyId: string; refresh?: boolean }, context: ContextType) => Promise<Maybe<SurveyAnalytics>>;
+  dashboardAnalytics?: (parent: any, args: any, context: ContextType) => Promise<Maybe<Scalars['JSON']>>;
+  surveyTemplate?: (parent: any, args: { id: string }, context: ContextType) => Promise<Maybe<SurveyTemplate>>;
+  surveyTemplates?: (parent: any, args: { category?: string; isPublic?: boolean }, context: ContextType) => Promise<Maybe<Array<SurveyTemplate>>>;
+};
+
+export type MutationResolvers<ContextType = any> = {
+  createSurvey?: (parent: any, args: any, context: ContextType) => Promise<Maybe<Survey>>;
+  updateSurvey?: (parent: any, args: any, context: ContextType) => Promise<Maybe<Survey>>;
+  deleteSurvey?: (parent: any, args: { id: string }, context: ContextType) => Promise<Maybe<Scalars['JSON']>>;
+  submitResponse?: (parent: any, args: { input: any }, context: ContextType) => Promise<Maybe<SurveyResponse>>;
+  updateResponse?: (parent: any, args: { id: string; input: any }, context: ContextType) => Promise<Maybe<SurveyResponse>>;
+  createTemplate?: (parent: any, args: { input: any }, context: ContextType) => Promise<Maybe<SurveyTemplate>>;
+  updateTemplate?: (parent: any, args: { id: string; input: any }, context: ContextType) => Promise<Maybe<SurveyTemplate>>;
+  deleteTemplate?: (parent: any, args: { id: string }, context: ContextType) => Promise<Maybe<Scalars['JSON']>>;
+};
+
+export type SubscriptionResolvers<ContextType = any> = {
+  responseSubmitted?: {
+    subscribe: (parent: any, args: { surveyId?: string }, context: ContextType) => AsyncIterator<{ responseSubmitted: Maybe<SurveyResponse> }>;
+  };
+  sessionUpdated?: {
+    subscribe: (parent: any, args: { sessionId?: string }, context: ContextType) => AsyncIterator<{ sessionUpdated: Maybe<SurveySession> }>;
+  };
+  analysisCompleted?: {
+    subscribe: (parent: any, args: { surveyId?: string }, context: ContextType) => AsyncIterator<{ analysisCompleted: Maybe<SurveyAnalytics> }>;
+  };
+  surveyAnalysisCompleted?: {
+    subscribe: (parent: any, args: { surveyId?: string }, context: ContextType) => AsyncIterator<{ surveyAnalysisCompleted: Maybe<SurveyAnalytics> }>;
+  };
+  systemNotification?: {
+    subscribe: (parent: any, args: any, context: ContextType) => AsyncIterator<{ systemNotification: Maybe<Scalars['JSON']> }>;
+  };
+  organizationNotification?: {
+    subscribe: (parent: any, args: { organizationId?: string }, context: ContextType) => AsyncIterator<{ organizationNotification: Maybe<Scalars['JSON']> }>;
+  };
+};
+
+export type UserResolvers<ContextType = any> = {
+  organization?: (parent: User, args: any, context: ContextType) => Promise<Maybe<Organization>>;
+  sessions?: (parent: User, args: any, context: ContextType) => Promise<Maybe<Array<SurveySession>>>;
+  responses?: (parent: User, args: any, context: ContextType) => Promise<Maybe<Array<SurveyResponse>>>;
+};
+
+export type OrganizationResolvers<ContextType = any> = {
+  users?: (parent: Organization, args: any, context: ContextType) => Promise<Maybe<Array<User>>>;
+  surveys?: (parent: Organization, args: any, context: ContextType) => Promise<Maybe<Array<Survey>>>;
+};
+
+export type SurveyResolvers<ContextType = any> = {
+  organization?: (parent: Survey, args: any, context: ContextType) => Promise<Maybe<Organization>>;
+  questions?: (parent: Survey, args: any, context: ContextType) => Promise<Maybe<Array<Question>>>;
+  responses?: (parent: Survey, args: any, context: ContextType) => Promise<Maybe<Array<SurveyResponse>>>;
+  analytics?: (parent: Survey, args: any, context: ContextType) => Promise<Maybe<SurveyAnalytics>>;
+};
+
+export type SurveyResponseResolvers<ContextType = any> = {
+  survey?: (parent: SurveyResponse, args: any, context: ContextType) => Promise<Maybe<Survey>>;
+  session?: (parent: SurveyResponse, args: any, context: ContextType) => Promise<Maybe<SurveySession>>;
+  user?: (parent: SurveyResponse, args: any, context: ContextType) => Promise<Maybe<User>>;
+};
+
+export type SurveyAnalyticsResolvers<ContextType = any> = {
+  survey?: (parent: SurveyAnalytics, args: any, context: ContextType) => Promise<Maybe<Survey>>;
+};
+
+export type SurveyTemplateResolvers<ContextType = any> = {
+  createdBy?: (parent: SurveyTemplate, args: any, context: ContextType) => Promise<Maybe<User>>;
+  organization?: (parent: SurveyTemplate, args: any, context: ContextType) => Promise<Maybe<Organization>>;
+};

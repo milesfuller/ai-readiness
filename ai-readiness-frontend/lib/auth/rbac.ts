@@ -3,7 +3,18 @@
  * Provides centralized role and permission management
  */
 
-import { UserRole } from '@/lib/types'
+// Import the UserRole type
+export type UserRole = 'user' | 'org_admin' | 'system_admin'
+
+// Create an enum for Role to support z.nativeEnum
+export enum Role {
+  VIEWER = 'viewer',
+  USER = 'user',
+  ANALYST = 'analyst',
+  ORG_ADMIN = 'org_admin',
+  SUPER_ADMIN = 'system_admin',
+  SYSTEM_ADMIN = 'system_admin' // Alias for backward compatibility
+}
 
 // Role definitions and hierarchy
 export const ROLES = {
@@ -13,10 +24,13 @@ export const ROLES = {
 } as const
 
 // Role hierarchy (higher roles inherit permissions from lower roles)
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
+export const ROLE_HIERARCHY: Record<string, number> = {
+  viewer: 0,
   user: 1,
-  org_admin: 2,
-  system_admin: 3
+  analyst: 2,
+  org_admin: 3,
+  system_admin: 4,
+  super_admin: 4 // Same level as system_admin
 }
 
 // Permission definitions
@@ -100,9 +114,18 @@ const SYSTEM_ADMIN_ADDITIONAL_PERMISSIONS = [
   PERMISSIONS.API_ADMIN_ACCESS
 ]
 
-// Role-to-permissions mapping
-export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
+// Role-to-permissions mapping (using string keys for all roles)
+export const ROLE_PERMISSIONS: Record<string, string[]> = {
+  viewer: [
+    PERMISSIONS.SURVEY_VIEW_OWN,
+    PERMISSIONS.USER_VIEW_OWN
+  ],
   user: USER_PERMISSIONS,
+  analyst: [
+    ...USER_PERMISSIONS,
+    PERMISSIONS.SURVEY_VIEW_ORG,
+    PERMISSIONS.USER_VIEW_ORG
+  ],
   org_admin: [
     // Inherit all user permissions
     ...USER_PERMISSIONS,
@@ -114,6 +137,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     ...USER_PERMISSIONS,
     ...ORG_ADMIN_ADDITIONAL_PERMISSIONS,
     // Additional system admin permissions
+    ...SYSTEM_ADMIN_ADDITIONAL_PERMISSIONS
+  ],
+  super_admin: [
+    // Super admin has all permissions (alias for system_admin)
+    ...USER_PERMISSIONS,
+    ...ORG_ADMIN_ADDITIONAL_PERMISSIONS,
     ...SYSTEM_ADMIN_ADDITIONAL_PERMISSIONS
   ]
 }
@@ -193,7 +222,7 @@ export function canAccessRoute(userRole: UserRole, route: string): boolean {
 /**
  * Check if a user role is higher than or equal to another role
  */
-export function isRoleEqualOrHigher(userRole: UserRole, requiredRole: UserRole): boolean {
+export function isRoleEqualOrHigher(userRole: UserRole | string, requiredRole: UserRole | string): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole]
 }
 
@@ -221,7 +250,7 @@ export function canAccessOrganization(
 /**
  * Get all permissions for a role
  */
-export function getRolePermissions(role: UserRole): string[] {
+export function getRolePermissions(role: UserRole | string): string[] {
   return ROLE_PERMISSIONS[role] || []
 }
 
@@ -270,6 +299,46 @@ export function canPerformAction(
 /**
  * Role validation utilities
  */
+// RBACService class for structured RBAC operations
+export class RBACService {
+  static hasPermission = hasPermission
+  static hasAnyPermission = hasAnyPermission
+  static hasAllPermissions = hasAllPermissions
+  static canAccessRoute = canAccessRoute
+  static isRoleEqualOrHigher = isRoleEqualOrHigher
+  static canAccessOrganization = canAccessOrganization
+  static getRolePermissions = getRolePermissions
+  static canPerformAction = canPerformAction
+  
+  static getRoleDisplayName(role: string): string {
+    const roleNames: Record<string, string> = {
+      viewer: 'Viewer',
+      user: 'User',
+      analyst: 'Analyst',
+      org_admin: 'Organization Admin',
+      system_admin: 'System Admin',
+      super_admin: 'Super Admin'
+    }
+    return roleNames[role] || role
+  }
+  
+  static getPermissionDisplayName(permission: string): string {
+    // Convert permission key to human-readable format
+    // e.g., "survey:view:own" -> "View Own Surveys"
+    const parts = permission.split(':')
+    if (parts.length === 3) {
+      const [resource, action, scope] = parts
+      const resourceName = resource.charAt(0).toUpperCase() + resource.slice(1)
+      const actionName = action.charAt(0).toUpperCase() + action.slice(1)
+      const scopeName = scope === 'own' ? 'Own' : scope === 'org' ? 'Organization' : 'All'
+      return `${actionName} ${scopeName} ${resourceName}s`
+    }
+    return permission.replace(/_/g, ' ').replace(/:/g, ' ').split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+}
+
 export const RoleUtils = {
   isUser: (role: UserRole) => role === ROLES.USER,
   isOrgAdmin: (role: UserRole) => role === ROLES.ORG_ADMIN,

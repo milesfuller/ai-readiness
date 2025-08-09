@@ -1,45 +1,46 @@
-import { Resolvers } from '../types/generated'
+import { Resolvers, SubscriptionResolvers, SurveyResponse, SurveySession, SurveyAnalytics } from '../types/generated'
+import { GraphQLContext } from '../context'
 
-export const subscriptionResolvers: Partial<Resolvers> = {
+export const subscriptionResolvers: Partial<Resolvers<GraphQLContext>> = {
   Subscription: {
     responseSubmitted: {
-      subscribe: async function* (_: any, args: any, context: any) {
+      subscribe: async function* (_, args: { surveyId?: string }, context: GraphQLContext) {
         // Placeholder for real-time response updates
         // Would use GraphQL subscriptions with WebSocket or SSE
-        yield { responseSubmitted: null }
+        yield { responseSubmitted: null as SurveyResponse | null }
       }
     },
     
     sessionUpdated: {
-      subscribe: async function* (_: any, args: any, context: any) {
+      subscribe: async function* (_, args: { sessionId?: string }, context: GraphQLContext) {
         // Placeholder for session updates
-        yield { sessionUpdated: null }
+        yield { sessionUpdated: null as SurveySession | null }
       }
     },
     
     analysisCompleted: {
-      subscribe: async function* (_: any, args: any, context: any) {
+      subscribe: async function* (_, args: { surveyId?: string }, context: GraphQLContext) {
         // Placeholder for analysis completion notifications
-        yield { analysisCompleted: null }
+        yield { analysisCompleted: null as SurveyAnalytics | null }
       }
     },
     
     surveyAnalysisCompleted: {
-      subscribe: async function* (_: any, args: any, context: any) {
+      subscribe: async function* (_, args: { surveyId?: string }, context: GraphQLContext) {
         // Placeholder for survey analysis updates
-        yield { surveyAnalysisCompleted: null }
+        yield { surveyAnalysisCompleted: null as SurveyAnalytics | null }
       }
     },
     
     systemNotification: {
-      subscribe: async function* (_: any, args: any, context: any) {
+      subscribe: async function* (_, args: {}, context: GraphQLContext) {
         // Placeholder for system-wide notifications
         yield { systemNotification: null }
       }
     },
     
     organizationNotification: {
-      subscribe: async function* (_: any, args: any, context: any) {
+      subscribe: async function* (_, args: { organizationId?: string }, context: GraphQLContext) {
         // Placeholder for organization notifications
         yield { organizationNotification: null }
       }

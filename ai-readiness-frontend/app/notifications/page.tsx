@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MainLayout } from '@/components/layout/main-layout'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Bell, CheckCircle, Info, AlertCircle } from 'lucide-react'
 
 export default async function NotificationsPage() {

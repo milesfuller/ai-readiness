@@ -45,7 +45,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { Role, RBACService, ROLE_PERMISSIONS } from '@/lib/auth/rbac'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/lib/hooks/use-toast'
 
 interface User {
   id: string
