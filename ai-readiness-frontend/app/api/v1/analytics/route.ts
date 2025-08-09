@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { checkApiKeyAuth, ApiPermissions, hasPermission } from '@/lib/api/auth/api-auth'
 import { enhancedRateLimiter } from '@/lib/api/rate-limiting'
 import { addAPISecurityHeaders } from '@/lib/security/middleware'
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
 
     // Validate and parse filters
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const organizationId = authResult.user?.organizationId
 
     if (!organizationId) {
@@ -508,7 +508,7 @@ async function getAverageTime(supabase: any, organizationId: string, startDate: 
     }
   }
 
-  const totalTime = data.reduce((sum, response) => sum + (response.completion_time || 0), 0)
+  const totalTime = data.reduce((sum: number, response: any) => sum + (response.completion_time || 0), 0)
   const averageSeconds = totalTime / data.length
   const averageMinutes = averageSeconds / 60
 
@@ -572,7 +572,7 @@ async function getJTBDAnalysis(supabase: any, organizationId: string, startDate:
   let totalConfidence = 0
   let validAnalyses = 0
 
-  data.forEach(item => {
+  data.forEach((item: any) => {
     const analysis = item.analysis_result
     if (analysis && analysis.primaryJtbdForce) {
       forceDistribution[analysis.primaryJtbdForce]++
@@ -601,9 +601,9 @@ async function getUserEngagement(supabase: any, organizationId: string, startDat
 
   if (error) throw error
 
-  const uniqueUsers = new Set(data?.map(r => r.respondent_id) || []).size
+  const uniqueUsers = new Set(data?.map((r: any) => r.respondent_id) || []).size
   const totalResponses = data?.length || 0
-  const completedResponses = data?.filter(r => r.submitted_at)?.length || 0
+  const completedResponses = data?.filter((r: any) => r.submitted_at)?.length || 0
 
   return {
     unique_users: uniqueUsers,

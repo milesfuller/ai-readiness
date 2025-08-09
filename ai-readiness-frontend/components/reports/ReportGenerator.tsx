@@ -435,7 +435,11 @@ export const ReportGenerator: React.FC = () => {
                           onCheckedChange={(checked) =>
                             setOptions(prev => ({
                               ...prev,
-                              branding: { ...prev.branding, includeLogo: !!checked }
+                              branding: { 
+                                includeLogo: !!checked,
+                                includeCompanyColors: prev.branding?.includeCompanyColors || true,
+                                customFooter: prev.branding?.customFooter
+                              }
                             }))
                           }
                         />
@@ -447,7 +451,11 @@ export const ReportGenerator: React.FC = () => {
                           onCheckedChange={(checked) =>
                             setOptions(prev => ({
                               ...prev,
-                              branding: { ...prev.branding, includeCompanyColors: !!checked }
+                              branding: { 
+                                includeLogo: prev.branding?.includeLogo || true,
+                                includeCompanyColors: !!checked,
+                                customFooter: prev.branding?.customFooter
+                              }
                             }))
                           }
                         />

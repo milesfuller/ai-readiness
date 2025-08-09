@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { checkApiKeyAuth, ApiPermissions, hasPermission } from '@/lib/api/auth/api-auth'
 import { enhancedRateLimiter } from '@/lib/api/rate-limiting'
 import { addAPISecurityHeaders } from '@/lib/security/middleware'
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
 
     // Validate and parse filters
@@ -255,7 +255,7 @@ export async function GET(request: NextRequest) {
     let enhancedUsers = users
     if (filters.include_stats) {
       enhancedUsers = await Promise.all(
-        users?.map(async (user) => {
+        users?.map(async (user: any) => {
           const stats = await getUserStats(supabase, user.id)
           return { ...user, stats }
         }) || []
@@ -266,7 +266,7 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil((count || 0) / filters.limit)
 
     // Transform users for response
-    const transformedUsers = enhancedUsers?.map(user => ({
+    const transformedUsers = enhancedUsers?.map((user: any) => ({
       id: user.id,
       email: user.email,
       role: user.role,
@@ -383,7 +383,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify organization access
     if (userData.organization_id !== authResult.user?.organizationId && 
@@ -562,7 +562,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updateData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify all users belong to accessible organizations
     const isSystemAdmin = hasPermission(
@@ -750,7 +750,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify users belong to accessible organizations
     const isSystemAdmin = hasPermission(

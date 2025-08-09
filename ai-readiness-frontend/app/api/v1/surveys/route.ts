@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { checkApiKeyAuth, ApiPermissions, hasPermission } from '@/lib/api/auth/api-auth'
 import { enhancedRateLimiter } from '@/lib/api/rate-limiting'
 import { addAPISecurityHeaders } from '@/lib/security/middleware'
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
 
     // Validate and parse filters
@@ -267,7 +267,7 @@ export async function POST(request: NextRequest) {
     }
 
     const surveyData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify organization access
     if (surveyData.organization_id !== authResult.user?.organizationId) {
@@ -410,7 +410,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify all surveys belong to user's organization
     const { data: surveys, error: surveyError } = await supabase
@@ -540,7 +540,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify surveys belong to user's organization
     const { data: surveys, error: surveyError } = await supabase

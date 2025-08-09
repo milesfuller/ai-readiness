@@ -334,7 +334,7 @@ const WebhooksPage = () => {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Webhook Documentation */}
         <motion.div

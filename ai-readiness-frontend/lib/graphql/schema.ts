@@ -1,6 +1,6 @@
 import { gql } from 'graphql-tag'
 import { DateTimeResolver, JSONResolver, DateTimeTypeDefinition, JSONTypeDefinition } from 'graphql-scalars'
-import { GraphQLUpload } from 'graphql-upload'
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs'
 
 /**
  * GraphQL Type Definitions for AI Readiness Platform

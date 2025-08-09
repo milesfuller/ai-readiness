@@ -58,7 +58,7 @@ interface QuickAction {
 }
 
 export default function ReportsPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('generate')
 
   // Mock data - in real app, this would come from API
@@ -286,10 +286,7 @@ export default function ReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ReportGenerator 
-                selectedTemplate={selectedTemplate}
-                onTemplateChange={setSelectedTemplate}
-              />
+              <ReportGenerator />
             </CardContent>
           </Card>
         </TabsContent>

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import DataLoader from 'dataloader'
 import { createClient } from '@supabase/supabase-js'
 import { PubSub } from 'graphql-subscriptions'
-import { RedisPubSub } from 'graphql-redis-subscriptions'
+// import { RedisPubSub } from 'graphql-redis-subscriptions' // Optional Redis support
 import { AuthenticationError, ForbiddenError } from './errors'
 import { createDataLoaders } from './dataloaders'
 import { createServices } from './services'
@@ -33,7 +33,7 @@ export interface GraphQLContext {
   dataSources: DataLoaders
   
   // PubSub for real-time subscriptions
-  pubsub: PubSub | RedisPubSub | null
+  pubsub: PubSub | null
   
   // Helper functions
   requireAuth: () => User
@@ -194,11 +194,16 @@ export async function createContext(request: NextRequest): Promise<GraphQLContex
   const services = createServices(supabase, dataSources)
   
   // Initialize PubSub for subscriptions
-  let pubsub: PubSub | RedisPubSub | null = null
+  let pubsub: PubSub | null = null
   
   try {
+    // Use in-memory PubSub (Redis can be added later for production scaling)
+    pubsub = new PubSub()
+    
+    /* Redis support disabled for now - uncomment when needed
     if (process.env.REDIS_URL) {
       // Use Redis for production subscriptions
+      const { RedisPubSub } = require('graphql-redis-subscriptions')
       pubsub = new RedisPubSub({
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
@@ -208,10 +213,8 @@ export async function createContext(request: NextRequest): Promise<GraphQLContex
           maxRetriesPerRequest: 3
         }
       })
-    } else {
-      // Use in-memory PubSub for development
-      pubsub = new PubSub()
     }
+    */
   } catch (error) {
     console.warn('Failed to initialize PubSub, subscriptions will be disabled:', error)
   }
@@ -360,49 +363,50 @@ export const PERMISSIONS = {
 /**
  * Role-based permissions mapping
  */
+const VIEWER_PERMS = [
+  PERMISSIONS.SURVEYS_READ,
+  PERMISSIONS.RESPONSES_READ,
+  PERMISSIONS.ANALYTICS_READ
+]
+
+const USER_PERMS = [
+  ...VIEWER_PERMS,
+  PERMISSIONS.SURVEYS_CREATE,
+  PERMISSIONS.SURVEYS_UPDATE,
+  PERMISSIONS.RESPONSES_CREATE,
+  PERMISSIONS.RESPONSES_UPDATE
+]
+
+const ANALYST_PERMS = [
+  ...USER_PERMS,
+  PERMISSIONS.ANALYTICS_WRITE,
+  PERMISSIONS.EXPORTS_CREATE,
+  PERMISSIONS.TEMPLATES_READ,
+  PERMISSIONS.TEMPLATES_CREATE
+]
+
+const ORG_ADMIN_PERMS = [
+  ...ANALYST_PERMS,
+  PERMISSIONS.USERS_READ,
+  PERMISSIONS.USERS_MANAGE,
+  PERMISSIONS.SURVEYS_MANAGE,
+  PERMISSIONS.SURVEYS_PUBLISH,
+  PERMISSIONS.SURVEYS_ARCHIVE,
+  PERMISSIONS.RESPONSES_READ_ALL,
+  PERMISSIONS.ANALYTICS_READ_ALL,
+  PERMISSIONS.ORGANIZATIONS_MANAGE,
+  PERMISSIONS.API_KEYS_CREATE,
+  PERMISSIONS.API_KEYS_MANAGE,
+  PERMISSIONS.SESSIONS_READ,
+  PERMISSIONS.SESSIONS_MANAGE
+]
+
 export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
-  VIEWER: [
-    PERMISSIONS.SURVEYS_READ,
-    PERMISSIONS.RESPONSES_READ,
-    PERMISSIONS.ANALYTICS_READ
-  ],
-  
-  USER: [
-    ...ROLE_PERMISSIONS.VIEWER,
-    PERMISSIONS.SURVEYS_CREATE,
-    PERMISSIONS.SURVEYS_UPDATE,
-    PERMISSIONS.RESPONSES_CREATE,
-    PERMISSIONS.RESPONSES_UPDATE
-  ],
-  
-  ANALYST: [
-    ...ROLE_PERMISSIONS.USER,
-    PERMISSIONS.ANALYTICS_WRITE,
-    PERMISSIONS.EXPORTS_CREATE,
-    PERMISSIONS.TEMPLATES_READ,
-    PERMISSIONS.TEMPLATES_CREATE
-  ],
-  
-  ORG_ADMIN: [
-    ...ROLE_PERMISSIONS.ANALYST,
-    PERMISSIONS.USERS_READ,
-    PERMISSIONS.USERS_MANAGE,
-    PERMISSIONS.SURVEYS_MANAGE,
-    PERMISSIONS.SURVEYS_PUBLISH,
-    PERMISSIONS.SURVEYS_ARCHIVE,
-    PERMISSIONS.RESPONSES_READ_ALL,
-    PERMISSIONS.ANALYTICS_READ_ALL,
-    PERMISSIONS.ORGANIZATIONS_MANAGE,
-    PERMISSIONS.API_KEYS_CREATE,
-    PERMISSIONS.API_KEYS_MANAGE,
-    PERMISSIONS.SESSIONS_READ,
-    PERMISSIONS.SESSIONS_MANAGE
-  ],
-  
-  SYSTEM_ADMIN: [
-    // System admins have all permissions
-    ...Object.values(PERMISSIONS)
-  ]
+  VIEWER: VIEWER_PERMS,
+  USER: USER_PERMS,
+  ANALYST: ANALYST_PERMS,
+  ORG_ADMIN: ORG_ADMIN_PERMS,
+  SYSTEM_ADMIN: Object.values(PERMISSIONS)
 }
 
 /**

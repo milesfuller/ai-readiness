@@ -10,7 +10,7 @@
  */
 
 import { NextRequest } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
@@ -110,7 +110,7 @@ export async function generateApiKey(
   organizationId: string,
   request: CreateApiKeyRequest
 ): Promise<{ key: string; apiKeyId: string }> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   // Generate key components
   const prefix = 'airead'
@@ -204,7 +204,7 @@ async function validateApiKey(apiKey: string): Promise<AuthResult> {
     .update(apiKey)
     .digest('hex')
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
 
   // Find the API key
   const { data: apiKeyData, error } = await supabase
@@ -251,22 +251,27 @@ async function validateApiKey(apiKey: string): Promise<AuthResult> {
   }
 
   // Update usage tracking (async, don't wait)
-  supabase
-    .from('api_keys')
-    .update({
-      usage_count: apiKeyData.usage_count + 1,
-      last_used_at: new Date().toISOString(),
-    })
-    .eq('id', apiKeyData.id)
-    .then(() => {})
-    .catch(console.error)
+  // Update usage asynchronously (fire and forget)
+  ;(async () => {
+    try {
+      await supabase
+        .from('api_keys')
+        .update({
+          usage_count: apiKeyData.usage_count + 1,
+          last_used_at: new Date().toISOString(),
+        })
+        .eq('id', apiKeyData.id)
+    } catch (error) {
+      console.error('Failed to update API key usage:', error)
+    }
+  })()
 
   return {
     success: true,
     user: {
-      id: apiKeyData.users.id,
-      email: apiKeyData.users.email,
-      role: apiKeyData.users.role,
+      id: Array.isArray(apiKeyData.users) ? (apiKeyData.users as any)[0]?.id : (apiKeyData.users as any)?.id,
+      email: Array.isArray(apiKeyData.users) ? (apiKeyData.users as any)[0]?.email : (apiKeyData.users as any)?.email,
+      role: Array.isArray(apiKeyData.users) ? (apiKeyData.users as any)[0]?.role : (apiKeyData.users as any)?.role,
       organizationId: apiKeyData.organization_id,
     },
     apiKey: {
@@ -290,7 +295,7 @@ async function validateJwtToken(token: string): Promise<AuthResult> {
     const decoded = jwt.verify(token, secret) as any
     
     // Get user from database
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { data: user, error } = await supabase
       .from('users')
       .select('id, email, role, organization_id')
@@ -352,7 +357,7 @@ export async function listApiKeys(
   userId: string,
   organizationId: string
 ): Promise<ApiKey[]> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   const { data, error } = await supabase
     .from('api_keys')
@@ -380,7 +385,7 @@ export async function revokeApiKey(
   userId: string,
   organizationId: string
 ): Promise<void> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   const { error } = await supabase
     .from('api_keys')
@@ -403,7 +408,7 @@ export async function updateApiKeyPermissions(
   userId: string,
   organizationId: string
 ): Promise<void> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   const { error } = await supabase
     .from('api_keys')
@@ -437,7 +442,7 @@ export async function getApiKeyStats(
     lastUsed: string | null
   }>
 }> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   const { data, error } = await supabase
     .from('api_keys')

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { checkApiKeyAuth, ApiPermissions, hasPermission } from '@/lib/api/auth/api-auth'
 import { enhancedRateLimiter } from '@/lib/api/rate-limiting'
 import { addAPISecurityHeaders } from '@/lib/security/middleware'
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
 
     // Validate and parse filters
@@ -330,11 +330,15 @@ export async function GET(request: NextRequest) {
       event_types: webhook.event_types,
       status: webhook.status,
       organization_id: webhook.organization_id,
-      organization_name: webhook.organizations?.name,
+      organization_name: Array.isArray(webhook.organizations) ? webhook.organizations[0]?.name : (webhook.organizations as any)?.name,
       created_by: webhook.created_by,
       creator: webhook.profiles ? {
-        name: `${webhook.profiles.first_name} ${webhook.profiles.last_name}`.trim(),
-        email: webhook.profiles.email
+        name: Array.isArray(webhook.profiles) 
+          ? `${webhook.profiles[0]?.first_name} ${webhook.profiles[0]?.last_name}`.trim()
+          : `${(webhook.profiles as any).first_name} ${(webhook.profiles as any).last_name}`.trim(),
+        email: Array.isArray(webhook.profiles) 
+          ? webhook.profiles[0]?.email 
+          : (webhook.profiles as any).email
       } : null,
       created_at: webhook.created_at,
       updated_at: webhook.updated_at,
@@ -352,7 +356,7 @@ export async function GET(request: NextRequest) {
       },
       filters: webhook.filters,
       rate_limit: webhook.rate_limit,
-      stats: filters.include_stats ? webhook.stats : undefined,
+      stats: filters.include_stats ? (webhook as any).stats : undefined,
     }))
 
     // Calculate pagination metadata
@@ -456,7 +460,7 @@ export async function POST(request: NextRequest) {
     }
 
     const webhookData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify organization access
     if (webhookData.organization_id !== authResult.user?.organizationId) {
@@ -469,7 +473,7 @@ export async function POST(request: NextRequest) {
 
     // Generate signing secret if not provided
     let signingSecret = webhookData.security?.signing_secret
-    if (!signingSecret && webhookData.security?.include_payload_hash !== false) {
+    if (!signingSecret && (webhookData.security as any)?.include_payload_hash !== false) {
       signingSecret = crypto.randomBytes(32).toString('hex')
     }
 
@@ -637,7 +641,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updateData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify all webhooks belong to user's organization
     const { data: webhooks, error: webhookError } = await supabase
@@ -793,7 +797,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify webhooks belong to user's organization
     const { data: webhooks, error: webhookError } = await supabase
@@ -921,13 +925,13 @@ async function getWebhookStats(supabase: any, webhookId: string) {
     if (error) throw error
 
     const totalCalls = logs?.length || 0
-    const successfulCalls = logs?.filter(log => log.success).length || 0
+    const successfulCalls = logs?.filter((log: any) => log.success).length || 0
     const failedCalls = totalCalls - successfulCalls
     const successRate = totalCalls > 0 ? (successfulCalls / totalCalls) * 100 : 0
 
     // Get recent activity (last 24 hours)
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    const recentLogs = logs?.filter(log => new Date(log.created_at) > yesterday) || []
+    const recentLogs = logs?.filter((log: any) => new Date(log.created_at) > yesterday) || []
 
     return {
       total_calls: totalCalls,
@@ -977,7 +981,7 @@ async function getWebhookEventTypeSummary(supabase: any, organizationId?: string
   if (error || !data) return {}
 
   const eventTypeCounts: any = {}
-  data.forEach(webhook => {
+  data.forEach((webhook: any) => {
     webhook.event_types.forEach((eventType: string) => {
       eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1
     })

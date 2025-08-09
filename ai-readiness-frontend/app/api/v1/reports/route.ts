@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { checkApiKeyAuth, ApiPermissions, hasPermission } from '@/lib/api/auth/api-auth'
 import { enhancedRateLimiter } from '@/lib/api/rate-limiting'
 import { addAPISecurityHeaders } from '@/lib/security/middleware'
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
 
     // Validate and parse filters
@@ -288,11 +288,15 @@ export async function GET(request: NextRequest) {
       description: report.description,
       status: report.status,
       organization_id: report.organization_id,
-      organization_name: report.organizations?.name,
+      organization_name: Array.isArray(report.organizations) ? report.organizations[0]?.name : (report.organizations as any)?.name,
       created_by: report.created_by,
       creator: report.profiles ? {
-        name: `${report.profiles.first_name} ${report.profiles.last_name}`.trim(),
-        email: report.profiles.email
+        name: Array.isArray(report.profiles) 
+          ? `${report.profiles[0]?.first_name} ${report.profiles[0]?.last_name}`.trim()
+          : `${(report.profiles as any).first_name} ${(report.profiles as any).last_name}`.trim(),
+        email: Array.isArray(report.profiles) 
+          ? report.profiles[0]?.email 
+          : (report.profiles as any).email
       } : null,
       created_at: report.created_at,
       updated_at: report.updated_at,
@@ -409,7 +413,7 @@ export async function POST(request: NextRequest) {
     }
 
     const reportData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify organization access
     if (reportData.organization_id !== authResult.user?.organizationId) {
@@ -603,7 +607,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updateData = validationResult.data
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify all reports belong to user's organization
     const { data: reports, error: reportError } = await supabase
@@ -749,7 +753,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
 
     // Verify reports belong to user's organization
     const { data: reports, error: reportError } = await supabase

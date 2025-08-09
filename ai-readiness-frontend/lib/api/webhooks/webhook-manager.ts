@@ -13,7 +13,7 @@
 import { NextRequest } from 'next/server'
 import crypto from 'crypto'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 
 // Webhook schemas
 export const WebhookEventSchema = z.object({
@@ -115,8 +115,6 @@ export interface DeliveryAttempt {
  * Main Webhook Manager class
  */
 export class WebhookManager {
-  private supabase = createServerSupabaseClient()
-
   /**
    * Register a new webhook endpoint
    */
@@ -125,10 +123,12 @@ export class WebhookManager {
     organizationId: string,
     request: CreateWebhookRequest
   ): Promise<WebhookEndpoint> {
+    const supabase = await createServerSupabaseClient()
+    
     // Generate secret if not provided
     const secret = request.secret || this.generateSecret()
 
-    const { data, error } = await this.supabase
+    const { data, error } = await supabase
       .from('webhook_endpoints')
       .insert({
         name: request.name,
@@ -304,7 +304,8 @@ export class WebhookManager {
     eventType: string,
     organizationId: string
   ): Promise<WebhookEndpoint[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await supabase
       .from('webhook_endpoints')
       .select('*')
       .eq('organization_id', organizationId)
@@ -323,7 +324,8 @@ export class WebhookManager {
    * Store webhook event
    */
   private async storeEvent(event: WebhookEvent): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { error } = await supabase
       .from('webhook_events')
       .insert({
         id: event.id,
@@ -344,7 +346,8 @@ export class WebhookManager {
    * Store delivery attempt
    */
   private async storeDeliveryAttempt(attempt: DeliveryAttempt): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { error } = await supabase
       .from('webhook_delivery_attempts')
       .insert({
         id: attempt.id,
@@ -440,7 +443,8 @@ export class WebhookManager {
    * List webhooks for organization
    */
   async listWebhooks(organizationId: string): Promise<WebhookEndpoint[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await supabase
       .from('webhook_endpoints')
       .select('*')
       .eq('organization_id', organizationId)
@@ -462,7 +466,8 @@ export class WebhookManager {
     organizationId: string,
     updates: Partial<CreateWebhookRequest>
   ): Promise<WebhookEndpoint> {
-    const { data, error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await supabase
       .from('webhook_endpoints')
       .update({
         ...updates,
@@ -489,7 +494,8 @@ export class WebhookManager {
     userId: string,
     organizationId: string
   ): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { error } = await supabase
       .from('webhook_endpoints')
       .delete()
       .eq('id', webhookId)
@@ -509,7 +515,8 @@ export class WebhookManager {
     organizationId: string,
     limit: number = 50
   ): Promise<DeliveryAttempt[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await supabase
       .from('webhook_delivery_attempts')
       .select(`
         *,
@@ -549,7 +556,8 @@ export class WebhookManager {
     duration?: number
   }> {
     // Get webhook details
-    const { data: webhook, error } = await this.supabase
+    const supabase = await createServerSupabaseClient()
+    const { data: webhook, error } = await supabase
       .from('webhook_endpoints')
       .select('*')
       .eq('id', webhookId)

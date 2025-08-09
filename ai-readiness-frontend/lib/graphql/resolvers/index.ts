@@ -29,13 +29,13 @@ export const resolvers: Resolvers<GraphQLContext> = {
   // ==========================================
   Query: {
     // User queries
-    me: async (parent, args, context) => {
+    me: async (parent: any, args: any, context: any) => {
       const { user, requireAuth } = context
       requireAuth()
       return user
     },
     
-    user: async (parent, { id }, context) => {
+    user: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, dataSources } = context
       requireAuth()
       requirePermission('users:read')
@@ -43,7 +43,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await dataSources.userLoader.load(id)
     },
     
-    users: async (parent, { pagination = {}, filters = {} }, context) => {
+    users: async (parent: any, { pagination = {}, filters = {} }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('users:read')
@@ -57,7 +57,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Organization queries
-    organization: async (parent, { id }, context) => {
+    organization: async (parent: any, { id }: any, context: any) => {
       const { user, requireAuth, dataSources } = context
       requireAuth()
       
@@ -68,7 +68,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await dataSources.organizationLoader.load(orgId)
     },
     
-    organizations: async (parent, { pagination = {} }, context) => {
+    organizations: async (parent: any, { pagination = {} }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('organizations:read')
@@ -81,43 +81,43 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Survey queries
-    survey: async (parent, { id }, context) => {
+    survey: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, dataSources } = context
       requireAuth()
       
       return await dataSources.surveyLoader.load(id)
     },
     
-    surveys: async (parent, args, context) => {
+    surveys: async (parent: any, args: any, context: any) => {
       return await surveyResolvers.Query.surveys(parent, args, context)
     },
     
-    surveyByShareUrl: async (parent, { shareUrl }, context) => {
+    surveyByShareUrl: async (parent: any, { shareUrl }: any, context: any) => {
       const { services } = context
       return await services.surveyService.findByShareUrl(shareUrl)
     },
     
     // Response queries
-    response: async (parent, { id }, context) => {
+    response: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, dataSources } = context
       requireAuth()
       
       return await dataSources.responseLoader.load(id)
     },
     
-    responses: async (parent, args, context) => {
+    responses: async (parent: any, args: any, context: any) => {
       return await responseResolvers.Query.responses(parent, args, context)
     },
     
     // Session queries
-    surveySession: async (parent, { id }, context) => {
+    surveySession: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, dataSources } = context
       requireAuth()
       
       return await dataSources.sessionLoader.load(id)
     },
     
-    surveySessions: async (parent, args, context) => {
+    surveySessions: async (parent: any, args: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('sessions:read')
@@ -134,15 +134,15 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Analytics queries
-    surveyAnalytics: async (parent, args, context) => {
+    surveyAnalytics: async (parent: any, args: any, context: any) => {
       return await analyticsResolvers.Query.surveyAnalytics(parent, args, context)
     },
     
-    dashboardAnalytics: async (parent, args, context) => {
+    dashboardAnalytics: async (parent: any, args: any, context: any) => {
       return await analyticsResolvers.Query.dashboardAnalytics(parent, args, context)
     },
     
-    responseAnalytics: async (parent, { responseId }, context) => {
+    responseAnalytics: async (parent: any, { responseId }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('analytics:read')
@@ -151,19 +151,19 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Template queries
-    surveyTemplate: async (parent, { id }, context) => {
+    surveyTemplate: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, dataSources } = context
       requireAuth()
       
       return await dataSources.templateLoader.load(id)
     },
     
-    surveyTemplates: async (parent, args, context) => {
+    surveyTemplates: async (parent: any, args: any, context: any) => {
       return await templateResolvers.Query.surveyTemplates(parent, args, context)
     },
     
     // API Key queries
-    apiKeys: async (parent, { pagination = {} }, context) => {
+    apiKeys: async (parent: any, { pagination = {} }: any, context: any) => {
       const { user, requireAuth, services } = context
       requireAuth()
       
@@ -174,7 +174,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       })
     },
     
-    apiKey: async (parent, { id }, context) => {
+    apiKey: async (parent: any, { id }: any, context: any) => {
       const { user, requireAuth, dataSources } = context
       requireAuth()
       
@@ -187,7 +187,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Search
-    search: async (parent, { input }, context) => {
+    search: async (parent: any, { input }: any, context: any) => {
       const { requireAuth, services } = context
       requireAuth()
       
@@ -195,14 +195,14 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // System queries
-    systemHealth: async (parent, args, context) => {
+    systemHealth: async (parent: any, args: any, context: any) => {
       const { requirePermission, services } = context
       requirePermission('system:read')
       
       return await services.systemService.getHealthStatus()
     },
     
-    systemMetrics: async (parent, args, context) => {
+    systemMetrics: async (parent: any, args: any, context: any) => {
       const { requirePermission, services } = context
       requirePermission('system:read')
       
@@ -215,15 +215,15 @@ export const resolvers: Resolvers<GraphQLContext> = {
   // ==========================================
   Mutation: {
     // Survey mutations
-    createSurvey: async (parent, args, context) => {
+    createSurvey: async (parent: any, args: any, context: any) => {
       return await surveyResolvers.Mutation.createSurvey(parent, args, context)
     },
     
-    updateSurvey: async (parent, args, context) => {
+    updateSurvey: async (parent: any, args: any, context: any) => {
       return await surveyResolvers.Mutation.updateSurvey(parent, args, context)
     },
     
-    deleteSurvey: async (parent, { id }, context) => {
+    deleteSurvey: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('surveys:delete')
@@ -231,7 +231,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.surveyService.delete(id)
     },
     
-    duplicateSurvey: async (parent, { id, title }, context) => {
+    duplicateSurvey: async (parent: any, { id, title }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('surveys:create')
@@ -240,7 +240,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Survey status mutations
-    publishSurvey: async (parent, { id }, context) => {
+    publishSurvey: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('surveys:publish')
@@ -248,7 +248,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.surveyService.publish(id)
     },
     
-    pauseSurvey: async (parent, { id }, context) => {
+    pauseSurvey: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('surveys:manage')
@@ -256,7 +256,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.surveyService.pause(id)
     },
     
-    archiveSurvey: async (parent, { id }, context) => {
+    archiveSurvey: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('surveys:archive')
@@ -265,7 +265,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Response mutations
-    startSurveySession: async (parent, { surveyId, userId }, context) => {
+    startSurveySession: async (parent: any, { surveyId, userId }: any, context: any) => {
       const { services, user } = context
       
       // Use provided userId or current user
@@ -281,15 +281,15 @@ export const resolvers: Resolvers<GraphQLContext> = {
       })
     },
     
-    submitResponse: async (parent, args, context) => {
+    submitResponse: async (parent: any, args: any, context: any) => {
       return await responseResolvers.Mutation.submitResponse(parent, args, context)
     },
     
-    updateResponse: async (parent, args, context) => {
+    updateResponse: async (parent: any, args: any, context: any) => {
       return await responseResolvers.Mutation.updateResponse(parent, args, context)
     },
     
-    deleteResponse: async (parent, { id }, context) => {
+    deleteResponse: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('responses:delete')
@@ -298,14 +298,14 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Voice recording mutations
-    uploadVoiceRecording: async (parent, { questionId, file, metadata }, context) => {
+    uploadVoiceRecording: async (parent: any, { questionId, file, metadata }: any, context: any) => {
       const { requireAuth, services } = context
       requireAuth()
       
       return await services.voiceService.upload(questionId, file, metadata)
     },
     
-    processVoiceRecording: async (parent, { id }, context) => {
+    processVoiceRecording: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, services } = context
       requireAuth()
       
@@ -313,7 +313,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Analysis mutations
-    triggerResponseAnalysis: async (parent, { responseIds }, context) => {
+    triggerResponseAnalysis: async (parent: any, { responseIds }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('analytics:write')
@@ -321,7 +321,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.analyticsService.analyzeResponses(responseIds)
     },
     
-    triggerSurveyAnalysis: async (parent, { surveyId }, context) => {
+    triggerSurveyAnalysis: async (parent: any, { surveyId }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('analytics:write')
@@ -330,7 +330,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Export mutations
-    generateExport: async (parent, { surveyId, format, filters }, context) => {
+    generateExport: async (parent: any, { surveyId, format, filters }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('exports:create')
@@ -344,7 +344,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Template mutations
-    createSurveyTemplate: async (parent, { input }, context) => {
+    createSurveyTemplate: async (parent: any, { input }: any, context: any) => {
       const { requireAuth, requirePermission, services, user } = context
       requireAuth()
       requirePermission('templates:create')
@@ -356,7 +356,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       })
     },
     
-    updateSurveyTemplate: async (parent, { id, input }, context) => {
+    updateSurveyTemplate: async (parent: any, { id, input }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('templates:update')
@@ -364,7 +364,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.templateService.update(id, input)
     },
     
-    deleteSurveyTemplate: async (parent, { id }, context) => {
+    deleteSurveyTemplate: async (parent: any, { id }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('templates:delete')
@@ -372,7 +372,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.templateService.delete(id)
     },
     
-    duplicateTemplate: async (parent, { id, title }, context) => {
+    duplicateTemplate: async (parent: any, { id, title }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('templates:create')
@@ -381,7 +381,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // API key mutations
-    createApiKey: async (parent, { input }, context) => {
+    createApiKey: async (parent: any, { input }: any, context: any) => {
       const { user, requireAuth, services } = context
       requireAuth()
       
@@ -392,7 +392,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       })
     },
     
-    updateApiKey: async (parent, { id, name, permissions }, context) => {
+    updateApiKey: async (parent: any, { id, name, permissions }: any, context: any) => {
       const { user, requireAuth, services } = context
       requireAuth()
       
@@ -403,7 +403,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       })
     },
     
-    revokeApiKey: async (parent, { id }, context) => {
+    revokeApiKey: async (parent: any, { id }: any, context: any) => {
       const { user, requireAuth, services } = context
       requireAuth()
       
@@ -411,7 +411,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
     },
     
     // Admin mutations
-    updateUserRole: async (parent, { userId, role }, context) => {
+    updateUserRole: async (parent: any, { userId, role }: any, context: any) => {
       const { requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('users:manage')
@@ -419,7 +419,7 @@ export const resolvers: Resolvers<GraphQLContext> = {
       return await services.userService.updateRole(userId, role)
     },
     
-    updateOrganizationSettings: async (parent, { input }, context) => {
+    updateOrganizationSettings: async (parent: any, { input }: any, context: any) => {
       const { user, requireAuth, requirePermission, services } = context
       requireAuth()
       requirePermission('organizations:manage')
@@ -435,12 +435,12 @@ export const resolvers: Resolvers<GraphQLContext> = {
   // SUBSCRIPTION RESOLVERS
   // ==========================================
   Subscription: {
-    responseSubmitted: subscriptionResolvers.responseSubmitted,
-    sessionUpdated: subscriptionResolvers.sessionUpdated,
-    analysisCompleted: subscriptionResolvers.analysisCompleted,
-    surveyAnalysisCompleted: subscriptionResolvers.surveyAnalysisCompleted,
-    systemNotification: subscriptionResolvers.systemNotification,
-    organizationNotification: subscriptionResolvers.organizationNotification
+    responseSubmitted: (subscriptionResolvers.Subscription as any)?.responseSubmitted,
+    sessionUpdated: (subscriptionResolvers.Subscription as any)?.sessionUpdated,
+    analysisCompleted: (subscriptionResolvers.Subscription as any)?.analysisCompleted,
+    surveyAnalysisCompleted: (subscriptionResolvers.Subscription as any)?.surveyAnalysisCompleted,
+    systemNotification: (subscriptionResolvers.Subscription as any)?.systemNotification,
+    organizationNotification: (subscriptionResolvers.Subscription as any)?.organizationNotification
   },
   
   // ==========================================
@@ -451,17 +451,17 @@ export const resolvers: Resolvers<GraphQLContext> = {
   User: {
     ...userResolvers.User,
     
-    organization: async (user, args, context) => {
+    organization: async (user: any, args: any, context: any) => {
       if (!user.organizationId) return null
       return await context.dataSources.organizationLoader.load(user.organizationId)
     },
     
-    surveysCreated: async (user, args, context) => {
+    surveysCreated: async (user: any, args: any, context: any) => {
       const { services } = context
       return await services.surveyService.countByCreator(user.id)
     },
     
-    responsesSubmitted: async (user, args, context) => {
+    responsesSubmitted: async (user: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.countByUser(user.id)
     }
@@ -471,34 +471,34 @@ export const resolvers: Resolvers<GraphQLContext> = {
   Organization: {
     ...organizationResolvers.Organization,
     
-    members: async (org, args, context) => {
+    members: async (org: any, args: any, context: any) => {
       const { services } = context
       return await services.userService.findByOrganization(org.id)
     },
     
-    surveys: async (org, args, context) => {
+    surveys: async (org: any, args: any, context: any) => {
       const { services } = context
       return await services.surveyService.findByOrganization(org.id)
     },
     
-    apiKeys: async (org, args, context) => {
+    apiKeys: async (org: any, args: any, context: any) => {
       const { requirePermission, services } = context
       requirePermission('api_keys:read')
       
       return await services.apiKeyService.findByOrganization(org.id)
     },
     
-    memberCount: async (org, args, context) => {
+    memberCount: async (org: any, args: any, context: any) => {
       const { services } = context
       return await services.userService.countByOrganization(org.id)
     },
     
-    surveyCount: async (org, args, context) => {
+    surveyCount: async (org: any, args: any, context: any) => {
       const { services } = context
       return await services.surveyService.countByOrganization(org.id)
     },
     
-    totalResponses: async (org, args, context) => {
+    totalResponses: async (org: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.countByOrganization(org.id)
     }
@@ -508,20 +508,20 @@ export const resolvers: Resolvers<GraphQLContext> = {
   Survey: {
     ...surveyResolvers.Survey,
     
-    createdBy: async (survey, args, context) => {
+    createdBy: async (survey: any, args: any, context: any) => {
       return await context.dataSources.userLoader.load(survey.createdById)
     },
     
-    organization: async (survey, args, context) => {
+    organization: async (survey: any, args: any, context: any) => {
       return await context.dataSources.organizationLoader.load(survey.organizationId)
     },
     
-    template: async (survey, args, context) => {
+    template: async (survey: any, args: any, context: any) => {
       if (!survey.templateId) return null
       return await context.dataSources.templateLoader.load(survey.templateId)
     },
     
-    responses: async (survey, { limit = 20, offset = 0, status }, context) => {
+    responses: async (survey, { limit = 20, offset = 0, status }: any, context: any) => {
       const { services } = context
       return await services.responseService.findBySurvey(survey.id, {
         limit: Math.min(limit, 100),
@@ -530,44 +530,44 @@ export const resolvers: Resolvers<GraphQLContext> = {
       })
     },
     
-    sessions: async (survey, args, context) => {
+    sessions: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.sessionService.findBySurvey(survey.id)
     },
     
-    analytics: async (survey, args, context) => {
+    analytics: async (survey: any, args: any, context: any) => {
       const { requirePermission, services } = context
       requirePermission('analytics:read')
       
       return await services.analyticsService.getSurveyAnalytics(survey.id)
     },
     
-    responseCount: async (survey, args, context) => {
+    responseCount: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.countBySurvey(survey.id)
     },
     
-    completionRate: async (survey, args, context) => {
+    completionRate: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.analyticsService.getCompletionRate(survey.id)
     },
     
-    averageCompletionTime: async (survey, args, context) => {
+    averageCompletionTime: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.analyticsService.getAverageCompletionTime(survey.id)
     },
     
-    shareUrl: async (survey, args, context) => {
+    shareUrl: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.surveyService.getShareUrl(survey.id)
     },
     
-    embedCode: async (survey, args, context) => {
+    embedCode: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.surveyService.getEmbedCode(survey.id)
     },
     
-    qrCode: async (survey, args, context) => {
+    qrCode: async (survey: any, args: any, context: any) => {
       const { services } = context
       return await services.surveyService.getQRCode(survey.id)
     }
@@ -575,31 +575,31 @@ export const resolvers: Resolvers<GraphQLContext> = {
   
   // Question type resolvers
   Question: {
-    survey: async (question, args, context) => {
+    survey: async (question: any, args: any, context: any) => {
       return await context.dataSources.surveyLoader.load(question.surveyId)
     },
     
-    responses: async (question, args, context) => {
+    responses: async (question: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.findByQuestion(question.id)
     },
     
-    responseCount: async (question, args, context) => {
+    responseCount: async (question: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.countByQuestion(question.id)
     },
     
-    skipRate: async (question, args, context) => {
+    skipRate: async (question: any, args: any, context: any) => {
       const { services } = context
       return await services.analyticsService.getQuestionSkipRate(question.id)
     },
     
-    averageTimeSpent: async (question, args, context) => {
+    averageTimeSpent: async (question: any, args: any, context: any) => {
       const { services } = context
       return await services.analyticsService.getQuestionAverageTime(question.id)
     },
     
-    topAnswers: async (question, args, context) => {
+    topAnswers: async (question: any, args: any, context: any) => {
       const { services } = context
       return await services.analyticsService.getQuestionTopAnswers(question.id)
     }
@@ -609,25 +609,25 @@ export const resolvers: Resolvers<GraphQLContext> = {
   Response: {
     ...responseResolvers.Response,
     
-    survey: async (response, args, context) => {
+    survey: async (response: any, args: any, context: any) => {
       return await context.dataSources.surveyLoader.load(response.surveyId)
     },
     
-    session: async (response, args, context) => {
+    session: async (response: any, args: any, context: any) => {
       return await context.dataSources.sessionLoader.load(response.sessionId)
     },
     
-    user: async (response, args, context) => {
+    user: async (response: any, args: any, context: any) => {
       if (!response.userId) return null
       return await context.dataSources.userLoader.load(response.userId)
     },
     
-    answers: async (response, args, context) => {
+    answers: async (response: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.getAnswers(response.id)
     },
     
-    analysis: async (response, args, context) => {
+    analysis: async (response: any, args: any, context: any) => {
       const { services } = context
       return await services.analyticsService.getResponseAnalysis(response.id)
     }
@@ -635,15 +635,15 @@ export const resolvers: Resolvers<GraphQLContext> = {
   
   // Question Response type resolvers
   QuestionResponse: {
-    question: async (qResponse, args, context) => {
+    question: async (qResponse: any, args: any, context: any) => {
       return await context.dataSources.questionLoader.load(qResponse.questionId)
     },
     
-    response: async (qResponse, args, context) => {
+    response: async (qResponse: any, args: any, context: any) => {
       return await context.dataSources.responseLoader.load(qResponse.responseId)
     },
     
-    voiceRecording: async (qResponse, args, context) => {
+    voiceRecording: async (qResponse: any, args: any, context: any) => {
       if (!qResponse.voiceRecordingId) return null
       return await context.dataSources.voiceRecordingLoader.load(qResponse.voiceRecordingId)
     }
@@ -651,16 +651,16 @@ export const resolvers: Resolvers<GraphQLContext> = {
   
   // Session type resolvers
   SurveySession: {
-    survey: async (session, args, context) => {
+    survey: async (session: any, args: any, context: any) => {
       return await context.dataSources.surveyLoader.load(session.surveyId)
     },
     
-    user: async (session, args, context) => {
+    user: async (session: any, args: any, context: any) => {
       if (!session.userId) return null
       return await context.dataSources.userLoader.load(session.userId)
     },
     
-    responses: async (session, args, context) => {
+    responses: async (session: any, args: any, context: any) => {
       const { services } = context
       return await services.responseService.findBySession(session.id)
     }
@@ -675,18 +675,18 @@ export const resolvers: Resolvers<GraphQLContext> = {
   SurveyTemplate: {
     ...templateResolvers.SurveyTemplate,
     
-    createdBy: async (template, args, context) => {
+    createdBy: async (template: any, args: any, context: any) => {
       return await context.dataSources.userLoader.load(template.createdById)
     }
   },
   
   // API Key type resolvers
   ApiKey: {
-    user: async (apiKey, args, context) => {
+    user: async (apiKey: any, args: any, context: any) => {
       return await context.dataSources.userLoader.load(apiKey.userId)
     },
     
-    organization: async (apiKey, args, context) => {
+    organization: async (apiKey: any, args: any, context: any) => {
       return await context.dataSources.organizationLoader.load(apiKey.organizationId)
     }
   }

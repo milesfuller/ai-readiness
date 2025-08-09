@@ -1,7 +1,7 @@
 import { Plugin } from 'graphql-yoga'
 import { useDepthLimit } from '@envelop/depth-limit'
-import { useQueryComplexity, QueryComplexityEstimatorArgs } from '@envelop/query-complexity'
-import { useRateLimiter } from '@envelop/rate-limiter'
+// import { useQueryComplexity, QueryComplexityEstimatorArgs } from '@envelop/query-complexity'
+// import { useRateLimiter } from '@envelop/rate-limiter'
 import { formatError, reportError } from './errors'
 
 /**
@@ -26,6 +26,7 @@ export const securityPlugins = [
   }),
   
   // Analyze query complexity to prevent expensive operations
+  /* Disabled - package not available
   useQueryComplexity({
     maximumComplexity: 1000,
     estimators: [
@@ -78,9 +79,10 @@ export const securityPlugins = [
       }
     }
   }),
+  */
   
-  // Rate limiting to prevent abuse
-  useRateLimiter({
+  // Rate limiting to prevent abuse - disabled for now
+  /* useRateLimiter({
     max: 100, // 100 requests per window
     window: 60000, // 1 minute window
     keyGenerator: (context: any) => {
@@ -101,6 +103,7 @@ export const securityPlugins = [
       })
     }
   })
+  */
 ]
 
 /**
@@ -269,14 +272,14 @@ export function createPlugins(options: {
   
   const customPlugins = [
     useDepthLimit({ maxDepth }),
-    useQueryComplexity({ maximumComplexity: maxComplexity }),
-    useRateLimiter({
-      max: rateLimit.max,
-      window: rateLimit.window,
-      keyGenerator: (context: any) => {
-        return context.user?.id || context.request?.ip || 'anonymous'
-      }
-    })
+    // useQueryComplexity({ maximumComplexity: maxComplexity }), // Package not available
+    // useRateLimiter({ // Package not available
+    //   max: rateLimit.max,
+    //   window: rateLimit.window,
+    //   keyGenerator: (context: any) => {
+    //     return context.user?.id || context.request?.ip || 'anonymous'
+    //   }
+    // })
   ]
   
   if (enablePerformanceMonitoring) {

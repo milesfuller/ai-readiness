@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { checkApiKeyAuth } from '../auth/api-auth'
-import { rateLimiter } from '../rate-limiting'
+import { enhancedRateLimiter as rateLimiter } from '../rate-limiting/index'
 import { WebhookManager } from '../webhooks/webhook-manager'
 
 // API Response schemas
@@ -224,9 +224,9 @@ export class ApiV1Router {
       }
 
       // Rate limiting
-      const rateLimitResult = await rateLimiter.checkLimit(
+      const rateLimitResult = await rateLimiter.checkRateLimit(
         request,
-        config.rateLimitStrategy
+        config.rateLimitStrategy || 'standard'
       )
 
       if (!rateLimitResult.success) {
@@ -292,11 +292,14 @@ export class ApiV1Router {
       if (config.webhookEvent && response.ok) {
         try {
           const responseData = await response.clone().json()
+          const user = (request as any).user
           await this.webhookManager.triggerWebhook({
             event: config.webhookEvent,
             data: responseData.data,
             timestamp: new Date().toISOString(),
             requestId,
+            organizationId: user?.organizationId || 'system',
+            userId: user?.id,
           })
         } catch (error) {
           console.error('Webhook trigger failed:', error)
@@ -391,7 +394,7 @@ export const apiV1Router = new ApiV1Router()
  * Generate OpenAPI specification
  */
 export function generateOpenApiSpec(): any {
-  const spec = {
+  const spec: any = {
     openapi: '3.0.0',
     info: {
       title: 'AI Readiness API',
@@ -451,7 +454,7 @@ export function generateOpenApiSpec(): any {
     }
 
     config.methods.forEach(method => {
-      spec.paths[path][method.toLowerCase()] = {
+      (spec.paths[path] as any)[method.toLowerCase()] = {
         summary: config.description,
         operationId: key,
         security: config.requiresAuth ? [{ ApiKeyAuth: [] }] : [],
