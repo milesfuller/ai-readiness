@@ -26,8 +26,19 @@ export async function createClient(): Promise<SupabaseClient> {
     await new Promise(resolve => setTimeout(resolve, MIN_SERVER_CREATION_INTERVAL - timeSinceLastCreation))
   }
   lastServerCreationTime = Date.now()
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  // Use staging variables if in preview/staging environment
+  const isPreviewOrStaging = process.env.VERCEL_ENV === 'preview' || 
+                             process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging' ||
+                             process.env.NEXT_PUBLIC_IS_PREVIEW === 'true'
+  
+  const supabaseUrl = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+    ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+    : process.env.NEXT_PUBLIC_SUPABASE_URL
+    
+  const supabaseAnonKey = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required')
@@ -117,8 +128,19 @@ export async function createClient(): Promise<SupabaseClient> {
  */
 export function createServerClient() {
   const cookieStore = cookies()
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  
+  // Use staging variables if in preview/staging environment
+  const isPreviewOrStaging = process.env.VERCEL_ENV === 'preview' || 
+                             process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging' ||
+                             process.env.NEXT_PUBLIC_IS_PREVIEW === 'true'
+  
+  const supabaseUrl = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+    ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+    : process.env.NEXT_PUBLIC_SUPABASE_URL!
+    
+  const supabaseAnonKey = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
   return createSupabaseServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {

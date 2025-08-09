@@ -40,8 +40,18 @@ export function createClient(): SupabaseClient {
 
   lastCreationTime = now
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Use staging variables if in preview/staging environment
+  const isPreviewOrStaging = process.env.VERCEL_ENV === 'preview' || 
+                             process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging' ||
+                             process.env.NEXT_PUBLIC_IS_PREVIEW === 'true'
+  
+  const supabaseUrl = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+    ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
+    : process.env.NEXT_PUBLIC_SUPABASE_URL
+    
+  const supabaseAnonKey = isPreviewOrStaging && process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? process.env.STAGING_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
     // Only log errors in development, and only if not in test environment
