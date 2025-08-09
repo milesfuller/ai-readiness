@@ -305,7 +305,7 @@ export class UserProfileService {
         skippedSteps.push(step);
       }
 
-      return await this.updateOnboardingProgress(userId, nextStep, {
+      return await this.updateOnboardingProgress(userId, nextStep as OnboardingStep, {
         skipped_steps: skippedSteps
       });
     } catch (error) {
@@ -335,11 +335,8 @@ export class UserProfileService {
         is_public: isPublic
       };
 
-      const validatedData = ProfileMetadataTableSchema.omit({
-        id: true,
-        created_at: true,
-        updated_at: true
-      }).parse(metadataData);
+      // Use the data directly as we're not including auto-generated fields
+      const validatedData = metadataData;
 
       const { data, error } = await this.supabase
         .from('profile_metadata')

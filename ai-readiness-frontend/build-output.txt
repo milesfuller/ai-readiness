@@ -1,0 +1,20 @@
+
+> ai-readiness-frontend@0.1.0 build /workspaces/ai-readiness/ai-readiness-frontend
+> node scripts/build-safe.js 2
+
+🚀 Starting safe build process...
+✅ Found .env.local file
+⚠️  Warning: No API keys found. LLM features will use fallback responses.
+   To enable LLM features, add ANTHROPIC_API_KEY or OPENAI_API_KEY to .env.local
+  ▲ Next.js 14.2.31
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+   Skipping linting
+   Checking validity of types ...
+
+❌ Build failed with exit code: 1
+
+💡 Tip: TypeScript errors found. Check the output above for details.
+   You can temporarily disable strict checking in tsconfig.json if needed.
+ ELIFECYCLE  Command failed with exit code 1.

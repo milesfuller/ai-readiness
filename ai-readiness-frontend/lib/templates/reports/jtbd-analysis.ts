@@ -754,7 +754,7 @@ export const jtbdTemplateHelpers = {
   },
 
   identifyFrictionPoints: (data: any) => {
-    const frictionPoints = []
+    const frictionPoints: any[] = []
     
     if ((data.analytics?.completionRate || 0) < 70) {
       frictionPoints.push({

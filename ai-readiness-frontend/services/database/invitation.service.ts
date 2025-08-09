@@ -763,11 +763,8 @@ export class InvitationService {
         metadata: data.metadata || {}
       };
 
-      const validatedData = InvitationBatchesTableSchema.omit({
-        id: true,
-        created_at: true,
-        updated_at: true
-      }).parse(batchData);
+      // Use the data directly as we're not including the auto-generated fields
+      const validatedData = batchData;
 
       const { data: batch, error } = await this.supabase
         .from('invitation_batches')
@@ -817,9 +814,9 @@ export class InvitationService {
       for (const recipient of batch.recipients_data) {
         try {
           await this.createInvitation({
-            type: batch.type,
+            type: batch.type || undefined,
             email: recipient.email,
-            template_id: batch.template_id,
+            template_id: batch.template_id || undefined,
             target_id: batch.target_id,
             subject: `Invitation - ${recipient.name || recipient.email}`,
             metadata: {

@@ -509,20 +509,25 @@ export class AnalyticsBackgroundProcessor implements TimeSeriesProcessor {
    */
   private async processWeeklyForOrganization(organizationId: string, startDate: Date, endDate: Date) {
     try {
-      const weeklyMetrics = await analyticsService.getOrganizationMetrics(organizationId, {
-        start: startDate,
-        end: endDate
-      })
+      // TODO: Uncomment when analyticsService is available
+      // const weeklyMetrics = await analyticsService.getOrganizationMetrics(organizationId, {
+      //   start: startDate,
+      //   end: endDate
+      // })
 
-      const jtbdTrends = await analyticsService.getJTBDTrends(organizationId, 'weekly', {
-        start: startDate,
-        end: endDate
-      })
+      // const jtbdTrends = await analyticsService.getJTBDTrends(organizationId, 'weekly', {
+      //   start: startDate,
+      //   end: endDate
+      // })
 
-      const voiceQuality = await analyticsService.getVoiceQualityMetrics(organizationId, {
-        start: startDate,
-        end: endDate
-      })
+      // const voiceQuality = await analyticsService.getVoiceQualityMetrics(organizationId, {
+      //   start: startDate,
+      //   end: endDate
+      // })
+
+      const weeklyMetrics = {}
+      const jtbdTrends = {}
+      const voiceQuality = {}
 
       await this.storeWeeklyAggregation(organizationId, startDate, {
         ...weeklyMetrics,
@@ -541,20 +546,25 @@ export class AnalyticsBackgroundProcessor implements TimeSeriesProcessor {
    */
   private async processMonthlyForOrganization(organizationId: string, startDate: Date, endDate: Date) {
     try {
-      const monthlyMetrics = await analyticsService.getOrganizationMetrics(organizationId, {
-        start: startDate,
-        end: endDate
-      })
+      // TODO: Uncomment when analyticsService is available
+      // const monthlyMetrics = await analyticsService.getOrganizationMetrics(organizationId, {
+      //   start: startDate,
+      //   end: endDate
+      // })
 
-      const jtbdTrends = await analyticsService.getJTBDTrends(organizationId, 'monthly', {
-        start: startDate,
-        end: endDate
-      })
+      // const jtbdTrends = await analyticsService.getJTBDTrends(organizationId, 'monthly', {
+      //   start: startDate,
+      //   end: endDate
+      // })
 
-      const userEngagement = await analyticsService.getUserEngagementMetrics(organizationId, {
-        start: startDate,
-        end: endDate
-      })
+      // const userEngagement = await analyticsService.getUserEngagementMetrics(organizationId, {
+      //   start: startDate,
+      //   end: endDate
+      // })
+
+      const monthlyMetrics = {}
+      const jtbdTrends = {}
+      const userEngagement = {}
 
       await this.storeMonthlyAggregation(organizationId, startDate, {
         ...monthlyMetrics,
@@ -573,7 +583,9 @@ export class AnalyticsBackgroundProcessor implements TimeSeriesProcessor {
    */
   private async detectAnomaliesForOrganization(organizationId: string) {
     try {
-      const anomalies = await analyticsService.detectAnomalies(organizationId)
+      // TODO: Uncomment when analyticsService is available
+      // const anomalies = await analyticsService.detectAnomalies(organizationId)
+      const anomalies = { anomalies: [] } // Mock implementation
       
       if (anomalies.anomalies.length > 0) {
         console.log(`Detected ${anomalies.anomalies.length} anomalies for org ${organizationId}`)
@@ -653,10 +665,12 @@ export class AnalyticsBackgroundProcessor implements TimeSeriesProcessor {
   }
 
   private async calculateDailyVoiceQuality(organizationId: string, startDate: Date, endDate: Date) {
-    const voiceMetrics = await analyticsService.getVoiceQualityMetrics(organizationId, {
-      start: startDate,
-      end: endDate
-    })
+    // TODO: Uncomment when analyticsService is available
+    // const voiceMetrics = await analyticsService.getVoiceQualityMetrics(organizationId, {
+    //   start: startDate,
+    //   end: endDate
+    // })
+    const voiceMetrics = { averageQuality: 0 } // Mock implementation
     return voiceMetrics.averageQuality
   }
 

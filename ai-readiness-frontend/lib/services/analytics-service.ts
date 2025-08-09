@@ -419,7 +419,7 @@ function calculateResponsesByMonth(responses: any[]): { month: string; responses
   })
 
   // Get last 12 months
-  const result = []
+  const result: { month: string; responses: number }[] = []
   const now = new Date()
   for (let i = 11; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1)

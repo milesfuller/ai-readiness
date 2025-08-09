@@ -63,7 +63,7 @@ interface CostTrackingOptions {
 }
 
 // Default LLM configurations
-const DEFAULT_CONFIGS: Record<LLMProvider, LLMConfig> = {
+const DEFAULT_CONFIGS: Partial<Record<LLMProvider, LLMConfig>> = {
   openai: {
     provider: 'openai',
     model: 'gpt-4o',
@@ -100,16 +100,11 @@ export class LLMService {
     customConfig?: Partial<LLMConfig>,
     costTracking?: CostTrackingOptions
   ) {
-    this.config = { ...DEFAULT_CONFIGS[provider], ...customConfig };
+    const defaultConfig = DEFAULT_CONFIGS[provider] || DEFAULT_CONFIGS.openai!;
+    this.config = { ...defaultConfig, ...customConfig } as LLMConfig;
     this.costTracking = costTracking || {
-      trackByOrganization: true,
-      trackBySurvey: true,
-      trackByUser: false,
-      alertThresholds: {
-        dailyCostCents: 10000, // $100/day
-        monthlyCostCents: 200000, // $2000/month
-        tokenUsage: 1000000 // 1M tokens
-      }
+      enableTracking: true,
+      costPerToken: 0.0003 // Default cost per token
     };
 
     // Get API key from environment
@@ -178,11 +173,11 @@ export class LLMService {
       // Track API usage
       const processingTime = Date.now() - startTime;
       await this.trackAPIUsage({
-        tokensUsed: response.usage?.total_tokens || 0,
-        processingTimeMs: processingTime,
-        status: 'success',
-        responseId: context.responseId,
-        surveyId: context.surveyId
+        id: `${Date.now()}_${context.responseId}`,
+        tokens: response.usage?.total_tokens || 0,
+        provider: this.config.provider,
+        cost: (response.usage?.total_tokens || 0) * 0.0003,
+        timestamp: new Date().toISOString()
       });
 
       return analysisResult;
@@ -191,12 +186,11 @@ export class LLMService {
       
       // Track failed API usage
       await this.trackAPIUsage({
-        tokensUsed: 0,
-        processingTimeMs: processingTime,
-        status: 'error',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        responseId: context.responseId,
-        surveyId: context.surveyId
+        id: `${Date.now()}_error_${context.responseId}`,
+        tokens: 0,
+        provider: this.config.provider,
+        cost: 0,
+        timestamp: new Date().toISOString()
       });
 
       throw this.handleLLMError(error);
@@ -256,9 +250,9 @@ export class LLMService {
         failed: errors.length,
         totalCostCents: totalCost,
         totalTokensUsed: totalTokens,
-        processingTimeMs: processingTime
-      },
-      errors
+        processingTimeMs: processingTime,
+        errors: errors
+      }
     };
   }
 
@@ -908,11 +902,12 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
       qualityScore += 0.05;
     }
 
+    // Include warnings in errors if they are critical
+    const allErrors = [...errors, ...warnings.filter(w => w.includes('critical'))];
+    
     return { 
-      errors, 
-      warnings, 
-      isValid: errors.length === 0,
-      score: Math.max(0, Math.min(1, qualityScore))
+      errors: allErrors, 
+      isValid: errors.length === 0
     };
   }
 
@@ -920,48 +915,21 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
    * Transform response from snake_case to camelCase
    */
   private transformResponseFormat(response: any): ExtendedJTBDAnalysisResult {
+    // Create forces object from response
+    const forces: Record<JTBDForceType, number> = {
+      demographic: response.forces?.demographic || 0,
+      pain_of_old: response.forces?.pain_of_old || response.forces?.push || response.force_strength_score || 0,
+      pull_of_new: response.forces?.pull_of_new || response.forces?.pull || 0,
+      anchors_to_old: response.forces?.anchors_to_old || response.forces?.habit || 0,
+      anxiety_of_new: response.forces?.anxiety_of_new || response.forces?.anxiety || 0
+    };
+
     return {
-      primaryJtbdForce: response.primary_jtbd_force,
-      secondaryJtbdForces: response.secondary_jtbd_forces || [],
-      forceStrengthScore: response.force_strength_score,
-      confidenceScore: response.confidence_score,
-      reasoning: response.reasoning,
-      keyThemes: response.key_themes,
-      themeCategories: response.theme_categories || {
-        process: [],
-        technology: [],
-        people: [],
-        organizational: []
-      },
-      sentimentAnalysis: {
-        overallScore: response.sentiment_analysis.overall_score,
-        sentimentLabel: response.sentiment_analysis.sentiment_label,
-        emotionalIndicators: response.sentiment_analysis.emotional_indicators || [],
-        tone: response.sentiment_analysis.tone
-      },
-      businessImplications: {
-        impactLevel: response.business_implications.impact_level,
-        affectedAreas: response.business_implications.affected_areas || [],
-        urgency: response.business_implications.urgency,
-        businessValue: response.business_implications.business_value
-      },
-      actionableInsights: {
-        summaryInsight: response.actionable_insights.summary_insight,
-        detailedAnalysis: response.actionable_insights.detailed_analysis,
-        immediateActions: response.actionable_insights.immediate_actions || [],
-        longTermRecommendations: response.actionable_insights.long_term_recommendations || []
-      },
-      qualityIndicators: {
-        responseQuality: response.quality_indicators.response_quality,
-        specificityLevel: response.quality_indicators.specificity_level,
-        actionability: response.quality_indicators.actionability,
-        businessRelevance: response.quality_indicators.business_relevance
-      },
-      analysisMetadata: {
-        processingNotes: response.analysis_metadata.processing_notes || '',
-        followUpQuestions: response.analysis_metadata.follow_up_questions || [],
-        relatedThemes: response.analysis_metadata.related_themes || []
-      }
+      forces,
+      confidence: response.confidence_score || response.confidenceScore || 0.7,
+      reasoning: response.reasoning || response.detailed_analysis || '',
+      recommendations: response.recommendations || response.actionable_insights?.immediate_actions || [],
+      keyInsights: response.key_insights || response.key_themes || []
     };
   }
 
@@ -977,20 +945,13 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
   /**
    * Track API usage for cost monitoring
    */
-  private async trackAPIUsage(usage: Partial<APIUsageLog>): Promise<void> {
+  private async trackAPIUsage(usage: APIUsageLog): Promise<void> {
     const logEntry: APIUsageLog = {
-      serviceType: 'llm_analysis',
-      provider: this.config.provider,
-      modelName: this.config.model,
-      tokensUsed: usage.tokensUsed || 0,
-      costEstimateCents: Math.round((usage.tokensUsed || 0) * (TOKEN_COSTS[this.config.model as keyof typeof TOKEN_COSTS] || 0.3)),
-      processingTimeMs: usage.processingTimeMs || 0,
-      status: usage.status || 'success',
-      errorMessage: usage.errorMessage,
-      timestamp: new Date().toISOString(),
-      organizationId: usage.organizationId,
-      surveyId: usage.surveyId,
-      responseId: usage.responseId
+      id: usage.id || `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      provider: usage.provider || this.config.provider,
+      tokens: usage.tokens || 0,
+      cost: usage.cost || (usage.tokens * (TOKEN_COSTS[this.config.model as keyof typeof TOKEN_COSTS] || 0.0003)),
+      timestamp: usage.timestamp || new Date().toISOString()
     };
 
     // Store in database or logging system
@@ -1019,13 +980,7 @@ Provide a comprehensive JSON response with executive summary, force analysis, or
   private handleLLMError(error: any): LLMError {
     const llmError: LLMError = {
       code: 'LLM_ERROR',
-      message: error.message || 'Unknown LLM error',
-      retryable: this.isRetryableError(error),
-      timestamp: new Date().toISOString(),
-      context: {
-        provider: this.config.provider,
-        model: this.config.model
-      }
+      message: error.message || 'Unknown LLM error'
     };
 
     // Categorize specific error types

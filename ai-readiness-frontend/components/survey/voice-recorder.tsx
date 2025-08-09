@@ -76,7 +76,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         analyserRef.current.getByteFrequencyData(dataArray)
         
         // Calculate volume levels for visualization
-        const volumes = []
+        const volumes: number[] = []
         for (let i = 0; i < 12; i++) {
           const start = Math.floor((i * bufferLength) / 12)
           const end = Math.floor(((i + 1) * bufferLength) / 12)

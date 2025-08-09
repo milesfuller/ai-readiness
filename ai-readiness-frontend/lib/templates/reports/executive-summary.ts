@@ -278,7 +278,7 @@ export const executiveTemplateHelpers = {
    * Identify critical issues requiring executive attention
    */
   identifyCriticalIssues: (data: any) => {
-    const issues = []
+    const issues: any[] = []
     
     if ((data.analytics?.completionRate || 0) < 50) {
       issues.push({

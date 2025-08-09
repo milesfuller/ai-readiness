@@ -689,7 +689,7 @@ export async function warmAnalyticsCache() {
     return
   }
   
-  const warmingStrategies = []
+  const warmingStrategies: any[] = []
   
   // Warm common analytics queries
   for (const org of organizations || []) {

@@ -90,7 +90,7 @@ export class DataExportService {
   }
 
   private async initializeSupabase() {
-    this.supabase = await createServerSupabaseClient()
+    this.supabase = await createClient()
   }
 
   /**

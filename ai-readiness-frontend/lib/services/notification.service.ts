@@ -2,8 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import nodemailer from 'nodemailer'
 import { z } from 'zod'
 import { render } from '@react-email/render'
-// Note: Email templates import commented out until templates are properly set up
-// import { emailTemplates } from '@/lib/email/templates'
+import { emailTemplates } from '@/lib/email/templates'
 import React from 'react'
 
 // Notification types
@@ -82,7 +81,7 @@ export class NotificationService {
   }
 
   private async initializeSupabase() {
-    this.supabase = await createServerSupabaseClient()
+    this.supabase = await createClient()
   }
 
   private initializeEmailTransporter() {

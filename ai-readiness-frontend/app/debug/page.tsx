@@ -23,7 +23,7 @@ export default function DebugPage() {
 
       // Try to check server-side env vars
       let serverEnv = null
-      let serverError = null
+      let serverError: string | null = null
       try {
         const response = await fetch('/api/debug/env')
         if (!response.ok) {

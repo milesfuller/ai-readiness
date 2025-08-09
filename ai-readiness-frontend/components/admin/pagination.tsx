@@ -46,8 +46,8 @@ export function Pagination({
   // Generate page numbers to show
   const getPageNumbers = () => {
     const delta = 2 // Number of pages to show on each side
-    const range = []
-    const rangeWithDots = []
+    const range: number[] = []
+    const rangeWithDots: (number | string)[] = []
 
     for (
       let i = Math.max(2, page - delta);

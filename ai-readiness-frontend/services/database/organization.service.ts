@@ -161,7 +161,7 @@ export class OrganizationService {
   async addMember(
     organizationId: string,
     userId: string,
-    role: MemberRole = 'user',
+    role: MemberRole = 'member',
     invitedBy?: string
   ): Promise<OrganizationMember> {
     try {
