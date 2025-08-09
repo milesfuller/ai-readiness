@@ -4,9 +4,10 @@
  */
 
 // Determine environment first
-const isProduction = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production'
-const isStaging = process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging'
+// Vercel preview should be treated as staging
 const isPreview = process.env.NEXT_PUBLIC_IS_PREVIEW === 'true' || process.env.VERCEL_ENV === 'preview'
+const isProduction = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' && !isPreview
+const isStaging = process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging' || isPreview
 
 // Select the correct environment variables based on environment
 const supabaseUrl = (isStaging || isPreview) && process.env.STAGING_NEXT_PUBLIC_SUPABASE_URL
@@ -78,9 +79,11 @@ export const config = {
  */
 export function getEnvironmentName(): string {
   if (config.isProduction) return 'Production'
-  if (config.isStaging) return 'Staging'
+  if (config.isStaging) return 'Staging'  // This now includes preview
   if (config.isTest) return 'Test'
   if (config.isDevelopment) return 'Development'
+  // Fallback for edge cases
+  if (process.env.VERCEL_ENV === 'preview') return 'Staging (Preview)'
   return 'Unknown'
 }
 
